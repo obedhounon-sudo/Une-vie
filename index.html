@@ -84,6 +84,8 @@
   #toast { position: absolute; left: 50%; bottom: 80px; transform: translateX(-50%); background: #25211b; color: #fff; padding: 8px 14px; border-radius: 20px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity .3s; max-width: 90%; text-align: center; z-index: 20; }
   #toast.on { opacity: 1; }
   .tabrow { display: flex; gap: 6px; margin: 6px 0; } .tabrow .btn { justify-content: center; text-align: center; }
+  input[type=text], input:not([type]), select { width: 100%; font-size: 15px; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font-family: inherit; }
+  input[type=range] { accent-color: var(--accent); }
   textarea { width: 100%; height: 70px; font-size: 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); padding: 6px; }
 </style>
 </head>
@@ -105,10 +107,11 @@ var EN = {};
   var MISS = {};
   try { window.__MISS = MISS; } catch (e) {}
   function T(s) {
-    if (LANG !== "en" || typeof s !== "string") return s;
-    if (Object.prototype.hasOwnProperty.call(EN, s)) return EN[s];
+    if (typeof s !== "string") return s;
+    if (LANG !== "en") return mloc(s);
+    if (Object.prototype.hasOwnProperty.call(EN, s)) return mloc(EN[s]);
     if (s && /[a-zà-ÿ]{2}/i.test(s)) MISS[s] = 1;
-    return s;
+    return mloc(s);
   }
   function TF(tpl) {
     var s = T(tpl);
@@ -184,7 +187,14 @@ var EN = {};
     { id: "ingenieur",  n: "Ingénierie",           ico: "📐", edu: 5, sk: "info",    lv: [{ t: "Ingénieur débutant", s: 38000 }, { t: "Ingénieur", s: 50000 }, { t: "Ingénieur principal", s: 72000 }, { t: "Directeur d'ingénierie", s: 108000 }] },
     { id: "avocat",     n: "Droit",                ico: "⚖️", edu: 5, sk: "social",  lv: [{ t: "Avocat collaborateur", s: 38000 }, { t: "Avocat", s: 58000 }, { t: "Avocat associé", s: 100000 }, { t: "Avocat de renom", s: 180000 }] },
     { id: "medecin",    n: "Médecine",             ico: "⚕️", edu: 6, sk: "social",  lv: [{ t: "Interne", s: 32000 }, { t: "Médecin", s: 70000 }, { t: "Médecin chef", s: 110000 }, { t: "Professeur de médecine", s: 150000 }] },
-    { id: "artiste",    n: "Arts et spectacle",    ico: "🎭", edu: 0, sk: "art",     lv: [{ t: "Artiste débutant", s: 11000 }, { t: "Artiste reconnu", s: 22000 }, { t: "Artiste établi", s: 48000 }, { t: "Artiste célèbre", s: 120000 }], risky: true }
+    { id: "artiste",    n: "Arts et spectacle",    ico: "🎭", edu: 0, sk: "art",     lv: [{ t: "Artiste débutant", s: 11000 }, { t: "Artiste reconnu", s: 22000 }, { t: "Artiste établi", s: 48000 }, { t: "Artiste célèbre", s: 120000 }], risky: true },
+    { id: "sportpro", n: "Sport professionnel", ico: "🏅", edu: 0, sk: "sport", risky: true, need: { sport: 40 }, minForme: 60, maxAge: 38, lv: [{ t: "Joueur amateur", s: 9000 }, { t: "Joueur semi-professionnel", s: 28000 }, { t: "Joueur professionnel", s: 120000 }, { t: "Star du sport", s: 600000 }] },
+    { id: "acteur", n: "Cinéma et télévision", ico: "🎬", edu: 0, sk: "art", risky: true, need: { art: 25 }, minCharme: 55, lv: [{ t: "Figurant", s: 9000 }, { t: "Second rôle", s: 35000 }, { t: "Acteur reconnu", s: 140000 }, { t: "Superstar", s: 900000 }] },
+    { id: "musicien", n: "Musique", ico: "🎤", edu: 0, sk: "musique", risky: true, need: { musique: 30 }, lv: [{ t: "Musicien de rue", s: 8000 }, { t: "Groupe local", s: 22000 }, { t: "Artiste signé", s: 90000 }, { t: "Idole internationale", s: 700000 }] },
+    { id: "influence", n: "Créateur de contenu", ico: "📱", edu: 0, sk: "social", risky: true, need: { social: 25 }, minCharme: 45, maxAge: 58, lv: [{ t: "Créateur débutant", s: 6000 }, { t: "Micro-influenceur", s: 24000 }, { t: "Influenceur", s: 95000 }, { t: "Star du web", s: 450000 }] },
+    { id: "politique", n: "Politique", ico: "🏛️", edu: 4, sk: "social", lv: [{ t: "Collaborateur d'élu", s: 32000 }, { t: "Élu local", s: 45000 }, { t: "Député", s: 85000 }, { t: "Ministre", s: 160000 }] },
+    { id: "militaire", n: "Armée", ico: "🎖️", edu: 2, sk: "sport", danger: true, lv: [{ t: "Soldat", s: 20000 }, { t: "Sous-officier", s: 30000 }, { t: "Officier", s: 48000 }, { t: "Général", s: 98000 }] },
+    { id: "crime", n: "Crime organisé", ico: "🕶️", edu: 0, sk: "social", crime: true, need: { social: 35 }, minCrim: 1, lv: [{ t: "Petite main", s: 14000 }, { t: "Homme de confiance", s: 38000 }, { t: "Lieutenant", s: 120000 }, { t: "Chef de réseau", s: 400000 }] }
   ];
   var RETIRE_AGE = 62, RETIRE_FORCED = 70;
 
@@ -203,7 +213,8 @@ var EN = {};
   var CLASSES = [
     { id: "modeste", n: "famille modeste", w: 40, money: 500,    st: -4 },
     { id: "moyenne", n: "famille de classe moyenne", w: 45, money: 3000,   st: 0 },
-    { id: "aisee",   n: "famille aisée", w: 15, money: 15000, st: 5 }
+    { id: "aisee",   n: "famille aisée", w: 15, money: 15000, st: 5 },
+    { id: "elite",   n: "famille richissime", w: 0, money: 250000, st: 9 }
   ];
 
   var TRAITS = [
@@ -234,6 +245,59 @@ var EN = {};
     { id: "foyer", ico: "🏡", n: "Un chez-soi", d: "Être propriétaire sans dette ni prêt", prog: function (P) { return P.owned ? (P.mortgage ? 0.6 : 1) : 0; } }
   ];
   AMBITIONS.forEach(function (a) { a.test = function (P) { if (a.id === "heureux") return P.age >= 50 && P.hN && P.hSum / P.hN >= 75; if (a.id === "famille") return P.kids.length >= 3 && P.partner && P.partner.married; if (a.id === "savoir") return P.edu >= 6; if (a.id === "longevite") return P.age >= 95; if (a.id === "maitre") return a.prog(P) >= 1; if (a.id === "carriere") return a.prog(P) >= 1; if (a.id === "foyer") return !!P.owned && !P.mortgage; return a.prog(P) >= 1; }; });
+
+  // =====================================================================
+  //  PAYS : monnaie, noms, espérance de vie, protection sociale
+  //  rate : multiplicateur d'affichage des montants (pouvoir d'achat local)
+  // =====================================================================
+  var INTL_M = ["Lucas", "Hugo", "Adam", "Samuel", "David", "Daniel", "Thomas", "Paul", "Karim", "Omar"];
+  var INTL_F = ["Emma", "Sarah", "Anna", "Marie", "Sofia", "Eva", "Julie", "Nadia", "Laura", "Alice"];
+  var COUNTRIES = [
+    { id: "fr", flag: "🇫🇷", n: "France", sym: "€", after: true, rate: 1, mortF: 1, welfare: 1,
+      m: FIRST_M, f: FIRST_F, l: LAST },
+    { id: "be", flag: "🇧🇪", n: "Belgique", sym: "€", after: true, rate: 1.05, mortF: 1, welfare: 1,
+      m: ["Lucas", "Noah", "Louis", "Arthur", "Jules", "Liam", "Maxime", "Thibault", "Mathieu", "Florian", "Ruben", "Tom"], f: ["Emma", "Louise", "Olivia", "Camille", "Charlotte", "Lotte", "Elise", "Manon", "Marie", "Sarah", "Fien", "Julie"],
+      l: ["Peeters", "Janssens", "Maes", "Jacobs", "Mertens", "Willems", "Claes", "Goossens", "Dubois", "Lambert", "Dupont", "Lejeune", "Renard", "De Smet", "Vandenberghe"] },
+    { id: "ch", flag: "🇨🇭", n: "Suisse", sym: "CHF ", after: false, rate: 1.25, mortF: 0.95, welfare: 1,
+      m: ["Noah", "Luca", "Leon", "Nils", "Louis", "Matteo", "Yannick", "Fabian", "Marc", "Reto", "Samuel", "Pascal"], f: ["Mia", "Emma", "Lena", "Lara", "Sophie", "Nina", "Julia", "Céline", "Aurélie", "Sandra", "Anja", "Laura"],
+      l: ["Müller", "Meier", "Schmid", "Keller", "Weber", "Huber", "Schneider", "Favre", "Rochat", "Fischer", "Brunner", "Baumann", "Gerber", "Morard", "Bonvin"] },
+    { id: "ca", flag: "🇨🇦", n: "Canada", sym: "CA$", after: false, rate: 1.5, mortF: 0.97, welfare: 0.9,
+      m: ["Liam", "Noah", "Olivier", "William", "Félix", "Thomas", "Jacob", "Ethan", "Samuel", "Nathan", "Gabriel", "Alexandre"], f: ["Emma", "Olivia", "Léa", "Charlotte", "Sophie", "Chloé", "Ava", "Zoé", "Florence", "Emily", "Béatrice", "Sarah"],
+      l: ["Tremblay", "Gagnon", "Roy", "Côté", "Bouchard", "Gauthier", "Smith", "Brown", "Wilson", "Lavoie", "Fortin", "Singh", "Chen", "Martin", "Morin"] },
+    { id: "us", flag: "🇺🇸", n: "États-Unis", sym: "$", after: false, rate: 1.25, mortF: 1.1, welfare: 0.4,
+      m: ["Liam", "Noah", "Oliver", "James", "Elijah", "William", "Henry", "Lucas", "Benjamin", "Jack", "Mason", "Ethan", "Michael", "Tyrone", "Carlos"], f: ["Olivia", "Emma", "Charlotte", "Amelia", "Sophia", "Mia", "Isabella", "Ava", "Harper", "Ella", "Emily", "Maria", "Jasmine", "Madison", "Grace"],
+      l: ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez", "Wilson", "Anderson", "Taylor", "Thomas", "Jackson", "Lee"] },
+    { id: "gb", flag: "🇬🇧", n: "Royaume-Uni", sym: "£", after: false, rate: 0.9, mortF: 1, welfare: 0.8,
+      m: ["Oliver", "George", "Harry", "Jack", "Jacob", "Noah", "Charlie", "Thomas", "Oscar", "William", "Freddie", "Arthur"], f: ["Olivia", "Amelia", "Isla", "Ava", "Emily", "Sophie", "Grace", "Lily", "Poppy", "Ella", "Charlotte", "Freya"],
+      l: ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "Patel", "Khan"] },
+    { id: "ma", flag: "🇲🇦", n: "Maroc", sym: " MAD", after: true, rate: 3.5, mortF: 1.15, welfare: 0.3,
+      m: ["Youssef", "Mohamed", "Amine", "Mehdi", "Omar", "Ayoub", "Hamza", "Karim", "Anas", "Bilal", "Rachid", "Yassine"], f: ["Fatima", "Khadija", "Aya", "Salma", "Meryem", "Imane", "Sara", "Nadia", "Hiba", "Zineb", "Amina", "Kenza"],
+      l: ["Benali", "El Amrani", "Alaoui", "Bennani", "Tazi", "Idrissi", "Berrada", "Chraibi", "Lahlou", "Fassi", "Bouzidi", "Amrani", "Naciri", "Benjelloun"] },
+    { id: "tn", flag: "🇹🇳", n: "Tunisie", sym: " DT", after: true, rate: 1.1, mortF: 1.1, welfare: 0.3,
+      m: ["Mohamed", "Ahmed", "Yassine", "Aymen", "Slim", "Walid", "Khaled", "Mehdi", "Oussama", "Firas", "Hichem", "Sami"], f: ["Yasmine", "Nour", "Ines", "Sarra", "Mariem", "Rim", "Amel", "Ons", "Hajer", "Lina", "Farah", "Emna"],
+      l: ["Ben Salah", "Trabelsi", "Jebali", "Gharbi", "Bouazizi", "Mejri", "Hamdi", "Chaabane", "Ben Ali", "Karoui", "Sfar", "Mansouri"] },
+    { id: "sn", flag: "🇸🇳", n: "Sénégal", sym: " FCFA", after: true, rate: 85, mortF: 1.5, welfare: 0.1,
+      m: ["Mamadou", "Abdoulaye", "Ibrahima", "Moussa", "Cheikh", "Ousmane", "Modou", "Pape", "Alioune", "Babacar", "Omar", "Samba"], f: ["Fatou", "Aminata", "Awa", "Khady", "Mariama", "Astou", "Binta", "Ndeye", "Seynabou", "Rokhaya", "Coumba", "Aïssatou"],
+      l: ["Diop", "Ndiaye", "Fall", "Sow", "Diallo", "Mbaye", "Faye", "Gueye", "Sarr", "Ba", "Cissé", "Thiam", "Sy", "Seck"] },
+    { id: "ci", flag: "🇨🇮", n: "Côte d'Ivoire", sym: " FCFA", after: true, rate: 85, mortF: 1.55, welfare: 0.1,
+      m: ["Kouassi", "Yao", "Koffi", "Konan", "Serge", "Ibrahim", "Aboubacar", "Jean-Marc", "Franck", "Arnaud", "Wilfried", "Mamadou"], f: ["Aya", "Adjoua", "Affoué", "Aminata", "Mariam", "Fanta", "Nathalie", "Estelle", "Christelle", "Marie-Laure", "Awa", "Mireille"],
+      l: ["Koné", "Traoré", "Ouattara", "Kouassi", "Yao", "Konan", "Bamba", "Coulibaly", "Touré", "Diabaté", "N'Guessan", "Kouamé", "Soro", "Gnagne"] },
+    { id: "bj", flag: "🇧🇯", n: "Bénin", sym: " FCFA", after: true, rate: 85, mortF: 1.55, welfare: 0.08,
+      m: ["Kofi", "Koffi", "Codjo", "Sèna", "Rodrigue", "Armand", "Honoré", "Jean", "Gildas", "Fiacre", "Médard", "Hervé"], f: ["Adjovi", "Akpédjé", "Ayaba", "Sènami", "Fidèle", "Reine", "Chantal", "Estelle", "Gisèle", "Prisca", "Murielle", "Ama"],
+      l: ["Amoussou", "Agbodjan", "Adjovi", "Hounkpatin", "Dossou", "Houngbédji", "Sossou", "Gnonlonfoun", "Zinsou", "Kpadonou", "Agossou", "Tchibozo", "Ahouansou", "Gbèdo"] },
+    { id: "tg", flag: "🇹🇬", n: "Togo", sym: " FCFA", after: true, rate: 85, mortF: 1.6, welfare: 0.08,
+      m: ["Kodjo", "Kofi", "Komlan", "Yao", "Edem", "Kossi", "Mawuli", "Sénam", "Prince", "Jean", "Koffi", "Eyram"], f: ["Akossiwa", "Ama", "Adjoa", "Mawuena", "Elom", "Abla", "Dédé", "Esso", "Afi", "Sika", "Delali", "Éfua"],
+      l: ["Mensah", "Agbodjan", "Amouzou", "Adjoh", "Kpodar", "Tchalla", "Lawson", "Ayivi", "Dogbe", "Gbikpi", "Akakpo", "Atsou", "Houénou", "Koudjo"] },
+    { id: "cm", flag: "🇨🇲", n: "Cameroun", sym: " FCFA", after: true, rate: 85, mortF: 1.6, welfare: 0.1,
+      m: ["Jean-Paul", "Éric", "Brice", "Patrick", "Serge", "Landry", "Carlos", "Fabrice", "Rodrigue", "Yannick", "Boris", "Alain"], f: ["Chantal", "Estelle", "Nadège", "Carine", "Sandrine", "Flore", "Vanessa", "Laure", "Prisca", "Larissa", "Mireille", "Josiane"],
+      l: ["Mbarga", "Nkoulou", "Tchouaméni", "Fotso", "Kamga", "Ndongo", "Essomba", "Mbella", "Tagne", "Njoya", "Atangana", "Ebogo", "Mvondo", "Nana"] },
+    { id: "ng", flag: "🇳🇬", n: "Nigeria", sym: "₦", after: false, rate: 170, mortF: 1.7, welfare: 0.05,
+      m: ["Chinedu", "Emeka", "Tunde", "Segun", "Ibrahim", "Obinna", "Chukwudi", "Femi", "Musa", "Uche", "Kunle", "David"], f: ["Chioma", "Ngozi", "Aisha", "Folake", "Adaeze", "Funke", "Zainab", "Amara", "Blessing", "Yetunde", "Ifeoma", "Grace"],
+      l: ["Okafor", "Adeyemi", "Balogun", "Okoye", "Ibrahim", "Eze", "Nwosu", "Bello", "Adebayo", "Abubakar", "Okonkwo", "Ogunleye", "Danjuma", "Chukwu"] },
+    { id: "gh", flag: "🇬🇭", n: "Ghana", sym: "GH₵", after: false, rate: 3.5, mortF: 1.4, welfare: 0.1,
+      m: ["Kwame", "Kofi", "Kwesi", "Yaw", "Kojo", "Nana", "Emmanuel", "Daniel", "Samuel", "Isaac", "Prince", "Michael"], f: ["Ama", "Abena", "Akosua", "Adwoa", "Efua", "Esi", "Grace", "Gifty", "Comfort", "Abigail", "Mercy", "Victoria"],
+      l: ["Mensah", "Owusu", "Boateng", "Asante", "Osei", "Appiah", "Agyeman", "Addo", "Quaye", "Tetteh", "Darko", "Ofori", "Amoah", "Annan"] }
+  ];
   // =====================================================================
   //  MOTEUR : état, tour annuel, finances, santé, relations, mort
   // =====================================================================
@@ -263,22 +327,43 @@ var EN = {};
     for (var i = 0; i < s.length; i++) { if (i && (s.length - i) % 3 === 0) o += sep; o += s[i]; }
     return (neg ? "-" : "") + o;
   }
-  function money(n) { return LANG === "en" ? (n < 0 ? "-$" : "$") + fmtN(Math.abs(n)) : fmtN(n) + " €"; }
+  // ---------- Pays, monnaie, noms ----------
+  var CCODE = "fr";
+  function countryDef(id) { id = id || CCODE; for (var i = 0; i < COUNTRIES.length; i++) if (COUNTRIES[i].id === id) return COUNTRIES[i]; return COUNTRIES[0]; }
+  function firstName(g) { var c = countryDef(); return pick(g === "f" ? c.f : c.m); }
+  function lastName() { return pick(countryDef().l); }
+  function money(n) {
+    var c = countryDef(), v = n * c.rate; if (c.rate >= 50) v = Math.round(v / 100) * 100;
+    var neg = v < 0, s = fmtN(Math.abs(v));
+    return (neg ? "-" : "") + (c.after ? s + "\u00a0" + c.sym.trim() : c.sym + s);
+  }
+  // convertit les montants écrits en dur dans les textes (« 250 € » ou « $250 ») dans la monnaie du pays
+  function mloc(s) {
+    if (typeof s !== "string" || (s.indexOf("€") < 0 && s.indexOf("$") < 0)) return s;
+    s = s.replace(/(\d[\d\u202f\u00a0 ]*\d|\d)\s?€/g, function (m, d) { return money(parseInt(d.replace(/[^\d]/g, ""), 10)); });
+    return s.replace(/\$(\d[\d,]*)/g, function (m, d) { return money(parseInt(d.replace(/,/g, ""), 10)); });
+  }
+  var DIFFS = { relax: { mort: 0.7, cost: 0.9 }, normal: { mort: 1, cost: 1 }, hard: { mort: 1.3, cost: 1.12 } };
+  function diffOf() { return DIFFS[(P && P.diff) || "normal"] || DIFFS.normal; }
 
   // ---------- Création d'une vie ----------
   function newGlobal() { return { legacy: 0, spent: 0, lives: 0, perks: {}, ach: {}, best: 0, hist: [], settings: { lang: "auto", pref: "a" }, yearNow: 0, tuto: 0 }; }
   function perk(id) { return (G && G.perks[id]) || 0; }
   function mkPerson(g, age, last) {
-    return { name: pick(g === "f" ? FIRST_F : FIRST_M) + " " + (last || pick(LAST)), g: g, age: age };
+    return { name: firstName(g) + " " + (last || lastName()), g: g, age: age };
   }
-  function newLife(heir) {
-    var g = heir ? heir.g : (chance(0.5) ? "f" : "h");
-    var cls = wpick(CLASSES, function (c) { return c.w * (c.id === "aisee" ? 1 + perk("rang") * 0.4 : 1); });
-    var last = heir ? heir.last : pick(LAST);
-    var firstName = heir ? heir.first : pick(g === "f" ? FIRST_F : FIRST_M);
+  function newLife(heir, opts) {
+    opts = opts || {};
+    CCODE = heir ? heir.country : (opts.country || (G.settings && G.settings.country) || "fr");
+    var g = heir ? heir.g : (opts.g || (chance(0.5) ? "f" : "h"));
+    var cdef = countryDef(), poor = cdef.welfare < 0.2;
+    var cls = opts.cls ? CLASSES.filter(function (c) { return c.id === opts.cls; })[0] : wpick(CLASSES, function (c) { return c.w * (c.id === "aisee" ? (1 + perk("rang") * 0.4) * (poor ? 0.5 : 1) : c.id === "modeste" && poor ? 1.4 : 1); });
+    if (!cls) cls = CLASSES[1];
+    var last = heir ? heir.last : (opts.last || lastName());
+    var fname = heir ? heir.first : (opts.first || firstName(g));
     var startYear = heir ? G.yearNow : ri(1962, 2004);
     var q = {
-      v: 1, first: firstName, last: last, name: firstName + " " + last, g: g, age: heir ? heir.age : 0, year: startYear, startYear: startYear, gen: heir ? heir.gen : 1,
+      v: 1, country: CCODE, cheat: false, tm: 0, skin: heir ? (heir.skin || 0) : (opts.skin || 0), diff: heir ? (heir.diff || "normal") : (opts.diff || "normal"), first: fname, last: last, name: fname + " " + last, g: g, age: heir ? heir.age : 0, year: startYear, startYear: startYear, gen: heir ? heir.gen : 1,
       cls: heir ? heir.cls : cls.id,
       sante: clamp(70 + ri(-12, 12) + perk("genes") * 3, 20, 100), bonheur: 60, esprit: clamp(45 + ri(-15, 20) + perk("cerveau") * 3, 10, 100),
       charme: clamp(45 + ri(-18, 22) + perk("allure") * 3, 5, 100), forme: clamp(60 + ri(-12, 15), 20, 100), stress: 20,
@@ -293,7 +378,7 @@ var EN = {};
     if (fam) { q.mother = fam.mother; q.father = fam.father; }
     else {
       q.mother = mkPerson("f", ri(21, 38) + 0, last); q.father = mkPerson("h", ri(22, 42) + 0, last);
-      q.mother.name = pick(FIRST_F) + " " + last; q.father.name = pick(FIRST_M) + " " + last;
+      q.mother.name = firstName("f") + " " + last; q.father.name = firstName("h") + " " + last;
       q.mother.bond = 70; q.father.bond = 65; q.mother.alive = true; q.father.alive = true;
       q.mother.age = q.age + q.mother.age; q.father.age = q.age + q.father.age;
     }
@@ -419,7 +504,7 @@ var EN = {};
   }
   function addKid() {
     var g = chance(0.5) ? "f" : "h";
-    var k = { name: pick(g === "f" ? FIRST_F : FIRST_M), g: g, age: 0, bond: 75 };
+    var k = { name: firstName(g), g: g, age: 0, bond: 75 };
     P.kids.push(k); log(TF("Naissance de {0} ! Vous êtes {1}.", k.name, P.g === "f" ? T("maman") : T("papa")));
     P.bonheur = clamp(P.bonheur + 12, 0, 100); P.stress = clamp(P.stress + 8, 0, 100);
     return k;
@@ -429,7 +514,7 @@ var EN = {};
   // ---------- Mortalité ----------
   var MORT = [[0, 0.004], [1, 0.0004], [15, 0.0004], [25, 0.0008], [35, 0.0012], [45, 0.003], [55, 0.0075], [65, 0.016], [75, 0.04], [85, 0.12], [95, 0.28], [105, 0.5], [112, 1]];
   function mort(a) {
-    for (var i = 1; i < MORT.length; i++) if (a <= MORT[i][0]) { var p = MORT[i - 1], q = MORT[i]; return p[1] + (q[1] - p[1]) * (a - p[0]) / (q[0] - p[0]); }
+    for (var i = 1; i < MORT.length; i++) if (a <= MORT[i][0]) { var p = MORT[i - 1], q = MORT[i]; return Math.min(1, (p[1] + (q[1] - p[1]) * (a - p[0]) / (q[0] - p[0])) * (a < 70 ? countryDef().mortF : 1 + (countryDef().mortF - 1) * 0.5)); }
     return 1;
   }
   function causeOf(who) {
@@ -457,6 +542,7 @@ var EN = {};
     var minors = P.kids.filter(function (k) { return k.age < 18; }).length;
     base += minors * 6500;
     if (has("econome")) base *= 0.92;
+    base *= diffOf().cost;
     if (P.car) base += carDef().upkeep;
     if (P.pet) base += PETS.filter(function (x) { return x.id === P.pet.id; })[0].up;
     base += Math.max(0, wealth() - 150000) * 0.012;
@@ -472,9 +558,10 @@ var EN = {};
     if (P.job) inc += netOf(grossNow());
     if (P.retired) inc += P.pension;
     if (P.partner && P.partner.income && P.age >= 18) inc += P.partner.income * 0.5;
-    if (!P.job && !P.retired && !P.school && P.age >= 18 && P.age < RETIRE_AGE) inc += 8000;
-    if (P.job && netOf(grossNow()) < 20000) inc += 2500;
-    if (P.school && P.age >= 18 && P.cls !== "aisee") inc += 3000;
+    var wf = countryDef().welfare;
+    if (!P.job && !P.retired && !P.school && P.age >= 18 && P.age < RETIRE_AGE) inc += 8000 * wf;
+    if (P.job && netOf(grossNow()) < 20000) inc += 2500 * wf;
+    if (P.school && P.age >= 18 && P.cls !== "aisee" && P.cls !== "elite") inc += 3000 * wf;
     return Math.round(inc);
   }
   function wealth() {
@@ -542,9 +629,19 @@ var EN = {};
     if (c.risky) p *= 0.5;
     return clamp(p, 0.05, 0.9);
   }
+  // exigences particulières (compétences, charme, âge) : renvoie un texte si elles ne sont pas remplies
+  function careerReq(c) {
+    var miss = [];
+    if (c.need) for (var k in c.need) if (skillOf(k) < c.need[k]) miss.push(T(SKILLS.filter(function (x) { return x.k === k; })[0].name) + " " + c.need[k] + "+");
+    if (c.minCharme && P.charme < c.minCharme) miss.push(T("Charme") + " " + c.minCharme + "+");
+    if (c.minForme && P.forme < c.minForme) miss.push(T("Forme") + " " + c.minForme + "+");
+    if (c.minCrim && !P.crim && skillOf("social") < 50) miss.push(T("casier ou relations"));
+    if (c.maxAge && P.age > c.maxAge - 4) miss.push(TF("avant {0} ans", c.maxAge));
+    return miss.length ? miss.join(", ") : null;
+  }
   function applyJob(id) {
     var c = CAREERS.filter(function (x) { return x.id === id; })[0];
-    if (P.edu < c.edu || P.school || P.retired) return null;
+    if (P.edu < c.edu || P.school || P.retired || careerReq(c)) return null;
     if (chance(careerChance(c))) {
       P.job = { id: id, lv: 0, yrs: 0, perf: 30 }; P.wmult = 1; P.maxJob = Math.max(P.maxJob, 1);
       var start = clamp(Math.floor((P.edu - c.edu) / 1.2 + P.workYears / 12), 0, 1);
@@ -556,6 +653,9 @@ var EN = {};
   function workYear() {
     var d = jobDef(); if (!d) return;
     P.workYears++; P.job.yrs++; P.lastGross = grossNow();
+    if (d.maxAge && P.age > d.maxAge) { log(TF("Votre carrière ({0}) prend fin avec l'âge.", T(d.n))); P.job = null; P.unemp = 0; P.bonheur = clamp(P.bonheur - 8, 0, 100); return; }
+    if (d.crime && chance(0.06 + 0.025 * P.job.lv)) { log(T("Votre réseau est démantelé : vous êtes arrêté(e).")); FN.jail2(); return; }
+    if (d.danger && chance(0.04)) { log(T("Vous êtes blessé(e) en service.")); P.sante = clamp(P.sante - ri(5, 15), 0, 100); }
     var base = P.esprit * 0.25 + skillOf(d.sk) * 0.25 + (100 - P.stress) * 0.1 + P.sante * 0.1;
     P.job.perf = clamp(Math.round(P.job.perf * 0.4 + base + ri(-6, 6)), 0, 100);
     P.stress = clamp(P.stress + 3 + (P.job.lv >= 2 ? 2 : 0) + (P.flags.entrepreneur ? 4 : 0), 0, 100);
@@ -569,7 +669,8 @@ var EN = {};
   function retire() {
     if (P.retired) return;
     var g = P.lastGross || grossNow() || 14000;
-    P.pension = Math.round(Math.max(9000, g * 0.6 * Math.min(1, P.workYears / 40)));
+    var wf2 = countryDef().welfare;
+    P.pension = Math.round(Math.max(9000 * wf2, g * 0.6 * (0.35 + 0.65 * wf2) * Math.min(1, P.workYears / 40)));
     if (P.job) { log(TF("Vous prenez votre retraite. Pension : {0} par an.", money(P.pension))); } else log(TF("Vous prenez votre retraite. Pension : {0} par an.", money(P.pension)));
     P.job = null; P.retired = true; P.bonheur = clamp(P.bonheur + 5, 0, 100);
   }
@@ -593,7 +694,7 @@ var EN = {};
     var f = clamp(1 + (50 - P.sante) / 55, 0.35, 5) * (has("prudent") ? 0.9 : 1);
     if (P.stress > 85) f *= 1.3;
     if (P.flags.smoker) f *= 1.25;
-    var q = mort(P.age) * f;
+    var q = mort(P.age) * f * diffOf().mort;
     if (P.sante <= 3) q += 0.3;
     if (P.sante < 10) P.flags.lowHealth = 1;
     if (chance(q) || P.age >= 112) { kill(); return true; }
@@ -719,10 +820,15 @@ var EN = {};
     var sc = avgH * 0.6 + Math.min(40, w / 15000) + P.edu * 4 + P.maxJob * 4 + P.kids.length * 3 + Math.min(10, P.friends.length * 2) + P.age * 0.5 + (P.partner ? 4 : 0) - P.crim * 3;
     d.score = Math.max(5, Math.round(sc)); d.pts = Math.max(1, Math.round(d.score / 9)); d.avgH = Math.round(avgH);
     d.estate = Math.max(0, wealth());
-    G.legacy += d.pts; G.lives++; G.best = Math.max(G.best, d.score);
+    if (P.cheat) d.pts = Math.max(1, Math.round(d.pts / 2));
+    return d;
+  }
+  // enregistre la mort (points d'héritage, historique) une seule fois, quand le joueur quitte l'écran de décès
+  function commitDeath() {
+    var d = P && P.dead; if (!d || d.committed) return;
+    d.committed = true; G.legacy += d.pts; G.lives++; G.best = Math.max(G.best, d.score);
     G.hist.unshift({ n: P.name, a: P.age, s: d.score, y: P.startYear, g: P.gen }); if (G.hist.length > 12) G.hist.pop();
     checkAch(true);
-    return d;
   }
   function heirOptions() {
     var out = [];
@@ -734,11 +840,11 @@ var EN = {};
     var share = Math.round(d.estate * 0.75 / Math.max(1, P.kids.length));
     var sib = P.kids.filter(function (_, j) { return j !== i; });
     var other = P.partner ? { name: P.partner.name, age: P.partner.age, bond: 80, alive: true } : null;
-    var mom = P.g === "f" ? { name: P.name, age: P.age, bond: 0, alive: false } : other || { name: pick(FIRST_F) + " " + P.last, age: P.age, bond: 50, alive: false };
-    var dad = P.g === "h" ? { name: P.name, age: P.age, bond: 0, alive: false } : other || { name: pick(FIRST_M) + " " + P.last, age: P.age, bond: 50, alive: false };
+    var mom = P.g === "f" ? { name: P.name, age: P.age, bond: 0, alive: false } : other || { name: firstName("f") + " " + P.last, age: P.age, bond: 50, alive: false };
+    var dad = P.g === "h" ? { name: P.name, age: P.age, bond: 0, alive: false } : other || { name: firstName("h") + " " + P.last, age: P.age, bond: 50, alive: false };
     var mixedEdu = k.age >= 22 ? Math.min(6, Math.max(2, P.edu - 1 + ri(0, 1))) : k.age >= 18 ? 3 : k.age >= 15 ? 2 : k.age >= 11 ? 1 : 0;
     var cl = d.estate > 400000 ? "aisee" : d.estate > 60000 ? "moyenne" : "modeste";
-    var heir = { traits: P.traits ? [pick(P.traits)] : [], first: k.name, last: P.last, g: k.g, age: k.age, gen: P.gen + 1, cls: cl, money: share, edu: mixedEdu, fam: { mother: mom, father: dad }, skills: {}, friends: [], partner: null, kids: [],
+    var heir = { country: P.country, skin: P.skin, diff: P.diff, traits: P.traits ? [pick(P.traits)] : [], first: k.name, last: P.last, g: k.g, age: k.age, gen: P.gen + 1, cls: cl, money: share, edu: mixedEdu, fam: { mother: mom, father: dad }, skills: {}, friends: [], partner: null, kids: [],
       sante: clamp(P.sante * 0.4 + 40 + ri(-8, 8), 30, 100), esprit: clamp(P.esprit * 0.5 + 25 + ri(-10, 12), 15, 100), charme: clamp(P.charme * 0.5 + 25 + ri(-10, 12), 10, 100), forme: clamp(65 + ri(-10, 10), 25, 100) };
     return heir;
   }
@@ -842,6 +948,11 @@ var EN = {};
     if (q.ambDone === undefined) q.ambDone = false;
     ["log", "yl", "kids", "friends", "chain"].forEach(function (k) { if (!Array.isArray(q[k])) q[k] = []; });
     ["skills", "flags", "seen", "cd"].forEach(function (k) { if (!q[k] || typeof q[k] !== "object") q[k] = {}; });
+    if (!q.country) q.country = "fr";
+    CCODE = q.country;
+    if (q.skin === undefined) q.skin = 0;
+    if (!q.diff) q.diff = "normal";
+    if (q.cheat === undefined) q.cheat = false;
     if (q.car === undefined) q.car = null;
     if (q.pet === undefined) q.pet = null;
     if (!q.jail) q.jail = 0;
@@ -4404,6 +4515,24 @@ var EN = {};
     "drôle": "funny", "sportif(ve)": "sporty", "ambitieux(se)": "ambitious", "calme": "calm", "artiste": "artistic", "cultivé(e)": "cultured", "aventurier(ère)": "adventurous", "généreux(se)": "generous",
     "Renoncer": "Give up", "Adopter un animal": "Adopt a pet", "Voiture": "Car"
   });
+  Object.assign(EN, {
+    "Togo": "Togo", "Aisée": "Well-off", "Armée": "Military", "Bénin": "Benin", "Femme": "Woman", "Ghana": "Ghana", "Homme": "Man", "Maroc": "Morocco", "Canada": "Canada", "Député": "Member of parliament", "France": "France",
+    "Guérir": "Heal", "Ouvrir": "Open", "Soldat": "Soldier", "Suisse": "Switzerland", "Détendu": "Relaxed", "Général": "General", "Modeste": "Modest", "Nigeria": "Nigeria", "Sénégal": "Senegal", "Tunisie": "Tunisia",
+    "Belgique": "Belgium", "Cameroun": "Cameroon", "Figurant": "Extra", "Ministre": "Minister", "Officier": "Officer", "Réaliste": "Realistic", "Au hasard": "Random", "Difficile": "Hard", "Élu local": "Local councillor",
+    "Mode Dieu": "God Mode", "Politique": "Politics", "Superstar": "Superstar", "États-Unis": "United States", "Lieutenant": "Lieutenant", "Influenceur": "Influencer", "Petite main": "Foot soldier", "Royaume-Uni": "United Kingdom",
+    "Second rôle": "Supporting role", "Star du web": "Web star", "Groupe local": "Local band", "Requis : {0}": "Required: {0}", "Artiste signé": "Signed artist", "avant {0} ans": "before age {0}", "Côte d'Ivoire": "Ivory Coast",
+    "Sous-officier": "Sergeant", "Star du sport": "Sports star", "Acteur reconnu": "Established actor", "Chef de réseau": "Network boss", "Classe moyenne": "Middle class", "Crime organisé": "Organized crime",
+    "Joueur amateur": "Amateur player", "Compétences 60+": "Skills 60+", "Musicien de rue": "Street musician", "Tout au maximum": "Max everything", "Remonter d'un an": "Go back one year", "Rien à remonter.": "Nothing to go back to.",
+    "Créateur débutant": "Beginner creator", "Effacer le casier": "Clear criminal record", "Micro-influenceur": "Micro-influencer", "Retour à {0} ans.": "Back to age {0}.", "Effacer les dettes": "Wipe out debts",
+    "famille richissime": "ultra-rich family", "Homme de confiance": "Trusted man", "casier ou relations": "a record or connections", "Collaborateur d'élu": "Politician's aide", "Créateur de contenu": "Content creator",
+    "Dynastie richissime": "Wealthy dynasty", "Sport professionnel": "Professional sports", "Cinéma et télévision": "Film and TV", "Créer mon personnage": "Create my character", "Idole internationale": "International idol",
+    "Joueur professionnel": "Professional player", "Joueur semi-professionnel": "Semi-pro player", "Machine à remonter le temps": "Time machine", "Choisir mes traits (3 maximum)": "Choose my traits (3 max)",
+    "Vous êtes blessé(e) en service.": "You are injured in the line of duty.", "Votre carrière ({0}) prend fin avec l'âge.": "Your career ({0}) comes to an end with age.", "Votre réseau est démantelé : vous êtes arrêté(e).": "Your network is dismantled: you are arrested.",
+    "Annulez la dernière année : vos choix, vos décès, vos erreurs.": "Undo the last year: your choices, your deaths, your mistakes.",
+    "Monnaie : {0} · espérance de vie, noms et protection sociale propres au pays.": "Currency: {0} · life expectancy, names and social protection specific to the country.",
+    "Modifiez librement vos jauges, votre argent et vos traits. Les points d'héritage de cette vie seront réduits de moitié.": "Freely edit your stats, money and traits. Legacy points for this life will be halved.",
+    "Prénom": "First name", "Nom de famille": "Last name", "Genre": "Gender", "Nationalité": "Nationality", "Famille de naissance": "Birth family", "Teint": "Skin tone", "Difficulté": "Difficulty"
+  });
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -4437,7 +4566,9 @@ var EN = {};
   function closeModal() { $("ov").className = ""; modalHandlers = null; }
 
   // ---------- Rendu principal ----------
-  function avatar() {
+  function skinned(e) { if (!P.skin) return e; var cp = Array.from(e); return cp[0] + String.fromCodePoint(0x1F3FB + P.skin - 1) + cp.slice(1).join(""); }
+  function avatar() { return skinned(avatar0()); }
+  function avatar0() {
     var a = P.age, f = P.g === "f";
     if (P.jail) return "⛓️";
     if (a < 2) return "👶"; if (a < 12) return f ? "👧" : "👦"; if (a < 18) return f ? "🧒" : "🧑";
@@ -4446,16 +4577,19 @@ var EN = {};
   function moodFace() { var b = P.bonheur; return P.sante < 20 ? "🤒" : P.stress > 80 ? "😫" : b >= 75 ? "😄" : b >= 55 ? "🙂" : b >= 35 ? "😐" : "😢"; }
   function render() {
     if (!P) { renderStart(); return; }
-    var homeN = P.owned ? T(BUY_PRICES.filter(function (b) { return b.id === P.owned; })[0].n) : T(HOMES.filter(function (h) { return h.id === P.home; })[0].n);
-    var stage = P.jail ? T("En prison") : P.age < 6 ? T("Petite enfance") : P.school ? T(SCHOOLS[P.school.key].n) : P.job ? jobTitle() : P.retired ? T("Retraité(e)") : T("Sans emploi");
-    $("hdr").innerHTML = '<div class="av">' + avatar() + "<i>" + moodFace() + '</i></div><div class="who"><div class="nm">' + esc(P.name) + '</div><div class="sub">' + TF("{0} ans", P.age) + " · " + P.year + " · " + esc(stage) + "</div></div>" +
-      '<div class="mo">' + money(P.money) + (P.debt > 0 ? "<small>" + TF("Dette : {0}", money(P.debt)) + "</small>" : "") + "</div>";
-    $("stats").innerHTML = STATS.map(function (s) { return '<div class="st"><div class="row"><span>' + s.ico + " " + T(s.name) + "</span><b>" + P[s.k] + "</b></div>" + bar(P[s.k], s.bad) + "</div>"; }).join("");
+    renderHead();
     $("tabs").innerHTML = TABS.map(function (t) { return '<button data-a="tab:' + t[0] + '" class="' + (TAB === t[0] ? "on" : "") + '"><span>' + t[1] + "</span>" + T(t[2]) + "</button>"; }).join("");
     var f = { vie: tabVie, actions: tabActions, carriere: tabCarriere, rel: tabRel, patri: tabPatri, moi: tabMoi }[TAB];
     var sc = resetScroll ? 0 : $("main").scrollTop, html; resetScroll = false;
     try { html = f(); } catch (e) { html = '<div class="card"><h3>⚠️</h3><p>' + esc(String(e && e.message || e)) + '</p><button class="btn sec" data-a="tab:vie">' + T("Retour") + "</button></div>"; }
     $("main").innerHTML = html; $("main").scrollTop = sc;
+  }
+  function renderHead() {
+    var homeN = P.owned ? T(BUY_PRICES.filter(function (b) { return b.id === P.owned; })[0].n) : T(HOMES.filter(function (h) { return h.id === P.home; })[0].n);
+    var stage = P.jail ? T("En prison") : P.age < 6 ? T("Petite enfance") : P.school ? T(SCHOOLS[P.school.key].n) : P.job ? jobTitle() : P.retired ? T("Retraité(e)") : T("Sans emploi");
+    $("hdr").innerHTML = '<div class="av">' + avatar() + "<i>" + moodFace() + '</i></div><div class="who"><div class="nm">' + esc(P.name) + '</div><div class="sub">' + TF("{0} ans", P.age) + " · " + P.year + " · " + esc(stage) + "</div></div>" +
+      '<div class="mo">' + money(P.money) + (P.debt > 0 ? "<small>" + TF("Dette : {0}", money(P.debt)) + "</small>" : "") + "</div>";
+    $("stats").innerHTML = STATS.map(function (s) { return '<div class="st"><div class="row"><span>' + s.ico + " " + T(s.name) + "</span><b>" + P[s.k] + "</b></div>" + bar(P[s.k], s.bad) + "</div>"; }).join("");
   }
   function pips() { var h = ""; for (var i = 0; i < 3; i++) h += '<span class="pip' + (i < P.acts ? "" : " off") + '"></span>'; return '<div class="pips">' + h + " " + TF("{0} action(s) restante(s)", P.acts) + "</div>"; }
 
@@ -4514,8 +4648,8 @@ var EN = {};
     if (!P.job && !P.school && !P.retired && P.age >= 16) {
       h += '<div class="sec-t">' + T("Chercher un emploi") + "</div>" + pips();
       CAREERS.forEach(function (c) {
-        var ok = P.edu >= c.edu, pc = Math.round(careerChance(c) * 100);
-        h += '<button class="btn sec" ' + (!ok || P.acts <= 0 ? "disabled " : "") + 'data-a="job:' + c.id + '"><span>' + c.ico + " " + T(c.n) + "<small>" + (ok ? TF("Dès {0} / an brut · chances ≈ {1} %", money(c.lv[0].s), pc) : TF("Diplôme requis : {0}", T(EDU[c.edu].n))) + "</small></span></button>";
+        var req = careerReq(c), ok = P.edu >= c.edu && !req, pc = Math.round(careerChance(c) * 100);
+        h += '<button class="btn sec" ' + (!ok || P.acts <= 0 ? "disabled " : "") + 'data-a="job:' + c.id + '"><span>' + c.ico + " " + T(c.n) + "<small>" + (ok ? TF("Dès {0} / an brut · chances ≈ {1} %", money(c.lv[0].s), pc) : P.edu < c.edu ? TF("Diplôme requis : {0}", T(EDU[c.edu].n)) : TF("Requis : {0}", req)) + "</small></span></button>";
       });
     } else if (P.job) h += '<p class="muted">' + T("Astuce : « Travailler dur » et « Réseauter » (onglet Actions) favorisent les promotions.") + "</p>";
     return h;
@@ -4570,7 +4704,7 @@ var EN = {};
   function tabMoi() {
     var h = '<div class="card"><h3>' + esc(P.name) + '</h3><p class="muted">' + TF("Génération {0}", P.gen) + " · " + T("Né(e) en") + " " + P.startYear + "</p></div>";
     h += '<div class="card"><h3>🧬 ' + T("Personnalité") + "</h3>" + P.traits.map(function (id) { var t = TRAITS.filter(function (x) { return x.id === id; })[0]; return '<div class="pr"><div class="ic">' + t.ico + '</div><div class="tx">' + T(t.n) + "<small>" + T(t.d) + "</small></div></div>"; }).join("") + "</div>";
-    h += lifeChart();
+    h += godCard() + timeCard() + lifeChart();
     h += '<div class="card"><h3>🛠️ ' + T("Compétences") + "</h3>" + SKILLS.map(function (s) { return '<div class="pr"><div class="ic">' + s.ico + '</div><div class="tx">' + T(s.name) + "</div>" + bar(skillOf(s.k)) + "</div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>🏆 ' + T("Succès") + "</h3>" + ACH.map(function (a) { return '<div class="pr"><div class="ic">' + (G.ach[a.id] ? "🏆" : "🔒") + '</div><div class="tx">' + T(a.n) + "<small>" + T(a.d) + "</small></div></div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>⚙️ ' + T("Réglages") + '</h3><div class="tabrow">' + [["auto", "Auto"], ["fr", "Français"], ["en", "English"]].map(function (l) { return '<button class="btn ' + (G.settings.lang === l[0] ? "" : "sec") + '" data-a="lang:' + l[0] + '">' + l[1] + "</button>"; }).join("") + "</div>";
@@ -4595,8 +4729,18 @@ var EN = {};
   function renderStart() {
     $("hdr").innerHTML = '<div><div class="nm">Une Vie</div><div class="sub">' + T("Simulation de vie, génération après génération") + "</div></div><div class=\"mo\">" + G.legacy + " ⭐</div>";
     $("stats").innerHTML = ""; $("tabs").innerHTML = "";
-    var h = '<div class="card"><h3>' + T("Nouvelle vie") + "</h3><p>" + T("Vous naîtrez dans une famille tirée au hasard. Sachez que chaque vie rapporte des points d'héritage permanents.") + "</p>";
-    h += '<div class="sec-t">' + T("Je préfère rencontrer…") + '</div><div class="tabrow">' + [["f", "Des femmes"], ["h", "Des hommes"], ["a", "Peu importe"]].map(function (p) { return '<button class="btn ' + (G.settings.pref === p[0] ? "" : "sec") + '" data-a="pref:' + p[0] + '">' + T(p[1]) + "</button>"; }).join("") + "</div>";
+    var cr = G.settings.cr = G.settings.cr || {}; CCODE = cr.country || "fr";
+    var SK = ["🧑", "🧑🏻", "🧑🏼", "🧑🏽", "🧑🏾", "🧑🏿"];
+    function lab(t) { return '<div class="sec-t">' + T(t) + "</div>"; }
+    function seg(key, opts) { return '<div class="tabrow">' + opts.map(function (o) { return '<button class="btn ' + ((cr[key] || "") === o[0] ? "" : "sec") + '" data-a="cr:' + key + ":" + o[0] + '">' + o[1] + "</button>"; }).join("") + "</div>"; }
+    var h = '<div class="card"><h3>' + T("Créer mon personnage") + "</h3>" + lab("Prénom") + '<input data-f="first" maxlength="18" placeholder="' + esc(T("Au hasard")) + '" value="' + esc(cr.first || "") + '">' + lab("Nom de famille") + '<input data-f="last" maxlength="18" placeholder="' + esc(T("Au hasard")) + '" value="' + esc(cr.last || "") + '">';
+    h += lab("Genre") + seg("g", [["", "🎲 " + T("Au hasard")], ["f", "♀ " + T("Femme")], ["h", "♂ " + T("Homme")]]);
+    h += lab("Nationalité") + '<select data-f="country">' + COUNTRIES.map(function (c) { return '<option value="' + c.id + '"' + (c.id === (cr.country || "fr") ? " selected" : "") + ">" + c.flag + " " + T(c.n) + "</option>"; }).join("") + "</select>";
+    h += '<p class="muted">' + TF("Monnaie : {0} · espérance de vie, noms et protection sociale propres au pays.", countryDef().sym.trim()) + "</p>";
+    h += lab("Famille de naissance") + '<select data-f="cls">' + [["", "🎲 " + T("Au hasard")], ["modeste", T("Modeste")], ["moyenne", T("Classe moyenne")], ["aisee", T("Aisée")], ["elite", "👑 " + T("Dynastie richissime")]].map(function (o) { return '<option value="' + o[0] + '"' + ((cr.cls || "") === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>";
+    h += lab("Teint") + '<div class="tabrow">' + SK.map(function (e, n) { return '<button class="btn ' + ((cr.skin || 0) === n ? "" : "sec") + '" data-a="cr:skin:' + n + '" style="font-size:22px;padding:8px 0">' + e + "</button>"; }).join("") + "</div>";
+    h += lab("Difficulté") + seg("diff", [["relax", T("Détendu")], ["normal", T("Réaliste")], ["hard", T("Difficile")]]);
+    h += lab("Je préfère rencontrer…") + '<div class="tabrow">' + [["f", "Des femmes"], ["h", "Des hommes"], ["a", "Peu importe"]].map(function (p) { return '<button class="btn ' + (G.settings.pref === p[0] ? "" : "sec") + '" data-a="pref:' + p[0] + '">' + T(p[1]) + "</button>"; }).join("") + "</div>";
     h += '<button class="btn big" data-a="newlife">' + T("Commencer une vie") + "</button></div>";
     h += '<div class="card"><h3>⭐ ' + TF("Points d'héritage : {0}", G.legacy - G.spent) + "</h3>" + PERKS.map(function (p) {
       var lv = perk(p.id), cost = perkCost(p.id), max = lv >= 5;
@@ -4609,6 +4753,7 @@ var EN = {};
 
   // ---------- Déroulé des événements ----------
   function startYear() {
+    tmPush();
     var r = endYear();
     if (r.dead) { P.evq = []; saveAll(); showDeath(); return; }
     P.evq = r.events.map(function (e) { return e.id; });
@@ -4653,9 +4798,10 @@ var EN = {};
       h += '<div class="sec-t">' + T("Continuer avec un héritier") + "</div>";
       kids.forEach(function (i) { var k = P.kids[i]; h += '<button class="btn" data-m="heir' + i + '"><span>' + (k.g === "f" ? "👧" : "👦") + " " + esc(k.name) + "<small>" + TF("{0} ans", k.age) + '</small></span><span class="r">' + money(Math.round(d.estate * 0.75 / P.kids.length)) + "</span></button>"; });
     }
+    if (TM.length) h += '<button class="btn sec" data-m="rewind">⏪ ' + T("Remonter d'un an") + "</button>";
     h += '<button class="btn sec" data-m="share">📤 ' + T("Partager ma vie") + '</button><button class="btn sec" data-m="fresh">' + T("Nouvelle famille (menu)") + "</button>";
-    var hd = { share: shareLife, fresh: function () { P = null; saveAll(); closeModal(); render(); } };
-    kids.forEach(function (i) { hd["heir" + i] = function () { var he = makeHeir(i); newLife(he); P.acts = 3; saveAll(); closeModal(); TAB = "vie"; render(); }; });
+    var hd = { share: shareLife, rewind: rewind, fresh: function () { commitDeath(); P = null; saveAll(); closeModal(); render(); } };
+    kids.forEach(function (i) { hd["heir" + i] = function () { commitDeath(); var he = makeHeir(i); newLife(he); P.acts = 3; saveAll(); closeModal(); TAB = "vie"; render(); }; });
     showModal(h, hd);
   }
 
@@ -4692,7 +4838,13 @@ var EN = {};
       case "lang": G.settings.lang = v; setLang(pickLang(v)); break;
       case "pref": G.settings.pref = v; break;
       case "perk": if (G.legacy - G.spent >= perkCost(v) && perk(v) < 5) { G.spent += perkCost(v); G.perks[v] = perk(v) + 1; } break;
-      case "newlife": newLife(null); TAB = "vie"; break;
+      case "cr": G.settings.cr = G.settings.cr || {}; G.settings.cr[v] = p[2] === undefined ? "" : (v === "skin" ? +p[2] : p[2]); break;
+      case "newlife": {
+        var c = G.settings.cr || {}; G.settings.country = c.country || "fr"; TM = []; saveTM();
+        newLife(null, { first: (c.first || "").trim() || undefined, last: (c.last || "").trim() || undefined, g: c.g || undefined, country: c.country || "fr", cls: c.cls || undefined, skin: c.skin || 0, diff: c.diff || "normal" });
+        TAB = "vie"; break; }
+      case "god": godAction(v, p[2]); break;
+      case "rewind": rewind(); return;
       case "savenow": saveAll(); toast(T("Partie sauvegardée.")); return;
       case "reset": showConfirm(T("Tout effacer ? Votre vie, votre héritage et vos succès seront perdus."), function () { showConfirm(T("Vraiment ? Cette action est définitive."), function () { G = newGlobal(); P = null; TAB = "vie"; saveAll(); setLang(pickLang(G.settings.lang)); render(); toast(T("Progression réinitialisée.")); }); }); return;
       case "export": showExport(); return;
@@ -4720,6 +4872,40 @@ var EN = {};
     if (navigator.share) { navigator.share({ text: txt }).catch(function () {}); return; }
     showModal("<h2>" + T("Partager ma vie") + '</h2><textarea id="code" readonly>' + esc(txt) + '</textarea><button class="btn" data-m="copy">' + T("Copier") + '</button><button class="btn sec" data-m="x">' + T("Fermer") + "</button>", { copy: function () { var t = $("code"); t.select(); try { document.execCommand("copy"); toast(T("Copié !")); } catch (e) {} }, x: closeModal });
   }
+  // ---------- Remonter le temps ----------
+  var TM = [];
+  try { TM = JSON.parse(localStorage.getItem("uneVie_TM") || "[]"); } catch (e) { TM = []; }
+  function saveTM() { try { localStorage.setItem("uneVie_TM", JSON.stringify(TM)); } catch (e) { TM = TM.slice(-2); } }
+  function tmPush() { TM.push(JSON.stringify(P)); if (TM.length > 6) TM.shift(); saveTM(); }
+  function rewind() {
+    if (!TM.length) { toast(T("Rien à remonter.")); return; }
+    P = JSON.parse(TM.pop()); fixP(); saveTM(); closeModal(); P.yl = P.yl || []; saveAll(); toast(TF("Retour à {0} ans.", P.age)); render();
+  }
+  // ---------- Mode Dieu ----------
+  var GODOPEN = false;
+  function godAction(k, v) {
+    if (k === "open") { GODOPEN = !GODOPEN; if (GODOPEN) P.cheat = true; return; }
+    P.cheat = true;
+    if (k === "money") P.money += +v;
+    else if (k === "debt") { P.debt = 0; if (P.mortgage) P.mortgage.bal = Math.round(P.mortgage.bal / 2); }
+    else if (k === "max") STATS.forEach(function (s) { P[s.k] = s.bad ? 0 : 100; });
+    else if (k === "heal") { P.sante = 100; P.forme = Math.max(P.forme, 80); P.stress = 0; }
+    else if (k === "skills") SKILLS.forEach(function (sk) { P.skills[sk.k] = Math.max(P.skills[sk.k] || 0, 60); });
+    else if (k === "trait") { var i = P.traits.indexOf(v); if (i >= 0) P.traits.splice(i, 1); else { P.traits.push(v); if (P.traits.length > 3) P.traits.shift(); } }
+    else if (k === "wipecrim") { P.crim = 0; delete P.flags.exCon; }
+  }
+  function godCard() {
+    var h = '<div class="card"><h3>⚡ ' + T("Mode Dieu") + "</h3>";
+    if (!GODOPEN) return h + '<p class="muted">' + T("Modifiez librement vos jauges, votre argent et vos traits. Les points d'héritage de cette vie seront réduits de moitié.") + '</p><button class="btn sec" data-a="god:open">' + T("Ouvrir") + "</button></div>";
+    h += STATS.map(function (st) { return '<div class="pr"><div class="ic">' + st.ico + '</div><div class="tx">' + T(st.name) + '</div><input type="range" min="0" max="100" value="' + P[st.k] + '" data-god="' + st.k + '" style="width:130px"></div>'; }).join("");
+    h += '<div class="tabrow"><button class="btn sec" data-a="god:money:1000">+' + money(1000) + '</button><button class="btn sec" data-a="god:money:100000">+' + money(100000) + '</button><button class="btn sec" data-a="god:money:1000000">+' + money(1000000) + "</button></div>";
+    h += '<div class="tabrow"><button class="btn sec" data-a="god:max">' + T("Tout au maximum") + '</button><button class="btn sec" data-a="god:heal">' + T("Guérir") + '</button></div><div class="tabrow"><button class="btn sec" data-a="god:debt">' + T("Effacer les dettes") + '</button><button class="btn sec" data-a="god:skills">' + T("Compétences 60+") + '</button></div><button class="btn sec" data-a="god:wipecrim">' + T("Effacer le casier") + "</button>";
+    h += '<div class="sec-t">' + T("Choisir mes traits (3 maximum)") + '</div><div class="tabrow" style="flex-wrap:wrap">' + TRAITS.map(function (t) { return '<button class="btn ' + (P.traits.indexOf(t.id) >= 0 ? "" : "sec") + '" style="flex:0 0 48%;font-size:12px;padding:8px 4px" data-a="god:trait:' + t.id + '">' + t.ico + " " + T(t.n) + "</button>"; }).join("") + "</div>";
+    return h + '<button class="btn sec" data-a="god:open">' + T("Fermer") + "</button></div>";
+  }
+  function timeCard() {
+    return '<div class="card"><h3>⏪ ' + T("Machine à remonter le temps") + '</h3><p class="muted">' + T("Annulez la dernière année : vos choix, vos décès, vos erreurs.") + '</p><button class="btn sec" ' + (TM.length ? "" : "disabled ") + 'data-a="rewind"><span>' + T("Remonter d'un an") + '</span><span class="r">' + TM.length + " / 6</span></button></div>";
+  }
   function showConfirm(msg, yes) {
     showModal('<h2>' + esc(msg) + '</h2><button class="btn" data-m="y">' + T("Oui") + '</button><button class="btn sec" data-m="n">' + T("Non") + "</button>", { y: function () { closeModal(); yes(); }, n: closeModal });
   }
@@ -4739,6 +4925,16 @@ var EN = {};
       if (t.getAttribute && t.getAttribute("data-a") !== null && !t.disabled) { if ($("ov").className === "on") return; onAction(t.getAttribute("data-a")); return; }
       t = t.parentNode;
     }
+  });
+  document.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t && t.getAttribute && t.getAttribute("data-f") !== null && t.tagName === "INPUT") { G.settings.cr = G.settings.cr || {}; G.settings.cr[t.getAttribute("data-f")] = t.value; }
+    else if (t && t.getAttribute && t.getAttribute("data-god")) { P[t.getAttribute("data-god")] = +t.value; P.cheat = true; renderHead(); }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t && t.getAttribute && t.getAttribute("data-f") !== null && t.tagName === "SELECT") { G.settings.cr = G.settings.cr || {}; G.settings.cr[t.getAttribute("data-f")] = t.value; if (t.getAttribute("data-f") === "country") { render(); } saveAll(); }
+    else if (t && t.getAttribute && t.getAttribute("data-god")) saveAll();
   });
   loadAll();
   setLang(pickLang(G.settings.lang));
