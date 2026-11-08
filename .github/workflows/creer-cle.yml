@@ -1,0 +1,30 @@
+name: Créer la clé de signature (une seule fois)
+on:
+  workflow_dispatch:
+
+jobs:
+  cle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: 21 }
+      - name: Générer la clé
+        run: |
+          PASS=$(openssl rand -hex 12)
+          keytool -genkeypair -v -keystore upload.jks -storetype PKCS12 -alias upload \
+            -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "$PASS" -keypass "$PASS" \
+            -dname "CN=Une Vie, O=Une Vie, C=TG"
+          {
+            echo "KEYSTORE_PASSWORD=$PASS"
+            echo "KEY_ALIAS=upload"
+            echo "KEYSTORE_BASE64 (à copier en entier, sans retour à la ligne) :"
+            base64 -w0 upload.jks
+            echo
+          } > secrets.txt
+          mkdir out && mv upload.jks secrets.txt out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cle-de-signature-A-SAUVEGARDER
+          path: out/
+          retention-days: 3

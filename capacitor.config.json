@@ -1,0 +1,8 @@
+{
+  "appId": "com.uneviejeu.simulation",
+  "appName": "Une Vie",
+  "webDir": "www",
+  "backgroundColor": "#1f6f6a",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
