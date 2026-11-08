@@ -49,6 +49,17 @@
   .btn[disabled] { opacity: .4; }
   .btn small { font-weight: 400; opacity: .85; font-size: 11px; display: block; }
   .btn .r { text-align: right; font-size: 12px; white-space: nowrap; }
+  #hdr { align-items: center; justify-content: flex-start; gap: 10px; }
+  #hdr .who { flex: 1; min-width: 0; } #hdr .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .av { position: relative; font-size: 34px; width: 52px; height: 52px; border-radius: 50%; background: var(--panel2); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 0 2px var(--line); flex: none; }
+  .av i { position: absolute; right: -4px; bottom: -4px; font-style: normal; font-size: 18px; background: var(--panel); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,.25); }
+  .card { box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 6px 16px -10px rgba(40,30,10,.35); animation: pop .22s ease-out; }
+  @keyframes pop { from { transform: translateY(6px); opacity: 0; } }
+  .btn:active:not([disabled]) { transform: scale(.98); filter: brightness(.95); }
+  .btn.big { background: linear-gradient(135deg, var(--accent), #2a8a82); letter-spacing: .01em; box-shadow: 0 8px 18px -10px var(--accent); }
+  #tabs button.on span { transform: translateY(-2px) scale(1.12); transition: transform .15s; }
+  .log.new { animation: flash 1.2s ease-out; } @keyframes flash { from { background: #ffe58a; } }
+  .chip { animation: pop .3s ease-out; }
   .pips { display: flex; gap: 6px; align-items: center; justify-content: center; margin: 8px 0; font-size: 13px; color: var(--muted); }
   .pip { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
   .pip.off { background: var(--panel2); }
@@ -276,7 +287,7 @@ var EN = {};
       home: "parents", owned: null, lifestyle: 1, skills: {},
       mother: null, father: null, partner: null, exes: 0, kids: [], friends: [],
       flags: {}, seen: {}, cd: {}, log: [], yl: [], acts: 3, hSum: 0, hN: 0, maxMoney: 0, maxJob: 0, crim: 0, dead: null, lifeYears: 0,
-      pendingBirth: false, chain: [], traits: [], track: [], amb: null, ambDone: false, hist: []
+      pendingBirth: false, chain: [], traits: [], track: [], amb: null, ambDone: false, hist: [], car: null, pet: null, jail: 0
     };
     var fam = heir && heir.fam ? heir.fam : null;
     if (fam) { q.mother = fam.mother; q.father = fam.father; }
@@ -337,7 +348,7 @@ var EN = {};
       }
     }
     if (f.argent !== undefined) {
-      var m = Math.round(rv(f.argent)); P.money += m;
+      var m = Math.round(rv(f.argent)); P.money += m; if (m >= 20000) P.flags.bigWin = P.year;
       if (ctx) ctx.argent = m;
       if (m) res.push({ k: "argent", d: m });
     }
@@ -446,6 +457,8 @@ var EN = {};
     var minors = P.kids.filter(function (k) { return k.age < 18; }).length;
     base += minors * 6500;
     if (has("econome")) base *= 0.92;
+    if (P.car) base += carDef().upkeep;
+    if (P.pet) base += PETS.filter(function (x) { return x.id === P.pet.id; })[0].up;
     base += Math.max(0, wealth() - 150000) * 0.012;
     return Math.round(base);
   }
@@ -466,7 +479,7 @@ var EN = {};
   }
   function wealth() {
     var home = P.owned ? BUY_PRICES.filter(function (b) { return b.id === P.owned; })[0].price : 0;
-    return P.money + P.invest + home - P.debt - (P.mortgage ? P.mortgage.bal : 0);
+    return P.money + P.invest + home + carValue() - P.debt - (P.mortgage ? P.mortgage.bal : 0);
   }
   function settleMoney() {
     var inc = incomeNow(), out = livingCost() + housingCost();
@@ -677,14 +690,17 @@ var EN = {};
     P.acts = 3; P.age++; P.year++; P.lifeYears++; if (P.year > G.yearNow) G.yearNow = P.year;
     setSchoolForAge();
     // 2) argent
-    if (P.age >= 18 || P.partner) { settleMoney(); } else { P.maxMoney = Math.max(P.maxMoney, wealth()); }
+    if (P.jail > 0) { jailYear(); P.school = null; }
+    else if (P.age >= 18 || P.partner) { settleMoney(); } else { P.maxMoney = Math.max(P.maxMoney, wealth()); }
+    if (P.car) P.car.age++;
     // 3) études, travail, retraite
-    if (P.school) schoolYear();
-    if (P.job) workYear();
+    if (P.school && !P.jail) schoolYear();
+    if (P.job && !P.jail) workYear();
     else if (!P.retired && !P.school && P.age >= 18 && P.age < RETIRE_AGE) P.unemp++;
     if (!P.retired && P.age >= RETIRE_FORCED) retire();
     // 4) santé et relations
-    relationsYear(); agingYear();
+    relationsYear(); agingYear(); petYear();
+    if (P.car) P.bonheur = clamp(P.bonheur + carDef().joy - 1, 0, 100);
     if (P.skillBoost) P.skillBoost = 0;
     if (P.flags.recentJobLoss && P.year - P.flags.recentJobLoss > 2) delete P.flags.recentJobLoss;
     if (P.flags.recentBreakup && P.year - P.flags.recentBreakup > 1) delete P.flags.recentBreakup;
@@ -694,7 +710,7 @@ var EN = {};
     // 5) mort ?
     if (deathRoll()) return { dead: true, events: [] };
     // 6) événements
-    return { dead: false, events: pickEvents() };
+    return { dead: false, events: P.jail > 0 ? [] : pickEvents() };
   }
   function afterDeath() {
     var d = P.dead; if (!d || d.score !== undefined) return d;
@@ -781,6 +797,10 @@ var EN = {};
     { id: "cerveau", n: "Esprit brillant", d: "Atteindre 95 d'esprit", t: function () { return P.esprit >= 95; } },
     { id: "atlete", n: "Athlète", d: "Atteindre 80 en sport", t: function () { return (P.skills.sport || 0) >= 80; } },
     { id: "ordre", n: "Sans reproche", d: "Atteindre 70 ans sans casier judiciaire", t: function () { return P.age >= 70 && !P.crim; } },
+    { id: "pet", n: "Meilleur ami", d: "Avoir un animal pendant 10 ans", t: function () { return !!P.pet && P.pet.age >= 10; } },
+    { id: "sportive", n: "Pied au plancher", d: "Posséder une voiture de sport", t: function () { return !!P.car && P.car.id === "sport"; } },
+    { id: "prison", n: "Dette envers la société", d: "Purger une peine de prison", t: function () { return !!P.flags.exCon && !P.jail; } },
+    { id: "gros", n: "Quitte ou double", d: "Gagner 20 000 € ou plus d'un coup au jeu ou autrement", t: function () { return P.flags.bigWin; } },
     { id: "rebond", n: "Rebond", d: "Perdre son emploi puis en retrouver un", t: function () { return P.flags.recentJobLoss && !!P.job && P.job.yrs >= 1; } }
   ];
   function checkAch(final) {
@@ -822,6 +842,9 @@ var EN = {};
     if (q.ambDone === undefined) q.ambDone = false;
     ["log", "yl", "kids", "friends", "chain"].forEach(function (k) { if (!Array.isArray(q[k])) q[k] = []; });
     ["skills", "flags", "seen", "cd"].forEach(function (k) { if (!q[k] || typeof q[k] !== "object") q[k] = {}; });
+    if (q.car === undefined) q.car = null;
+    if (q.pet === undefined) q.pet = null;
+    if (!q.jail) q.jail = 0;
     if (q.lifestyle === undefined) q.lifestyle = 1;
     if (q.acts === undefined) q.acts = 3;
     if (q.gen === undefined) q.gen = 1;
@@ -1147,6 +1170,86 @@ var EN = {};
   function repay(amount) { amount = Math.min(amount, P.money, P.debt); if (amount <= 0) return; P.money -= amount; P.debt -= amount; }
   function marryNow() { if (P.partner && !P.partner.married && P.partner.love >= 65 && P.money >= 4000) { P.money -= 4000; FN.marry(); P.partner.love = clamp(P.partner.love + 8, 0, 100); P.bonheur = clamp(P.bonheur + 12, 0, 100); return true; } return false; }
   function quitJob() { if (P.job) { log(TF("Vous démissionnez ({0}).", jobTitle())); P.job = null; P.unemp = 0; } }
+  // =====================================================================
+  //  EXTRAS : voitures, animaux, justice et prison, casino, rencontres
+  // =====================================================================
+  var CARS = [
+    { id: "occ", n: "Voiture d'occasion", price: 4500, upkeep: 1400, joy: 1, charme: 0 },
+    { id: "citadine", n: "Citadine neuve", price: 16000, upkeep: 2000, joy: 2, charme: 1 },
+    { id: "berline", n: "Berline confortable", price: 32000, upkeep: 3200, joy: 3, charme: 3 },
+    { id: "sport", n: "Voiture de sport", price: 75000, upkeep: 6500, joy: 5, charme: 6 }
+  ];
+  var PETS = [{ id: "chien", ico: "🐶", n: "Chien", cost: 300, up: 700 }, { id: "chat", ico: "🐱", n: "Chat", cost: 150, up: 450 }, { id: "lapin", ico: "🐰", n: "Lapin", cost: 80, up: 300 }];
+  var PET_NAMES = ["Rex", "Pixel", "Mimi", "Nala", "Simba", "Biscotte", "Oscar", "Luna", "Choco", "Milo", "Pépito", "Fanta", "Tigrou", "Nougat"];
+  function carDef() { return P.car ? CARS.filter(function (c) { return c.id === P.car.id; })[0] : null; }
+  function carValue() { var c = carDef(); return c ? Math.round(c.price * Math.max(0.15, 0.62 - P.car.age * 0.07)) : 0; }
+  function buyCar(id) {
+    var c = CARS.filter(function (x) { return x.id === id; })[0];
+    if (P.car) return T("Vendez d'abord votre voiture actuelle.");
+    if (!P.flags.permis) return T("Il vous faut le permis de conduire.");
+    if (P.age < 18) return T("Il faut être majeur(e).");
+    if (P.money < c.price * 0.3) return T("Il faut au moins 30 % d'apport.");
+    var pay = Math.min(P.money, c.price); P.money -= pay; P.debt += c.price - pay;
+    P.car = { id: id, age: 0 }; P.charme = clamp(P.charme + c.charme, 0, 100); P.bonheur = clamp(P.bonheur + 5, 0, 100);
+    log(TF("Vous achetez : {0}.", T(c.n))); return null;
+  }
+  function sellCar() { if (!P.car) return; var v = carValue(); P.money += v; log(TF("Vous vendez votre voiture : {0}.", money(v))); P.car = null; }
+  function adoptPet(id) {
+    var p = PETS.filter(function (x) { return x.id === id; })[0];
+    if (P.pet) return T("Vous avez déjà un animal."); if (P.money < p.cost) return T("Pas assez d'argent.");
+    P.money -= p.cost; P.pet = { id: id, name: pick(PET_NAMES), age: 0, life: ri(10, 17) }; P.bonheur = clamp(P.bonheur + 6, 0, 100);
+    log(TF("Vous adoptez {0}, votre {1}.", P.pet.name, T(p.n).toLowerCase())); return null;
+  }
+  function petYear() {
+    if (!P.pet) return;
+    P.pet.age++; var p = PETS.filter(function (x) { return x.id === P.pet.id; })[0];
+    P.stress = clamp(P.stress - 2, 0, 100); P.bonheur = clamp(P.bonheur + 2, 0, 100);
+    if (P.pet.age >= P.pet.life) { log(TF("{0} s'est éteint. Vous êtes très triste.", P.pet.name)); P.bonheur = clamp(P.bonheur - 12, 0, 100); P.pet = null; }
+  }
+  // ----- Justice et prison -----
+  function jailNow(years, why) {
+    P.jail = years; P.acts = 0; if (P.job) { log(TF("Vous perdez votre emploi ({0}).", jobTitle())); P.job = null; }
+    if (P.partner) P.partner.love = clamp(P.partner.love - 20, 0, 100);
+    P.flags.exCon = P.year; log(TF("Condamné(e) à {0} an(s) de prison.", years));
+  }
+  FN.jail1 = function () { P.crim += 1; jailNow(ri(1, 3)); };
+  FN.jail2 = function () { P.crim += 2; jailNow(ri(2, 5)); };
+  FN.jail3 = function () { P.crim += 3; jailNow(ri(4, 9)); };
+  FN.beauty = function () { };
+  function jailYear() {
+    P.jail--; P.stress = clamp(P.stress + 5, 0, 100); P.bonheur = clamp(P.bonheur - 8, 0, 100); P.sante = clamp(P.sante - 2, 0, 100); P.acts = 0;
+    P.friends.forEach(function (f) { f.bond -= 4; });
+    if (P.jail <= 0) { P.jail = 0; log(T("Vous sortez de prison. Il faut reconstruire sa vie.")); P.bonheur = clamp(P.bonheur + 8, 0, 100); }
+  }
+  // ----- Actions risquées / casino / chirurgie -----
+  A({ id: "vol", cat: "risque", ico: "🛍️", n: "Vol à l'étalage", d: "Petit gain, petit risque", age: [14, 90], o: [o(70, "Personne ne vous voit.", { argent: [40, 300], stress: 4 }), o(30, "Vous êtes pris(e) : amende et casier.", { argent: -400, crim: 1, bonheur: -8, stress: 10 })] });
+  A({ id: "cambriolage", cat: "risque", ico: "🏚️", n: "Cambriolage", d: "Gros gain, vrai danger", age: [16, 70], o: [o(45, "Le coup réussit : butin de {argent}.", { argent: [2000, 9000], stress: 10, bonheur: -3 }), o(55, "La police vous arrête.", { bonheur: -15, stress: 15, fn: "jail1" })] });
+  A({ id: "arnaque", cat: "risque", ico: "💻", n: "Arnaque en ligne", d: "Gains rapides, risque judiciaire", age: [16, 80], ok: function (P) { return skillOf("info") >= 10; }, o: [o(function (P) { return 40 + skillOf("info") / 3; }, "Ça rapporte {argent}.", { argent: [1500, 7000], stress: 8 }), o(function (P) { return 60 - skillOf("info") / 3; }, "Vous êtes identifié(e) et condamné(e).", { bonheur: -12, stress: 14, fn: "jail1" })] });
+  A({ id: "braquage", cat: "risque", ico: "🔫", n: "Braquage", d: "Quitte ou double (très risqué)", age: [18, 55], o: [o(25, "Le braquage réussit : {argent} !", { argent: [20000, 60000], stress: 18, bonheur: -5 }), o(75, "Cela tourne mal : lourde peine de prison.", { bonheur: -25, stress: 20, fn: "jail3" })] });
+  A({ id: "casino", cat: "risque", ico: "🎰", n: "Aller au casino", d: "Miser 200 €", c: 200, age: [18, 95], o: [o(46, "Chanceux ! Vous repartez avec 400 €.", { argent: 400, bonheur: 5 }), o(4, "Jackpot : 4 000 € !", { argent: 4000, bonheur: 14 }), o(50, "La maison gagne.", { bonheur: -4, stress: 4 })] });
+  A({ id: "grospari", cat: "risque", ico: "🎲", n: "Gros pari", d: "Miser 2 000 €", c: 2000, age: [18, 95], o: [o(46, "Vous doublez la mise : 4 000 € !", { argent: 4000, bonheur: 8 }), o(54, "Perdu. Quelle tristesse...", { bonheur: -8, stress: 8 })] });
+  A({ id: "chirurgie", cat: "sante", ico: "💉", n: "Chirurgie esthétique", d: "Charme (coûteux, risqué)", c: 6000, age: [21, 85], o: [o(78, "Le résultat est superbe.", { charme: 10, bonheur: 6, sante: -2 }), o(22, "Opération ratée, complications.", { charme: -3, sante: -6, stress: 10, bonheur: -8 })] });
+  CATS.push(["risque", "🕶️", "Zone grise"]);
+  var JAIL_OK = function (a) { return !P.jail; };
+  // les actions sont indisponibles en prison
+  var _actionOk = actionOk; actionOk = function (a) { return !P.jail && _actionOk(a); };
+  // ----- Rencontres : 3 candidats -----
+  var DATE_TRAITS = ["drôle", "sportif(ve)", "ambitieux(se)", "calme", "artiste", "cultivé(e)", "aventurier(ère)", "généreux(se)"];
+  function makeCandidates() {
+    var out = [], i;
+    for (i = 0; i < 3; i++) {
+      var pref = G.settings.pref, g = (pref === "h" || pref === "f") ? pref : (chance(0.5) ? "f" : "h");
+      var c = mkPerson(g, clamp(P.age + ri(-6, 7), 16, 92)); c.charme = clamp(ri(30, 90), 0, 100); c.trait = pick(DATE_TRAITS);
+      c.love = 50; c.years = 0; c.married = false; c.alive = true;
+      c.income = P.age >= 22 ? Math.round(netOf(pick([18000, 24000, 32000, 45000, 70000]))) : 0; out.push(c);
+    }
+    return out;
+  }
+  function tryDate(c) {
+    var pc = clamp(0.3 + (P.charme - c.charme) / 120 + skillOf("social") / 300 + (has("sociable") ? 0.08 : 0), 0.08, 0.92);
+    if (chance(pc)) { c.love = 55 + ri(0, 12); P.partner = c; log(TF("Vous sortez avec {0}.", c.name)); P.bonheur = clamp(P.bonheur + 10, 0, 100); return true; }
+    P.bonheur = clamp(P.bonheur - 3, 0, 100); log(TF("{0} décline votre invitation.", c.name)); return false;
+  }
   // ===== Lot ecole : enfance, scolarité, études, entrée dans la vie active =====
   function ec_isStudent(P) { return !!P.school; }
   function ec_higher(P) { return !!P.school && (P.school.key === "licence" || P.school.key === "master" || P.school.key === "prepa" || P.school.key === "doctorat"); }
@@ -4276,11 +4379,36 @@ var EN = {};
   Object.assign(EN, { "Sport": "Sports", "Musique": "Music", "Cuisine": "Cooking", "Informatique": "Computing", "Art": "Art", "Relationnel": "Social skills", "Bricolage": "DIY", "Finances": "Finance" });
   Object.assign(EN, { "Sauvegarder maintenant": "Save now", "Partie sauvegardée.": "Game saved.", "Réinitialiser toute la progression": "Reset all progress", "Tout effacer ? Votre vie, votre héritage et vos succès seront perdus.": "Erase everything? Your life, legacy and achievements will be lost.", "Vraiment ? Cette action est définitive.": "Really? This cannot be undone.", "Progression réinitialisée.": "Progress reset." });
   Object.assign(EN, { "Retour": "Back" });
+  Object.assign(EN, {
+    "Braquage": "Armed robbery", "Véhicule": "Vehicle", "En prison": "In prison", "Gros pari": "High-stakes bet", "Miser 200 €": "Wager $200", "Meilleur ami": "Best friend", "Miser 2 000 €": "Wager $2,000",
+    "charme discret": "quietly charming", "Aller au casino": "Go to the casino", "Partager ma vie": "Share my life", "Vol à l'étalage": "Shoplifting", "Arnaque en ligne": "Online scam", "La maison gagne.": "The house wins.",
+    "Pied au plancher": "Pedal to the metal", "Quitte ou double": "Double or nothing", "très séduisant(e)": "very attractive", "Entretien {0} / an": "Upkeep {0} / yr", "{0} ans · {1} · {2}": "{0} yrs · {1} · {2}",
+    "agréable à regarder": "pleasant-looking", "Animal de compagnie": "Pet", "Jackpot : 4 000 € !": "Jackpot: $4,000!", "Pas assez d'argent.": "Not enough money.", "Chirurgie esthétique": "Cosmetic surgery",
+    "Ça rapporte {argent}.": "It pays off: {argent}.", "Vous sortez avec {0}.": "You start dating {0}.", "Gros gain, vrai danger": "Big payoff, real danger", "La police vous arrête.": "The police arrest you.",
+    "Personne ne vous voit.": "Nobody sees you.", "Dette envers la société": "Debt to society", "Il faut être majeur(e).": "You must be an adult.", "Charme (coûteux, risqué)": "Charm (costly, risky)",
+    "Le résultat est superbe.": "The result is superb.", "Petit gain, petit risque": "Small gain, small risk", "Qui voulez-vous aborder ?": "Who do you want to approach?", "Vous avez déjà un animal.": "You already have a pet.",
+    "Perdu. Quelle tristesse...": "Lost. How sad...", "Purger une peine de prison": "Serve a prison sentence", "Vous adoptez {0}, votre {1}.": "You adopt {0}, your {1}.", "{0} décline votre invitation.": "{0} declines your invitation.",
+    "Posséder une voiture de sport": "Own a sports car", "Avoir un animal pendant 10 ans": "Have a pet for 10 years", "Quitte ou double (très risqué)": "Double or nothing (very risky)", "Il faut au moins 30 % d'apport.": "You need at least a 30% down payment.",
+    "Opération ratée, complications.": "The operation goes wrong, with complications.", "Gains rapides, risque judiciaire": "Quick gains, legal risk", "Le braquage réussit : {argent} !": "The robbery succeeds: {argent}!",
+    "Vous doublez la mise : 4 000 € !": "You double your stake: $4,000!", "Vous vendez votre voiture : {0}.": "You sell your car: {0}.", "{0} accepte de sortir avec vous !": "{0} agrees to go out with you!",
+    "Valeur : {0} · entretien {1} / an": "Value: {0} · upkeep {1} / yr", "Condamné(e) à {0} an(s) de prison.": "Sentenced to {0} year(s) in prison.", "En prison : aucune action possible.": "In prison: no actions available.",
+    "Il vous faut le permis de conduire.": "You need a driver's license.", "Chanceux ! Vous repartez avec 400 €.": "Lucky! You walk away with $400.", "Le coup réussit : butin de {argent}.": "The job works: loot of {argent}.",
+    "Vous êtes pris(e) : amende et casier.": "You're caught: a fine and a criminal record.", "{0} décline poliment votre invitation.": "{0} politely declines your invitation.", "Vendez d'abord votre voiture actuelle.": "Sell your current car first.",
+    "Vous êtes identifié(e) et condamné(e).": "You are identified and convicted.", "{0} s'est éteint. Vous êtes très triste.": "{0} has passed away. You are heartbroken.", "Cela tourne mal : lourde peine de prison.": "It goes wrong: a heavy prison sentence.",
+    "Il vous faut d'abord le permis de conduire.": "You need a driver's license first.", "Vous sortez de prison. Il faut reconstruire sa vie.": "You walk out of prison. Time to rebuild your life.",
+    "Gagner 20 000 € ou plus d'un coup au jeu ou autrement": "Win $20,000 or more in one go, by gambling or otherwise",
+    "Encore {0} an(s) de peine. Vous ne pouvez rien faire d'autre qu'attendre.": "{0} more year(s) to serve. There is nothing to do but wait.",
+    "J'ai vécu {0} ans dans « Une Vie » : score {1}, {2} enfant(s), génération {3}.": "I lived {0} years in \"A Life\": score {1}, {2} child(ren), generation {3}.",
+    "Trois personnes vous plaisent. Votre charme et votre sens du contact décideront du résultat.": "Three people catch your eye. Your charm and people skills will decide the outcome.",
+    "Chien": "Dog", "Chat": "Cat", "Lapin": "Rabbit", "Zone grise": "Gray area", "Voiture d'occasion": "Used car", "Citadine neuve": "New city car", "Berline confortable": "Comfortable sedan", "Voiture de sport": "Sports car",
+    "drôle": "funny", "sportif(ve)": "sporty", "ambitieux(se)": "ambitious", "calme": "calm", "artiste": "artistic", "cultivé(e)": "cultured", "aventurier(ère)": "adventurous", "généreux(se)": "generous",
+    "Renoncer": "Give up", "Adopter un animal": "Adopt a pet", "Voiture": "Car"
+  });
   // =====================================================================
   //  INTERFACE
   // =====================================================================
   var $ = function (id) { return document.getElementById(id); };
-  var TAB = "vie";
+  var TAB = "vie", resetScroll = false;
   var TABS = [["vie", "📖", "Vie"], ["actions", "⚡", "Actions"], ["carriere", "💼", "Carrière"], ["rel", "👪", "Relations"], ["patri", "🏠", "Patrimoine"], ["moi", "🙋", "Moi"]];
   var PERKS = [
     { id: "genes", ico: "🧬", n: "Bons gènes", d: "+3 santé de départ et moins de dégâts de santé par niveau" },
@@ -4309,16 +4437,23 @@ var EN = {};
   function closeModal() { $("ov").className = ""; modalHandlers = null; }
 
   // ---------- Rendu principal ----------
+  function avatar() {
+    var a = P.age, f = P.g === "f";
+    if (P.jail) return "⛓️";
+    if (a < 2) return "👶"; if (a < 12) return f ? "👧" : "👦"; if (a < 18) return f ? "🧒" : "🧑";
+    if (a < 62) return P.retired ? (f ? "👵" : "👴") : (f ? "👩" : "👨"); if (a < 75) return f ? "👩‍🦳" : "👨‍🦳"; return f ? "👵" : "👴";
+  }
+  function moodFace() { var b = P.bonheur; return P.sante < 20 ? "🤒" : P.stress > 80 ? "😫" : b >= 75 ? "😄" : b >= 55 ? "🙂" : b >= 35 ? "😐" : "😢"; }
   function render() {
     if (!P) { renderStart(); return; }
     var homeN = P.owned ? T(BUY_PRICES.filter(function (b) { return b.id === P.owned; })[0].n) : T(HOMES.filter(function (h) { return h.id === P.home; })[0].n);
-    var stage = P.age < 6 ? T("Petite enfance") : P.school ? T(SCHOOLS[P.school.key].n) : P.job ? jobTitle() : P.retired ? T("Retraité(e)") : T("Sans emploi");
-    $("hdr").innerHTML = '<div><div class="nm">' + esc(P.name) + '</div><div class="sub">' + TF("{0} ans", P.age) + " · " + P.year + " · " + esc(stage) + "</div></div>" +
+    var stage = P.jail ? T("En prison") : P.age < 6 ? T("Petite enfance") : P.school ? T(SCHOOLS[P.school.key].n) : P.job ? jobTitle() : P.retired ? T("Retraité(e)") : T("Sans emploi");
+    $("hdr").innerHTML = '<div class="av">' + avatar() + "<i>" + moodFace() + '</i></div><div class="who"><div class="nm">' + esc(P.name) + '</div><div class="sub">' + TF("{0} ans", P.age) + " · " + P.year + " · " + esc(stage) + "</div></div>" +
       '<div class="mo">' + money(P.money) + (P.debt > 0 ? "<small>" + TF("Dette : {0}", money(P.debt)) + "</small>" : "") + "</div>";
     $("stats").innerHTML = STATS.map(function (s) { return '<div class="st"><div class="row"><span>' + s.ico + " " + T(s.name) + "</span><b>" + P[s.k] + "</b></div>" + bar(P[s.k], s.bad) + "</div>"; }).join("");
     $("tabs").innerHTML = TABS.map(function (t) { return '<button data-a="tab:' + t[0] + '" class="' + (TAB === t[0] ? "on" : "") + '"><span>' + t[1] + "</span>" + T(t[2]) + "</button>"; }).join("");
     var f = { vie: tabVie, actions: tabActions, carriere: tabCarriere, rel: tabRel, patri: tabPatri, moi: tabMoi }[TAB];
-    var sc = $("main").scrollTop, html;
+    var sc = resetScroll ? 0 : $("main").scrollTop, html; resetScroll = false;
     try { html = f(); } catch (e) { html = '<div class="card"><h3>⚠️</h3><p>' + esc(String(e && e.message || e)) + '</p><button class="btn sec" data-a="tab:vie">' + T("Retour") + "</button></div>"; }
     $("main").innerHTML = html; $("main").scrollTop = sc;
   }
@@ -4335,15 +4470,16 @@ var EN = {};
       h += '<div class="card"><div class="pr"><div class="ic">' + ad.ico + '</div><div class="tx">' + T("Ambition") + " : " + T(ad.n) + "<small>" + T(ad.d) + (P.ambDone ? " ✔" : "") + "</small></div>" + bar(Math.round(pg * 100)) + "</div></div>";
     }
     if (P.yl.length) h += '<div class="card"><h3>' + TF("Votre année : {0} ans", P.age) + "</h3>" + P.yl.map(function (t) { return '<div class="log new">' + esc(t) + "</div>"; }).join("") + "</div>";
-    h += P.age >= 6 ? pips() : '<div class="pips">' + T("Vous êtes encore trop jeune pour agir seul(e).") + "</div>";
+    if (P.jail) h += '<div class="card" style="border-color:var(--bad)"><h3>⛓️ ' + T("En prison") + "</h3><p>" + TF("Encore {0} an(s) de peine. Vous ne pouvez rien faire d'autre qu'attendre.", P.jail) + "</p></div>";
+    h += P.age >= 6 && !P.jail ? pips() : '<div class="pips">' + T("Vous êtes encore trop jeune pour agir seul(e).") + "</div>";
     h += '<button class="btn big" data-a="next">' + TF("Année suivante → {0} ans", P.age + 1) + "</button>";
     var old = P.log.filter(function (l) { return P.yl.indexOf(l.t) < 0; }).slice(-14).reverse();
     if (old.length) h += '<div class="sec-t">' + T("Souvenirs récents") + "</div>" + old.map(function (l) { return '<div class="log"><b>' + l.a + "</b> · " + esc(l.t) + "</div>"; }).join("");
     return h;
   }
   function tabActions() {
-    var h = P.age < 6 ? '<div class="card"><p>' + T("Vous êtes trop jeune pour agir seul(e). Laissez les années passer…") + "</p></div>" : pips();
-    if (P.age < 6) return h;
+    var h = P.age < 6 ? '<div class="card"><p>' + T("Vous êtes trop jeune pour agir seul(e). Laissez les années passer…") + "</p></div>" : P.jail ? '<div class="card"><p>⛓️ ' + T("En prison : aucune action possible.") + "</p></div>" : pips();
+    if (P.age < 6 || P.jail) return h;
     CATS.forEach(function (c) {
       var list = ACTIONS.filter(function (a) { return a.cat === c[0] && actionOk(a); });
       if (!list.length) return;
@@ -4400,6 +4536,8 @@ var EN = {};
     if (P.father) h += person("👨", P.father, P.father.alive ? "" : " · † ");
     h += "</div>";
     if (P.kids.length) h += '<div class="card"><h3>🧒 ' + T("Enfants") + "</h3>" + P.kids.map(function (k) { return person(k.g === "f" ? "👧" : "👦", k); }).join("") + "</div>";
+    if (P.pet) { var pd = PETS.filter(function (x) { return x.id === P.pet.id; })[0]; h += '<div class="card"><h3>' + pd.ico + " " + T("Animal de compagnie") + '</h3><div class="pr"><div class="ic">' + pd.ico + '</div><div class="tx">' + esc(P.pet.name) + "<small>" + T(pd.n) + " · " + TF("{0} ans", P.pet.age) + "</small></div></div></div>"; }
+    else if (P.age >= 10) h += '<div class="card"><h3>🐾 ' + T("Adopter un animal") + '</h3><div class="tabrow">' + PETS.map(function (x) { return '<button class="btn sec" data-a="pet:' + x.id + '">' + x.ico + " " + T(x.n) + "</button>"; }).join("") + "</div></div>";
     h += '<div class="card"><h3>🍻 ' + T("Amis") + "</h3>" + (P.friends.length ? P.friends.map(function (f) { return person("🙂", f); }).join("") : "<p>" + T("Aucun ami pour l'instant. Sortez, rencontrez du monde !") + "</p>") + "</div>";
     return h;
   }
@@ -4415,6 +4553,10 @@ var EN = {};
       h += '<div class="sec-t">' + T("Placements (risqués : ±)") + '</div><div class="tabrow"><button class="btn sec" data-a="inv:1000">+1 000</button><button class="btn sec" data-a="inv:5000">+5 000</button><button class="btn sec" data-a="inv:20000">+20 000</button><button class="btn sec" data-a="wd:all">' + T("Tout retirer") + "</button></div>";
       if (P.debt > 0) h += '<div class="sec-t">' + T("Rembourser les dettes") + '</div><div class="tabrow"><button class="btn sec" data-a="rep:1000">1 000</button><button class="btn sec" data-a="rep:all">' + T("Tout") + "</button></div>";
       h += '<div class="sec-t">' + T("Train de vie") + '</div><div class="tabrow">' + [T("Économe"), T("Normal"), T("Luxueux")].map(function (n, i) { return '<button class="btn ' + (P.lifestyle === i ? "" : "sec") + '" data-a="life:' + i + '">' + n + "</button>"; }).join("") + "</div>";
+      h += '<div class="sec-t">' + T("Véhicule") + "</div>";
+      if (P.car) h += '<button class="btn sec" data-a="sellcar"><span>🚗 ' + T(carDef().n) + "<small>" + TF("Valeur : {0} · entretien {1} / an", money(carValue()), money(carDef().upkeep)) + '</small></span><span class="r">' + T("Vendre") + "</span></button>";
+      else CARS.forEach(function (c) { h += '<button class="btn sec" ' + (!P.flags.permis ? "disabled " : "") + 'data-a="buycar:' + c.id + '"><span>🚗 ' + T(c.n) + "<small>" + TF("Entretien {0} / an", money(c.upkeep)) + '</small></span><span class="r">' + money(c.price) + "</span></button>"; });
+      if (!P.car && !P.flags.permis) h += '<p class="muted">' + T("Il vous faut d'abord le permis de conduire.") + "</p>";
       h += '<div class="sec-t">' + T("Logement") + "</div>";
       if (!P.owned) HOMES.forEach(function (x) {
         if (x.id === "parents" && P.age >= 26) return;
@@ -4511,8 +4653,8 @@ var EN = {};
       h += '<div class="sec-t">' + T("Continuer avec un héritier") + "</div>";
       kids.forEach(function (i) { var k = P.kids[i]; h += '<button class="btn" data-m="heir' + i + '"><span>' + (k.g === "f" ? "👧" : "👦") + " " + esc(k.name) + "<small>" + TF("{0} ans", k.age) + '</small></span><span class="r">' + money(Math.round(d.estate * 0.75 / P.kids.length)) + "</span></button>"; });
     }
-    h += '<button class="btn sec" data-m="fresh">' + T("Nouvelle famille (menu)") + "</button>";
-    var hd = { fresh: function () { P = null; saveAll(); closeModal(); render(); } };
+    h += '<button class="btn sec" data-m="share">📤 ' + T("Partager ma vie") + '</button><button class="btn sec" data-m="fresh">' + T("Nouvelle famille (menu)") + "</button>";
+    var hd = { share: shareLife, fresh: function () { P = null; saveAll(); closeModal(); render(); } };
     kids.forEach(function (i) { hd["heir" + i] = function () { var he = makeHeir(i); newLife(he); P.acts = 3; saveAll(); closeModal(); TAB = "vie"; render(); }; });
     showModal(h, hd);
   }
@@ -4521,11 +4663,17 @@ var EN = {};
   function onAction(a) {
     var p = a.split(":"), k = p[0], v = p[1], r;
     switch (k) {
-      case "tab": TAB = v; break;
+      case "tab": TAB = v; resetScroll = true; break;
       case "tuto": G.tuto++; break;
       case "amb": chooseAmb(v); break;
       case "next": startYear(); return;
-      case "act": r = doAction(v); if (r) { saveAll(); render(); showResult(r); return; } break;
+      case "act":
+        if (v === "chercher") { if (P.acts > 0 && actionOk(ACTIONS.filter(function (x) { return x.id === "chercher"; })[0]) && P.money >= 30) { P.acts--; P.money -= 30; saveAll(); render(); showDating(); return; } break; }
+        r = doAction(v); if (r) { saveAll(); render(); showResult(r); return; } break;
+      case "buycar": r = buyCar(v); if (r) toast(r); break;
+      case "sellcar": sellCar(); break;
+      case "pet": r = adoptPet(v); if (r) toast(r); break;
+      case "share": shareLife(); return;
       case "enr": if (enroll(v)) toast(T("Inscription réussie.")); break;
       case "quitjob": quitJob(); break;
       case "retire": retire(); break;
@@ -4552,6 +4700,25 @@ var EN = {};
       case "giveup": showConfirm(T("Mettre fin à cette vie ? (Votre personnage meurt.)"), function () { kill(T("un choix délibéré")); showDeath(); }); return;
     }
     saveAll(); render();
+  }
+  function showDating() {
+    var cs = makeCandidates();
+    var h = '<div class="ico">💘</div><h2>' + T("Qui voulez-vous aborder ?") + '</h2><div class="tx">' + T("Trois personnes vous plaisent. Votre charme et votre sens du contact décideront du résultat.") + "</div>", hd = {};
+    cs.forEach(function (c, i) {
+      var look = c.charme >= 75 ? T("très séduisant(e)") : c.charme >= 55 ? T("agréable à regarder") : T("charme discret");
+      h += '<button class="btn" data-m="d' + i + '"><span>' + (c.g === "f" ? "👩" : "👨") + " " + esc(c.name) + "<small>" + TF("{0} ans · {1} · {2}", c.age, T(c.trait), look) + "</small></span></button>";
+      hd["d" + i] = function () {
+        var ok = tryDate(c); saveAll();
+        showModal('<div class="ico">' + (ok ? "💞" : "💔") + "</div><h2>" + esc(c.name) + '</h2><div class="tx">' + (ok ? TF("{0} accepte de sortir avec vous !", c.name.split(" ")[0]) : TF("{0} décline poliment votre invitation.", c.name.split(" ")[0])) + '</div><button class="btn big" data-m="go">' + T("Continuer") + "</button>", { go: function () { closeModal(); render(); } });
+      };
+    });
+    h += '<button class="btn sec" data-m="no">' + T("Renoncer") + "</button>"; hd.no = function () { closeModal(); render(); };
+    showModal(h, hd);
+  }
+  function shareLife() {
+    var d = P.dead || {}, txt = TF("J'ai vécu {0} ans dans « Une Vie » : score {1}, {2} enfant(s), génération {3}.", P.age, d.score || 0, P.kids.length, P.gen);
+    if (navigator.share) { navigator.share({ text: txt }).catch(function () {}); return; }
+    showModal("<h2>" + T("Partager ma vie") + '</h2><textarea id="code" readonly>' + esc(txt) + '</textarea><button class="btn" data-m="copy">' + T("Copier") + '</button><button class="btn sec" data-m="x">' + T("Fermer") + "</button>", { copy: function () { var t = $("code"); t.select(); try { document.execCommand("copy"); toast(T("Copié !")); } catch (e) {} }, x: closeModal });
   }
   function showConfirm(msg, yes) {
     showModal('<h2>' + esc(msg) + '</h2><button class="btn" data-m="y">' + T("Oui") + '</button><button class="btn sec" data-m="n">' + T("Non") + "</button>", { y: function () { closeModal(); yes(); }, n: closeModal });
