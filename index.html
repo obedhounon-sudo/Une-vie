@@ -199,6 +199,7 @@ var EN = {};
   var RETIRE_AGE = 62, RETIRE_FORCED = 70;
 
   // Logements : coût annuel de loyer ; 'achat' : prix d'un bien
+  var CLOUD = { url: "", key: "" }; // Supabase : URL du projet + clé publique (anon)
   var SUPPORT_URL = "https://buymeacoffee.com/obedhounonl"; // lien Ko-fi / Buy Me a Coffee à renseigner
   var HOMES = [
     { id: "parents", n: "Chez les parents", rent: 0,     joy: 0 },
@@ -947,8 +948,10 @@ var EN = {};
   }
 
   // ---------- Sauvegarde ----------
-  function saveAll() {
+  function saveAll(noPush) {
+    try { if (G) G.savedAt = Date.now(); } catch (e) {}
     try { localStorage.setItem(SAVE_G, JSON.stringify(G)); if (P) localStorage.setItem(SAVE_P, JSON.stringify(P)); else localStorage.removeItem(SAVE_P); } catch (e) {}
+    if (noPush !== true && typeof schedulePush === "function") schedulePush();
   }
   function loadAll() {
     var ok = false;
@@ -1524,6 +1527,117 @@ var EN = {};
   function sellProp(i) {
     var pr = (P.props || [])[i]; if (!pr) return; var net = Math.round(propValue(pr) * 0.95 - (pr.loan ? pr.loan.bal : 0));
     P.money += net; P.props.splice(i, 1); log(TF("Vous vendez un bien locatif : {0} récupérés.", money(net)));
+  }
+  // =====================================================================
+  //  COMPTES EN LIGNE (Supabase) : connexion, inscription, sauvegarde cloud
+  // =====================================================================
+  var AUTH = null, AUTH_KEY = "uv_auth", pushTimer = null, syncState = "", lastSync = 0, authMode = "in";
+  function cloudOn() { return !!(CLOUD.url && CLOUD.key); }
+  try { AUTH = JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); } catch (e) { AUTH = null; }
+  function authSave() { try { if (AUTH) localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); else localStorage.removeItem(AUTH_KEY); } catch (e) {} }
+  function apiCall(path, method, body, token, extra) {
+    var h = { "apikey": CLOUD.key, "Content-Type": "application/json", "Authorization": "Bearer " + (token || CLOUD.key) };
+    if (extra) for (var k in extra) h[k] = extra[k];
+    return fetch(CLOUD.url.replace(/\/$/, "") + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined, keepalive: !!(extra && extra.keepalive) }).then(function (r) {
+      return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {} if (!r.ok) { var m = (j && (j.msg || j.error_description || j.message || j.error)) || ("HTTP " + r.status); var er = new Error(m); er.status = r.status; throw er; } return j; });
+    });
+  }
+  function authErr(e) {
+    var m = String(e && e.message || "");
+    if (/invalid login/i.test(m)) return T("E-mail ou mot de passe incorrect.");
+    if (/already registered|already been registered/i.test(m)) return T("Un compte existe déjà avec cet e-mail.");
+    if (/at least 6|weak/i.test(m)) return T("Mot de passe trop court (6 caractères minimum).");
+    if (/rate limit|too many|seconds/i.test(m)) return T("Trop d'essais. Réessayez dans quelques minutes.");
+    if (/email not confirmed/i.test(m)) return T("Confirmez d'abord votre e-mail (regardez vos messages).");
+    if (/invalid.*email|valid email/i.test(m)) return T("Adresse e-mail invalide.");
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return T("Connexion impossible. Vérifiez internet.");
+    return T("Erreur") + " : " + m;
+  }
+  function authStore(j, email) {
+    AUTH = { at: j.access_token, rt: j.refresh_token, exp: Date.now() + (j.expires_in || 3600) * 1000 - 60000, email: (j.user && j.user.email) || email, uid: j.user && j.user.id };
+    authSave();
+  }
+  function ensureToken() {
+    if (!AUTH) return Promise.reject(new Error("no auth"));
+    if (Date.now() < AUTH.exp) return Promise.resolve(AUTH.at);
+    return apiCall("/auth/v1/token?grant_type=refresh_token", "POST", { refresh_token: AUTH.rt }).then(function (j) { authStore(j, AUTH.email); return AUTH.at; }).catch(function (e) { if (e.status === 400 || e.status === 401) { AUTH = null; authSave(); } throw e; });
+  }
+  function doSignIn(email, pw) { return apiCall("/auth/v1/token?grant_type=password", "POST", { email: email, password: pw }).then(function (j) { authStore(j, email); }); }
+  function doSignUp(email, pw) {
+    return apiCall("/auth/v1/signup", "POST", { email: email, password: pw }).then(function (j) {
+      if (j && j.access_token) { authStore(j, email); return "ok"; }
+      return "confirm";
+    });
+  }
+  function doRecover(email) { return apiCall("/auth/v1/recover", "POST", { email: email }); }
+  function doSignOut() { var t = AUTH && AUTH.at; AUTH = null; authSave(); syncState = ""; if (t) apiCall("/auth/v1/logout", "POST", null, t).catch(function () {}); }
+  function snapshot() { return { G: G, P: P, t: G.savedAt || Date.now() }; }
+  function cloudPush(now) {
+    if (!cloudOn() || !AUTH) return Promise.resolve();
+    syncState = "sync";
+    return ensureToken().then(function (tk) {
+      return apiCall("/rest/v1/saves?on_conflict=user_id", "POST", { user_id: AUTH.uid, data: snapshot(), updated_at: new Date().toISOString() }, tk, { "Prefer": "resolution=merge-duplicates,return=minimal", keepalive: !!now });
+    }).then(function () { syncState = "ok"; lastSync = Date.now(); }).catch(function () { syncState = "err"; });
+  }
+  function schedulePush() {
+    if (!cloudOn() || !AUTH) return;
+    clearTimeout(pushTimer); pushTimer = setTimeout(function () { cloudPush(false).then(function () { if (G && G.tab === "moi") {} }); }, 4000);
+  }
+  function cloudPull() {
+    return ensureToken().then(function (tk) { return apiCall("/rest/v1/saves?select=data,updated_at&user_id=eq." + AUTH.uid, "GET", null, tk); }).then(function (rows) { return rows && rows[0] ? rows[0].data : null; });
+  }
+  function applyCloud(d) {
+    if (!d || !d.G) return;
+    G = d.G; P = d.P || null; var base = newGlobal(); for (var k in base) if (G[k] === undefined) G[k] = base[k];
+    if (!G.settings) G.settings = base.settings;
+    if (P && (typeof P !== "object" || !P.v)) P = null;
+    fixP(); G.guest = false; TM = []; setLang(pickLang(G.settings.lang)); saveAll(true);
+  }
+  function localHasProgress() { return !!(P || (G && G.lives > 0)); }
+  function describeSave(d) { var p = d && d.P; return (p ? (p.nom || "") + " · " + p.age + " " + T("ans") : T("aucune vie en cours")) + " · " + T("vies jouées") + " : " + ((d && d.G && d.G.lives) || 0); }
+  function afterLogin() {
+    return cloudPull().then(function (cd) {
+      if (!cd) { return cloudPush(false).then(function () { toast(T("Connecté. Partie sauvegardée en ligne.")); render(); }); }
+      if (!localHasProgress()) { applyCloud(cd); toast(T("Partie en ligne chargée.")); render(); return; }
+      var same = JSON.stringify(cd.G && cd.G.lives) === JSON.stringify(G.lives) && ((cd.P && cd.P.age) === (P && P.age));
+      if (same) { toast(T("Connecté.")); schedulePush(); render(); return; }
+      showModal('<div class="ico">☁️</div><h2>' + T("Quelle partie garder ?") + '</h2><p class="muted">' + T("Une partie existe déjà en ligne et une autre sur cet appareil.") + '</p><div class="card"><b>' + T("En ligne") + "</b><br>" + esc(describeSave(cd)) + (cd.t ? "<br><small>" + new Date(cd.t).toLocaleString() + "</small>" : "") + '</div><div class="card"><b>' + T("Cet appareil") + "</b><br>" + esc(describeSave({ G: G, P: P })) + "</div>" +
+        '<button class="btn" data-m="cl">' + T("Garder la partie en ligne") + '</button><button class="btn sec" data-m="lo">' + T("Garder celle de cet appareil") + "</button>",
+        { cl: function () { applyCloud(cd); closeModal(); render(); }, lo: function () { closeModal(); cloudPush(false); render(); } });
+    });
+  }
+  function showLogin() {
+    var up = authMode === "up";
+    showModal('<div class="ico">👤</div><h2>' + T(up ? "Créer un compte" : "Connexion") + '</h2><p class="muted">' + T("Sauvegardez votre vie en ligne et retrouvez-la sur n'importe quel appareil.") + '</p>' +
+      '<input id="lemail" type="email" autocomplete="email" placeholder="' + T("Adresse e-mail") + '" style="width:100%;margin:6px 0"><input id="lpw" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '" placeholder="' + T("Mot de passe") + '" style="width:100%;margin:6px 0"><div id="lmsg" class="muted" style="min-height:1.4em"></div>' +
+      '<button class="btn" data-m="go">' + T(up ? "Créer mon compte" : "Se connecter") + '</button>' +
+      '<button class="btn sec" data-m="sw">' + T(up ? "J'ai déjà un compte" : "Pas encore de compte ? Créer un compte") + "</button>" +
+      (up ? "" : '<button class="btn sec" data-m="fg">' + T("Mot de passe oublié") + "</button>") +
+      '<button class="btn sec" data-m="gu">' + T(AUTH || G.guest ? "Fermer" : "Jouer sans compte") + "</button>",
+      {
+        go: function () {
+          var em = $("lemail").value.trim(), pw = $("lpw").value, msg = $("lmsg");
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) { msg.textContent = T("Adresse e-mail invalide."); return; }
+          if (pw.length < 6) { msg.textContent = T("Mot de passe trop court (6 caractères minimum)."); return; }
+          msg.textContent = T("Un instant…");
+          (up ? doSignUp(em, pw) : doSignIn(em, pw).then(function () { return "ok"; })).then(function (r) {
+            if (r === "confirm") { msg.textContent = T("Compte créé ! Confirmez votre e-mail puis connectez-vous."); authMode = "in"; return; }
+            closeModal(); return afterLogin();
+          }).catch(function (e) { msg.textContent = authErr(e); });
+        },
+        sw: function () { authMode = up ? "in" : "up"; showLogin(); },
+        fg: function () { var em = $("lemail").value.trim(); if (!em) { $("lmsg").textContent = T("Entrez votre e-mail ci-dessus."); return; } doRecover(em).then(function () { $("lmsg").textContent = T("E-mail de réinitialisation envoyé."); }).catch(function (e) { $("lmsg").textContent = authErr(e); }); },
+        gu: function () { if (!AUTH) { G.guest = true; saveAll(); } closeModal(); render(); }
+      });
+  }
+  function accountCard() {
+    if (!cloudOn()) return "";
+    var h = '<div class="card"><h3>☁️ ' + T("Compte et sauvegarde en ligne") + "</h3>";
+    if (AUTH) {
+      h += "<p>" + T("Connecté") + " : <b>" + esc(AUTH.email || "") + "</b></p><p class=\"muted\">" + (syncState === "sync" ? T("Synchronisation…") : syncState === "err" ? T("Dernière synchronisation échouée.") : lastSync ? T("Synchronisé") + " " + new Date(lastSync).toLocaleTimeString() : T("La partie se sauvegarde automatiquement en ligne.")) + "</p>" +
+        '<button class="btn sec" data-a="cloudsync">' + T("Synchroniser maintenant") + '</button><button class="btn sec" data-a="logout">' + T("Se déconnecter") + "</button>";
+    } else h += '<p class="muted">' + T("Jouez sur plusieurs appareils et ne perdez jamais votre partie.") + '</p><button class="btn" data-a="login">' + T("Se connecter / Créer un compte") + "</button>";
+    return h + "</div>";
   }
   // ===== Lot ecole : enfance, scolarité, études, entrée dans la vie active =====
   function ec_isStudent(P) { return !!P.school; }
@@ -4745,6 +4859,21 @@ Object.assign(EN, {"🔒 Débloqué à 18 ans : bourse, cryptos, immobilier, voi
 Object.assign(EN, {"Vous avez déjà le permis.":"You already have a licence.","Il faut 1 800 pour l'auto-école.":"You need 1,800 for driving school.","Vous obtenez votre permis de conduire !":"You get your driving licence!","Permis obtenu ! 🎉":"Licence obtained! 🎉","Vous ratez l'examen du permis. Il faudra le repasser.":"You fail the driving test. You'll have to retake it.","Examen raté, réessayez.":"Test failed, try again.","Passer le permis de conduire":"Take the driving test","Auto-école : 1 800, réussite probable":"Driving school: 1,800, likely to pass"});
 Object.assign(EN, {"Soutenir le jeu":"Support the game","Le jeu est gratuit. Si il vous plaît, un petit don aide à le faire grandir.":"The game is free. If you like it, a small donation helps it grow.","Faire un don":"Donate"});
 Object.assign(EN, {"Modifiez librement vos jauges, votre argent et vos traits. Le mode Dieu se débloque pour 1 $ (une seule fois, pour toutes vos vies).":"Freely edit your stats, money and traits. God Mode unlocks for $1 (one time, for all your lives).","Débloquer le mode Dieu":"Unlock God Mode","1. Faites un don de 1 $ (ou plus) via le bouton ci-dessous.":"1. Donate $1 (or more) with the button below.","2. Vous recevez un code dans le message de remerciement.":"2. You receive a code in the thank-you message.","3. Entrez-le ici.":"3. Enter it here.","Donner 1 $":"Donate $1","Valider le code":"Validate code","Mode Dieu débloqué ! Merci 💛":"God Mode unlocked! Thank you 💛","Code invalide.":"Invalid code."});
+Object.assign(EN, {
+  "E-mail ou mot de passe incorrect.":"Incorrect email or password.","Un compte existe déjà avec cet e-mail.":"An account already exists with this email.","Mot de passe trop court (6 caractères minimum).":"Password too short (6 characters minimum).",
+  "Trop d'essais. Réessayez dans quelques minutes.":"Too many attempts. Try again in a few minutes.","Confirmez d'abord votre e-mail (regardez vos messages).":"Please confirm your email first (check your inbox).",
+  "Adresse e-mail invalide.":"Invalid email address.","Connexion impossible. Vérifiez internet.":"Can't connect. Check your internet.","Erreur":"Error",
+  "ans":"years old","aucune vie en cours":"no life in progress","vies jouées":"lives played","Connecté. Partie sauvegardée en ligne.":"Signed in. Game saved online.","Partie en ligne chargée.":"Online game loaded.","Connecté.":"Signed in.",
+  "Quelle partie garder ?":"Which save to keep?","Une partie existe déjà en ligne et une autre sur cet appareil.":"A save already exists online and another on this device.","En ligne":"Online","Cet appareil":"This device",
+  "Garder la partie en ligne":"Keep the online save","Garder celle de cet appareil":"Keep this device's save","Créer un compte":"Create an account","Connexion":"Sign in",
+  "Sauvegardez votre vie en ligne et retrouvez-la sur n'importe quel appareil.":"Save your life online and pick it up on any device.","Adresse e-mail":"Email address","Mot de passe":"Password","Un instant…":"One moment…",
+  "Compte créé ! Confirmez votre e-mail puis connectez-vous.":"Account created! Confirm your email, then sign in.","Créer mon compte":"Create my account","Se connecter":"Sign in","J'ai déjà un compte":"I already have an account",
+  "Pas encore de compte ? Créer un compte":"No account yet? Create one","Mot de passe oublié":"Forgot password","Fermer":"Close","Jouer sans compte":"Play without an account",
+  "Entrez votre e-mail ci-dessus.":"Enter your email above.","E-mail de réinitialisation envoyé.":"Reset email sent.","Compte et sauvegarde en ligne":"Account and online save","Connecté":"Signed in",
+  "Synchronisation…":"Syncing…","Dernière synchronisation échouée.":"Last sync failed.","Synchronisé":"Synced","La partie se sauvegarde automatiquement en ligne.":"Your game saves online automatically.",
+  "Synchroniser maintenant":"Sync now","Se déconnecter":"Sign out","Jouez sur plusieurs appareils et ne perdez jamais votre partie.":"Play on several devices and never lose your game.","Se connecter / Créer un compte":"Sign in / Create account",
+  "Se déconnecter ? Votre partie reste sur cet appareil.":"Sign out? Your game stays on this device.","Synchronisé.":"Synced.","Échec de la synchronisation.":"Sync failed."
+});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -4965,7 +5094,7 @@ Object.assign(EN, {"Modifiez librement vos jauges, votre argent et vos traits. L
     var h = '<div class="card"><h3>' + esc(P.name) + '</h3><p class="muted">' + TF("Génération {0}", P.gen) + " · " + T("Né(e) en") + " " + P.startYear + "</p></div>";
     h += '<div class="card"><h3>🧬 ' + T("Personnalité") + "</h3>" + P.traits.map(function (id) { var t = TRAITS.filter(function (x) { return x.id === id; })[0]; return '<div class="pr"><div class="ic">' + t.ico + '</div><div class="tx">' + T(t.n) + "<small>" + T(t.d) + "</small></div></div>"; }).join("") + "</div>";
     if (SUPPORT_URL) h += '<div class="card"><h3>☕ ' + T("Soutenir le jeu") + "</h3><p>" + T("Le jeu est gratuit. Si il vous plaît, un petit don aide à le faire grandir.") + '</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">' + T("Faire un don") + "</a></div>";
-    h += godCard() + timeCard() + lifeChart();
+    h += accountCard() + godCard() + timeCard() + lifeChart();
     h += '<div class="card"><h3>🛠️ ' + T("Compétences") + "</h3>" + SKILLS.map(function (s) { return '<div class="pr"><div class="ic">' + s.ico + '</div><div class="tx">' + T(s.name) + "</div>" + bar(skillOf(s.k)) + "</div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>🏆 ' + T("Succès") + "</h3>" + ACH.map(function (a) { return '<div class="pr"><div class="ic">' + (G.ach[a.id] ? "🏆" : "🔒") + '</div><div class="tx">' + T(a.n) + "<small>" + T(a.d) + "</small></div></div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>⚙️ ' + T("Réglages") + '</h3><div class="tabrow">' + [["auto", "Auto"], ["fr", "Français"], ["en", "English"]].map(function (l) { return '<button class="btn ' + (G.settings.lang === l[0] ? "" : "sec") + '" data-a="lang:' + l[0] + '">' + l[1] + "</button>"; }).join("") + "</div>";
@@ -4994,7 +5123,7 @@ Object.assign(EN, {"Modifiez librement vos jauges, votre argent et vos traits. L
     var SK = ["🧑", "🧑🏻", "🧑🏼", "🧑🏽", "🧑🏾", "🧑🏿"];
     function lab(t) { return '<div class="sec-t">' + T(t) + "</div>"; }
     function seg(key, opts) { return '<div class="tabrow">' + opts.map(function (o) { return '<button class="btn ' + ((cr[key] || "") === o[0] ? "" : "sec") + '" data-a="cr:' + key + ":" + o[0] + '">' + o[1] + "</button>"; }).join("") + "</div>"; }
-    var h = '<div class="card"><h3>' + T("Créer mon personnage") + "</h3>" + lab("Prénom") + '<input data-f="first" maxlength="18" placeholder="' + esc(T("Au hasard")) + '" value="' + esc(cr.first || "") + '">' + lab("Nom de famille") + '<input data-f="last" maxlength="18" placeholder="' + esc(T("Au hasard")) + '" value="' + esc(cr.last || "") + '">';
+    var h = accountCard() + '<div class="card"><h3>' + T("Créer mon personnage") + "</h3>" + lab("Prénom") + '<input data-f="first" maxlength="18" placeholder="' + esc(T("Au hasard")) + '" value="' + esc(cr.first || "") + '">' + lab("Nom de famille") + '<input data-f="last" maxlength="18" placeholder="' + esc(T("Au hasard")) + '" value="' + esc(cr.last || "") + '">';
     h += lab("Genre") + seg("g", [["", "🎲 " + T("Au hasard")], ["f", "♀ " + T("Femme")], ["h", "♂ " + T("Homme")]]);
     h += lab("Nationalité") + '<select data-f="country">' + COUNTRIES.map(function (c) { return '<option value="' + c.id + '"' + (c.id === (cr.country || "fr") ? " selected" : "") + ">" + c.flag + " " + T(c.n) + "</option>"; }).join("") + "</select>";
     h += '<p class="muted">' + TF("Monnaie : {0} · espérance de vie, noms et protection sociale propres au pays.", countryDef().sym.trim()) + "</p>";
@@ -5097,6 +5226,9 @@ Object.assign(EN, {"Modifiez librement vos jauges, votre argent et vos traits. L
       case "buy": r = buyHome(v); if (r) toast(r); break;
       case "permis": toast(passPermis()); break;
       case "unlock": showUnlock(); return;
+      case "login": authMode = "in"; showLogin(); return;
+      case "logout": showConfirm(T("Se déconnecter ? Votre partie reste sur cet appareil."), function () { doSignOut(); render(); }); return;
+      case "cloudsync": cloudPush(false).then(function () { toast(syncState === "ok" ? T("Synchronisé.") : T("Échec de la synchronisation.")); render(); }); return;
       case "psub": PSUB = v; resetScroll = false; break;
       case "asset": showAsset(v); return;
       case "buyprop": r = buyProp(v); if (r) toast(r); break;
@@ -5211,9 +5343,11 @@ Object.assign(EN, {"Modifiez librement vos jauges, votre argent et vos traits. L
   });
   loadAll();
   setLang(pickLang(G.settings.lang));
-  window.addEventListener("pagehide", saveAll);
-  document.addEventListener("visibilitychange", function () { if (document.hidden) saveAll(); });
+  window.addEventListener("pagehide", function () { saveAll(true); if (typeof AUTH !== "undefined" && AUTH) cloudPush(true); });
+  document.addEventListener("visibilitychange", function () { if (document.hidden) { saveAll(true); if (AUTH) cloudPush(true); } });
   render();
+  if (cloudOn() && !AUTH && !G.guest) showLogin();
+  else if (cloudOn() && AUTH) { cloudPull().then(function (cd) { if (cd && cd.t && cd.t > (G.savedAt || 0) + 5000 && JSON.stringify(cd.P && cd.P.age) !== JSON.stringify(P && P.age)) afterLogin(); }).catch(function () {}); }
   if (P && P.dead) showDeath();
   else if (P && P.evq && P.evq.length) nextEvent();
 })();
