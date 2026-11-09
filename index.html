@@ -5347,7 +5347,10 @@ Object.assign(EN, {
   window.addEventListener("pagehide", function () { saveAll(true); if (typeof AUTH !== "undefined" && AUTH) cloudPush(true); });
   document.addEventListener("visibilitychange", function () { if (document.hidden) { saveAll(true); if (AUTH) cloudPush(true); } });
   render();
-  if (cloudOn() && !AUTH && !G.guest) showLogin();
+  if (cloudOn() && !AUTH && !G.guest) {
+    var ab = window.AbortController ? new AbortController() : null, tm = setTimeout(function () { if (ab) ab.abort(); }, 5000);
+    fetch(CLOUD.url + "/auth/v1/settings", { headers: { apikey: CLOUD.key }, signal: ab ? ab.signal : undefined }).then(function (r) { clearTimeout(tm); if (r.ok && !AUTH && !G.guest && !(P && P.dead) && $("ov").className !== "on") showLogin(); }).catch(function () {});
+  }
   else if (cloudOn() && AUTH) { cloudPull().then(function (cd) { if (cd && cd.t && cd.t > (G.savedAt || 0) + 5000 && JSON.stringify(cd.P && cd.P.age) !== JSON.stringify(P && P.age)) afterLogin(); }).catch(function () {}); }
   if (P && P.dead) showDeath();
   else if (P && P.evq && P.evq.length) nextEvent();
