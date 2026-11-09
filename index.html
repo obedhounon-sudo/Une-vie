@@ -605,7 +605,7 @@ var EN = {};
     if (P.debt > 0) P.debt = Math.round(P.debt * 1.08);
     if (P.money < 0) { P.debt += Math.round(-P.money); P.money = 0; }
     if (P.debt > 0 && P.money > 1500) { var pay = Math.min(P.debt, P.money - 1500); P.debt -= pay; P.money -= pay; }
-    marketYear();
+    marketYear(); aiYear();
     if (P.debt > 10000) P.flags.bigDebt = 1;
     P.maxMoney = Math.max(P.maxMoney, wealth());
     return { inc: inc, out: out };
@@ -772,7 +772,7 @@ var EN = {};
     for (i = 0; i < must.length; i++) out.push(must[i]);
     var pool = EVENTS.filter(function (e) { return !e.must && evOk(e); });
     for (i = 0; i < n; i++) {
-      ev = wpick(pool, function (e) { return (e.w || 10) * (usedTag[e.tag] ? 0.25 : 1) * (e.yr ? 6 : 1); });
+      ev = wpick(pool, function (e) { return (e.w || 10) * aiWeight(e) * (usedTag[e.tag] ? 0.25 : 1) * (e.yr ? 6 : 1); });
       if (!ev) break;
       out.push(ev); usedTag[ev.tag] = true; pool = pool.filter(function (e) { return e !== ev; });
     }
@@ -801,6 +801,7 @@ var EN = {};
     var ch = ev.ch[ci], ctx = {};
     if (ch.c) { P.money -= ch.c; }
     var o = wpick(ch.o, function (x) { var w; if (typeof x.p === "function") { try { w = x.p(P); } catch (e) { w = 1; } } else w = x.p === undefined ? 1 : x.p; return w * (has("chanceux") ? (outGood(x) ? 1.3 : 0.85) : 1); }) || ch.o[0];
+    aiChoice(ev, ci);
     var chips = applyFx(o.f, ctx);
     if (ch.c) chips.unshift({ k: "argent", d: -ch.c });
     var txt = tokens(T(o.t), ctx);
@@ -850,7 +851,7 @@ var EN = {};
   // enregistre la mort (points d'héritage, historique) une seule fois, quand le joueur quitte l'écran de décès
   function commitDeath() {
     var d = P && P.dead; if (!d || d.committed) return;
-    d.committed = true; G.legacy += d.pts; G.lives++; G.best = Math.max(G.best, d.score);
+    d.committed = true; G.legacy += d.pts; G.lives++; aiNewLife(); G.best = Math.max(G.best, d.score);
     G.hist.unshift({ n: P.name, a: P.age, s: d.score, y: P.startYear, g: P.gen }); if (G.hist.length > 12) G.hist.pop();
     checkAch(true);
   }
@@ -1288,7 +1289,7 @@ var EN = {};
   function doAction(id) {
     var a = ACTIONS.filter(function (x) { return x.id === id; })[0];
     if (!a || P.acts <= 0 || !actionOk(a) || (a.c && P.money < a.c)) return null;
-    P.acts--;
+    P.acts--; aiAction(a);
     var ev = { t: a.n, ch: [{ c: a.c || 0, o: a.o }] };
     var r = resolveChoice(ev, 0);
     if (a.id === "fete" && has("fetard")) { P.bonheur = clamp(P.bonheur + 3, 0, 100); P.sante = clamp(P.sante - 1, 0, 100); r.chips.push({ k: "bonheur", d: 3 }); }
@@ -1480,7 +1481,7 @@ var EN = {};
     }
     var net = amount * (1 - a.fee); P.hold = P.hold || {}; P.cost = P.cost || {};
     P.hold[id] = holdOf(id) + net / priceOf(id); P.cost[id] = (P.cost[id] || 0) + amount; P.money -= amount;
-    P.flags.invested = P.year; return null;
+    P.flags.invested = P.year; aiLearn("money", 1); aiFollowInvest(); return null;
   }
   function sellAsset(id, frac) {
     var a = assetDef(id), u = holdOf(id) * frac; if (!a || u <= 0) return T("Rien à vendre.");
@@ -1639,6 +1640,104 @@ var EN = {};
         '<button class="btn sec" data-a="cloudsync">' + T("Synchroniser maintenant") + '</button><button class="btn sec" data-a="logout">' + T("Se déconnecter") + "</button>";
     } else h += '<p class="muted">' + T("Jouez sur plusieurs appareils et ne perdez jamais votre partie.") + '</p><button class="btn" data-a="login">' + T("Se connecter / Créer un compte") + "</button>";
     return h + "</div>";
+  }
+  // =====================================================================
+  //  IA DU DESTIN : apprend de vos choix (d'une vie à l'autre), ajuste les événements,
+  //  conseille, et un analyste de marché qui s'entraîne chaque année sur les cours.
+  // =====================================================================
+  var AI_TRAITS = [["risk", "🎲", "Audace"], ["social", "🤝", "Relations"], ["career", "💼", "Carrière"], ["money", "📈", "Argent"], ["health", "🧘", "Santé"], ["learn", "🧠", "Savoir"], ["fun", "🎈", "Plaisir"]];
+  var AI_ARCH = { risk: ["🎲", "Casse-cou"], social: ["🤝", "Âme sociable"], career: ["💼", "Carriériste"], money: ["📈", "Stratège financier"], health: ["🧘", "Équilibriste"], learn: ["🧠", "Esprit curieux"], fun: ["🎈", "Épicurien"] };
+  var AI_TAG = { travail: "career", famille: "social", amis: "social", amour: "social", argent: "money", sante: "health", ecole: "learn", loisirs: "fun", voyage: "fun", justice: "risk", logement: "money", perso: "learn" };
+  var AI_CAT = { sante: "health", esprit: "learn", social: "social", travail: "career", loisirs: "fun", risque: "risk" };
+  function aiInit() {
+    if (!G.ai) G.ai = { gen: 0, cnt: {}, wm: 0.5, wr: 0.3, hit: 0, n: 0, adv: 0, fol: 0 };
+    AI_TRAITS.forEach(function (t) { if (G.ai.cnt[t[0]] === undefined) G.ai.cnt[t[0]] = 0; });
+    if (P && !P.ai) P.ai = { last: "", lastY: 0, pred: {} };
+  }
+  function aiLearn(trait, w) { try { aiInit(); if (trait) G.ai.cnt[trait] += w; } catch (e) {} }
+  function aiSum() { var s = 0; AI_TRAITS.forEach(function (t) { s += G.ai.cnt[t[0]]; }); return s; }
+  function aiShare(k) { var s = aiSum(); return s > 0 ? G.ai.cnt[k] / s : 1 / AI_TRAITS.length; }
+  function aiTop() { aiInit(); var best = null, bv = -1; AI_TRAITS.forEach(function (t) { if (G.ai.cnt[t[0]] > bv) { bv = G.ai.cnt[t[0]]; best = t[0]; } }); return aiSum() >= 8 ? best : null; }
+  function aiWeight(e) {
+    try {
+      aiInit(); var m = 1, tr = AI_TAG[e.tag];
+      if (tr && aiSum() >= 8) m *= 1 + clamp((aiShare(tr) - 1 / AI_TRAITS.length) * 2.2, -0.2, 0.6);
+      var low = P.sante < 35 || P.stress > 75 || P.bonheur < 30, high = P.sante > 65 && P.bonheur > 65 && P.stress < 40;
+      if (low && (e.tag === "amis" || e.tag === "famille" || e.tag === "loisirs" || e.tag === "amour")) m *= 1.35;
+      if (high && (e.tag === "monde" || e.tag === "justice" || e.tag === "argent")) m *= 1.2;
+      return m;
+    } catch (er) { return 1; }
+  }
+  function aiAction(a) { try { aiInit(); aiLearn(AI_CAT[a.cat] || (a.cat === "risque" ? "risk" : null), 1); aiFollowCheck(a.cat, a.id); } catch (e) {} }
+  function aiChoice(ev, ci) { try { aiInit(); var tr = AI_TAG[ev.tag]; if (tr) aiLearn(tr, 0.5); var ch = ev.ch && ev.ch[ci]; if (ch && ch.c > 0) aiLearn("money", 0.3); } catch (e) {} }
+  function aiFollowCheck(cat, id) {
+    if (!P.ai || !P.ai.last || P.ai.lastY !== P.year) return;
+    var m = { health: cat === "sante", rest: id === "repos", learn: cat === "esprit", social: cat === "social", work: cat === "travail", fun: cat === "loisirs" }[P.ai.last];
+    if (m) { G.ai.fol++; P.ai.lastY = 0; }
+  }
+  function aiFollowInvest() { try { aiInit(); if (P.ai.last === "invest" && P.ai.lastY === P.year) { G.ai.fol++; P.ai.lastY = 0; } } catch (e) {} }
+  // ---- Conseil personnalisé ----
+  function aiAdvice() {
+    aiInit(); var A = [];
+    if (P.age < 5) return null;
+    if (P.sante < 40) A.push([10, "health", "Votre santé est fragile : consultez un médecin ou faites du sport avant que ça empire."]);
+    if (P.stress > 70) A.push([9, "rest", "Votre stress est très élevé. Reposez-vous cette année."]);
+    if (P.bonheur < 35) A.push([8, "social", "Vous avez le moral bas : passez du temps avec vos proches."]);
+    if (P.debt > 0 && P.money > P.debt) A.push([8, "invest", "Vous pouvez rembourser vos dettes : elles coûtent 8 % par an."]);
+    if (P.age >= 18 && P.money > 15000 && P.invest + portValue() < P.money * 0.3) A.push([6, "invest", "Votre argent dort. Pensez à en placer une partie (bourse, refuges, immobilier)."]);
+    if (P.age >= 16 && P.age < 26 && !P.job && P.esprit < 55) A.push([6, "learn", "Travaillez votre Esprit : il ouvre de meilleurs métiers."]);
+    if (P.age >= 22 && P.age < 60 && !P.job) A.push([7, "work", "Sans emploi, vos revenus s'épuisent : cherchez du travail."]);
+    if (P.age >= 20 && !P.partner && P.bonheur < 60) A.push([4, "social", "La solitude pèse parfois : sortez, rencontrez du monde."]);
+    var top = aiTop();
+    if (top === "risk" && P.sante < 60) A.push([5, "health", "Vous aimez le risque : gardez de la santé en réserve."]);
+    if (top === "career" && P.job && P.stress > 55) A.push([5, "rest", "Carrière intense : un peu de repos évitera l'épuisement."]);
+    if (top === "fun" && P.money < 3000 && P.age > 20) A.push([5, "work", "Les plaisirs coûtent cher : pensez à renflouer vos finances."]);
+    if (!A.length) return null;
+    A.sort(function (a, b) { return b[0] - a[0]; });
+    return { type: A[0][1], text: A[0][2] };
+  }
+  // ---- Analyste de marché qui apprend ----
+  function aiFeat(id, y) {
+    var p0 = priceOf(id, y), p1 = priceOf(id, y - 1), p2 = priceOf(id, y - 2), p3 = priceOf(id, y - 3);
+    if (!(p0 > 0 && p1 > 0 && p2 > 0)) return null;
+    var mom = (p0 / p1 - 1) * 0.6 + (p1 / p2 - 1) * 0.4;
+    var base = p3 > 0 ? Math.pow(p0 / p3, 1 / 3) - 1 : 0.05;
+    return { mom: mom, rev: -(base - 0.06) };
+  }
+  function aiSignal(id) { aiInit(); var f = aiFeat(id, P.year); if (!f) return null; var s = G.ai.wm * f.mom + G.ai.wr * f.rev + 0.02; return { s: s, f: f }; }
+  function aiTrain() {
+    try {
+      aiInit(); var y = P.year;
+      ASSETS.forEach(function (a) {
+        if (a.id === "livret" || a.id === "stable") return;
+        var f = aiFeat(a.id, y - 1), now = priceOf(a.id, y), prev = priceOf(a.id, y - 1); if (!f || !(now > 0 && prev > 0)) return;
+        var act = now / prev - 1 - 0.04, pr = G.ai.wm * f.mom + G.ai.wr * f.rev + 0.02 - 0.04;
+        G.ai.n++; if ((act > 0) === (pr > 0)) G.ai.hit++;
+        var err = act - pr, lr = 0.15; // descente de gradient : l'analyste corrige ses poids
+        G.ai.wm = clamp(G.ai.wm + lr * err * f.mom, -1, 1.5); G.ai.wr = clamp(G.ai.wr + lr * err * f.rev, -1, 1.5);
+      });
+    } catch (e) {}
+  }
+  function aiAnalyst(id) {
+    var r = aiSignal(id); if (!r) return "";
+    var s = r.s - 0.04, tag = s > 0.03 ? "📈 " + T("plutôt haussier") : s < -0.03 ? "📉 " + T("plutôt baissier") : "➡️ " + T("neutre"), acc = G.ai.n >= 20 ? Math.round(G.ai.hit / G.ai.n * 100) : null;
+    return '<p class="muted">🤖 ' + T("Analyste IA") + " : <b>" + tag + "</b>" + (acc !== null ? " · " + TF("précision {0} % sur {1} prévisions", acc, G.ai.n) : " · " + T("en apprentissage")) + "<br><small>" + T("Les marchés sont très imprévisibles : ce n'est pas un conseil sûr.") + "</small></p>";
+  }
+  // ---- fin d'année / fin de vie ----
+  function aiYear() {
+    try {
+      aiInit(); aiTrain(); AI_TRAITS.forEach(function (t) { G.ai.cnt[t[0]] *= 0.985; });
+      var ad = aiAdvice(); if (ad) { P.ai.last = ad.type; P.ai.lastY = P.year; G.ai.adv++; P.ai.advice = ad.text; } else { P.ai.last = ""; P.ai.advice = ""; }
+    } catch (e) {}
+  }
+  function aiNewLife() { try { aiInit(); G.ai.gen++; } catch (e) {} }
+  function aiCard() {
+    aiInit(); var top = aiTop(), h = '<div class="card"><h3>🤖 ' + T("L'IA du Destin") + "</h3>";
+    if (top) h += "<p>" + T("Profil appris") + " : <b>" + AI_ARCH[top][0] + " " + T(AI_ARCH[top][1]) + "</b></p>"; else h += '<p class="muted">' + T("Je vous observe… faites quelques choix et j'apprendrai qui vous êtes.") + "</p>";
+    h += '<div style="display:flex;flex-wrap:wrap;gap:6px 4%">' + AI_TRAITS.map(function (t) { var v = Math.round(aiShare(t[0]) * 100); return '<div style="flex:0 0 48%;font-size:13px"><span>' + t[1] + " " + T(t[2]) + '</span><div style="height:5px;border-radius:3px;background:#8883;overflow:hidden;margin-top:2px"><div style="width:' + Math.min(100, v * 2.2) + '%;height:100%;background:var(--accent,#1f7a6d)"></div></div></div>'; }).join("") + "</div>";
+    if (P.ai && P.ai.advice) h += '<p style="margin-top:8px">💡 <b>' + T("Conseil") + "</b> : " + T(P.ai.advice) + "</p>";
+    h += '<p class="muted">' + TF("L'IA adapte les événements à votre style et au défi du moment. Vies analysées : {0}.", G.ai.gen + 1) + (G.ai.adv >= 5 ? " " + TF("Conseils suivis : {0} %.", Math.round(G.ai.fol / G.ai.adv * 100)) : "") + "</p></div>";
+    return h;
   }
   // ===== Lot ecole : enfance, scolarité, études, entrée dans la vie active =====
   function ec_isStudent(P) { return !!P.school; }
@@ -4875,6 +4974,25 @@ Object.assign(EN, {
   "Synchroniser maintenant":"Sync now","Se déconnecter":"Sign out","Jouez sur plusieurs appareils et ne perdez jamais votre partie.":"Play on several devices and never lose your game.","Se connecter / Créer un compte":"Sign in / Create account",
   "Se déconnecter ? Votre partie reste sur cet appareil.":"Sign out? Your game stays on this device.","Synchronisé.":"Synced.","Échec de la synchronisation.":"Sync failed."
 });
+Object.assign(EN, {
+  "Audace":"Boldness","Relations":"Relationships","Carrière":"Career","Argent":"Money","Santé":"Health","Savoir":"Knowledge","Plaisir":"Pleasure",
+  "Casse-cou":"Daredevil","Âme sociable":"Social butterfly","Carriériste":"Careerist","Stratège financier":"Financial strategist","Équilibriste":"Balanced soul","Esprit curieux":"Curious mind","Épicurien":"Epicurean",
+  "Votre santé est fragile : consultez un médecin ou faites du sport avant que ça empire.":"Your health is fragile: see a doctor or exercise before it gets worse.",
+  "Votre stress est très élevé. Reposez-vous cette année.":"Your stress is very high. Get some rest this year.",
+  "Vous avez le moral bas : passez du temps avec vos proches.":"Your mood is low: spend time with loved ones.",
+  "Vous pouvez rembourser vos dettes : elles coûtent 8 % par an.":"You can repay your debts: they cost 8% a year.",
+  "Votre argent dort. Pensez à en placer une partie (bourse, refuges, immobilier).":"Your money is idle. Consider investing some (stocks, safe havens, real estate).",
+  "Travaillez votre Esprit : il ouvre de meilleurs métiers.":"Work on your Mind: it opens better jobs.",
+  "Sans emploi, vos revenus s'épuisent : cherchez du travail.":"Without a job your income dries up: look for work.",
+  "La solitude pèse parfois : sortez, rencontrez du monde.":"Loneliness can weigh: go out and meet people.",
+  "Vous aimez le risque : gardez de la santé en réserve.":"You like risk: keep some health in reserve.",
+  "Carrière intense : un peu de repos évitera l'épuisement.":"Intense career: a little rest will prevent burnout.",
+  "Les plaisirs coûtent cher : pensez à renflouer vos finances.":"Pleasures are expensive: think about topping up your finances.",
+  "plutôt haussier":"rather bullish","plutôt baissier":"rather bearish","neutre":"neutral","Analyste IA":"AI analyst","précision {0} % sur {1} prévisions":"accuracy {0}% over {1} forecasts","en apprentissage":"still learning",
+  "Les marchés sont très imprévisibles : ce n'est pas un conseil sûr.":"Markets are very unpredictable: this is not reliable advice.",
+  "L'IA du Destin":"Destiny AI","Profil appris":"Learned profile","Je vous observe… faites quelques choix et j'apprendrai qui vous êtes.":"I'm watching… make a few choices and I'll learn who you are.","Conseil":"Advice",
+  "L'IA adapte les événements à votre style et au défi du moment. Vies analysées : {0}.":"The AI adapts events to your style and the current challenge. Lives analysed: {0}.","Conseils suivis : {0} %.":"Advice followed: {0}%."
+});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -4945,6 +5063,7 @@ Object.assign(EN, {
       var ad = ambDef(), pg = P.ambDone ? 1 : clamp(ad.prog(P), 0, 1);
       h += '<div class="card"><div class="pr"><div class="ic">' + ad.ico + '</div><div class="tx">' + T("Ambition") + " : " + T(ad.n) + "<small>" + T(ad.d) + (P.ambDone ? " ✔" : "") + "</small></div>" + bar(Math.round(pg * 100)) + "</div></div>";
     }
+    if (P.age >= 6) h += aiCard();
     if (P.yl.length) h += '<div class="card"><h3>' + TF("Votre année : {0} ans", P.age) + "</h3>" + P.yl.map(function (t) { return '<div class="log new">' + esc(t) + "</div>"; }).join("") + "</div>";
     if (P.jail) h += '<div class="card" style="border-color:var(--bad)"><h3>⛓️ ' + T("En prison") + "</h3><p>" + TF("Encore {0} an(s) de peine. Vous ne pouvez rien faire d'autre qu'attendre.", P.jail) + "</p></div>";
     h += P.age >= 6 && !P.jail ? pips() : '<div class="pips">' + T("Vous êtes encore trop jeune pour agir seul(e).") + "</div>";
@@ -5028,12 +5147,15 @@ Object.assign(EN, {
     return '<svg viewBox="0 0 ' + W + " " + (H + 2) + '" style="width:100%;height:auto"><polyline fill="none" stroke="' + (up ? "var(--good)" : "var(--bad)") + '" stroke-width="2" points="' + d + '"/></svg><p class="muted">' + pts[0][0] + " → " + P.year + (lg ? " · " + T("échelle logarithmique") : "") + "</p>";
   }
   function pct(x) { return (x >= 0 ? "+" : "") + Math.round(x * 100) + " %"; }
+  function aiAnalystSafe(id) { try { return a_(id); } catch (e) { return ""; } }
+  function a_(id) { return aiAnalyst(id); }
   function showAsset(id) {
     var a = assetDef(id), pr = priceOf(id), hv = holdValue(id), cost = (P.cost && P.cost[id]) || 0, ch = priceChange(id);
     var h = '<div class="ico">' + a.ico + "</div><h2>" + esc(T(a.n)) + '</h2><p class="muted">' + T(a.desc) + "</p>" + spark(id);
     h += "<p>" + T("Cours") + " : <b>" + (pr >= 100 ? money(Math.round(pr)) : money(Math.round(pr * 100) / 100)) + '</b> <span style="color:var(--' + (ch >= 0 ? "good" : "bad") + ')">' + pct(ch) + " " + T("sur 1 an") + "</span></p>";
     if (a.div) h += '<p class="muted">' + TF("Dividende ≈ {0} / an · frais {1}", Math.round(a.div * 1000) / 10 + " %", Math.round(a.fee * 1000) / 10 + " %") + "</p>";
     if (hv > 0) h += "<p>" + T("Votre position") + " : <b>" + money(Math.round(hv)) + "</b> (" + T("investi") + " " + money(Math.round(cost)) + ", " + (hv >= cost ? T("gain") : T("perte")) + " " + money(Math.abs(Math.round(hv - cost))) + ")</p>";
+    h += aiAnalystSafe(id);
     h += "<p>" + T("Argent") + " : <b>" + money(P.money) + "</b></p>";
     var H = {}, i = 0;
     [1000, 5000, 20000, 100000].forEach(function (n) { h += '<button class="btn" data-m="b' + n + '"><span>' + T("Acheter") + '</span><span class="r">' + money(n) + "</span></button>"; H["b" + n] = function () { var r = buyAsset(id, n); if (r) toast(r); else { toast(T("Achat effectué.")); } saveAll(); showAsset(id); render(); }; });
