@@ -606,7 +606,7 @@ var EN = {};
     if (P.debt > 0) P.debt = Math.round(P.debt * 1.08);
     if (P.money < 0) { P.debt += Math.round(-P.money); P.money = 0; }
     if (P.debt > 0 && P.money > 1500) { var pay = Math.min(P.debt, P.money - 1500); P.debt -= pay; P.money -= pay; }
-    marketYear(); aiYear();
+    marketYear(); aiYear(); shopApplyBank();
     if (P.debt > 10000) P.flags.bigDebt = 1;
     P.maxMoney = Math.max(P.maxMoney, wealth());
     return { inc: inc, out: out };
@@ -1739,6 +1739,57 @@ var EN = {};
     if (P.ai && P.ai.advice) h += '<p style="margin-top:8px">💡 <b>' + T("Conseil") + "</b> : " + T(P.ai.advice) + "</p>";
     h += '<p class="muted">' + TF("L'IA adapte les événements à votre style et au défi du moment. Vies analysées : {0}.", G.ai.gen + 1) + (G.ai.adv >= 5 ? " " + TF("Conseils suivis : {0} %.", Math.round(G.ai.fol / G.ai.adv * 100)) : "") + "</p></div>";
     return h;
+  }
+  // =====================================================================
+  //  BOUTIQUE : points d'héritage et argent, payés par Mobile Money (Moov Money / T-Money)
+  //  via FedaPay. Le paiement est créé et vérifié côté serveur (fonctions Supabase pay-create / pay-claim).
+  // =====================================================================
+  var SHOP_URL_BACK = "https://obedhounon-sudo.github.io/Une-vie/";
+  var SHOP = [
+    { id: "pts_s", kind: "pts", n: 30, price: 500, ico: "⭐" }, { id: "pts_m", kind: "pts", n: 100, price: 1500, ico: "⭐" }, { id: "pts_l", kind: "pts", n: 300, price: 4000, ico: "🌟" },
+    { id: "cash_s", kind: "cash", n: 50000, price: 500, ico: "💶" }, { id: "cash_m", kind: "cash", n: 300000, price: 2000, ico: "💰" }, { id: "cash_l", kind: "cash", n: 2000000, price: 10000, ico: "🏦" }
+  ];
+  function fcfa(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " FCFA"; }
+  function shopApplyBank() { try { if (P && G.cashBank) { P.money += G.cashBank; log(TF("Achat boutique : {0} ajoutés.", money(G.cashBank))); G.cashBank = 0; saveAll(); } } catch (e) {} }
+  function shopApply(list) {
+    var pts = 0, cash = 0;
+    list.forEach(function (d) { if (d.kind === "pts") pts += d.n; else if (d.kind === "cash") cash += d.n; });
+    if (pts) G.legacy += pts;
+    if (cash) { G.cashBank = (G.cashBank || 0) + cash; shopApplyBank(); }
+    saveAll(true); if (cloudOn() && AUTH) cloudPush(false);
+    return { pts: pts, cash: cash };
+  }
+  function shopClaim(silent) {
+    if (!cloudOn() || !AUTH) return Promise.resolve();
+    return ensureToken().then(function (tk) { return apiCall("/functions/v1/pay-claim", "POST", {}, tk); }).then(function (r) {
+      var d = (r && r.delivered) || [];
+      if (d.length) { var a = shopApply(d); toast("🎉 " + T("Merci ! Achat reçu") + (a.pts ? " : +" + a.pts + " ⭐" : "") + (a.cash ? " +" + money(a.cash) : "")); render(); }
+      else if (!silent) toast(r && r.pending ? T("Paiement pas encore confirmé. Réessayez dans un instant.") : T("Aucun achat en attente."));
+    }).catch(function (e) { if (!silent) toast(shopErr(e)); });
+  }
+  function shopErr(e) {
+    var m = String(e && e.message || "");
+    if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return T("Connexion impossible. Vérifiez internet.");
+    if (e && e.status === 404) return T("La boutique n'est pas encore disponible.");
+    return T("Erreur") + " : " + m;
+  }
+  function shopBuy(id) {
+    if (!AUTH) { toast(T("Connectez-vous pour acheter.")); authMode = "in"; showLogin(); return; }
+    toast(T("Un instant…"));
+    ensureToken().then(function (tk) { return apiCall("/functions/v1/pay-create", "POST", { pack: id, back: SHOP_URL_BACK }, tk); }).then(function (r) {
+      if (!r || !r.url) throw new Error((r && r.error) || "no url");
+      showModal('<div class="ico">📲</div><h2>' + T("Paiement Mobile Money") + '</h2><p>' + T("Choisissez Moov Money ou T-Money sur la page de paiement, puis revenez ici.") + '</p><a class="btn" data-m="go" style="display:block;text-align:center;text-decoration:none" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + T("Ouvrir la page de paiement") + '</a><button class="btn sec" data-m="chk">' + T("J'ai payé : vérifier") + '</button><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
+        { go: function () {}, chk: function () { shopClaim(false).then(function () { closeModal(); }); }, x: closeModal });
+    }).catch(function (e) { toast(shopErr(e)); });
+  }
+  function shopCard() {
+    if (!cloudOn()) return "";
+    var h = '<div class="card"><h3>🛒 ' + T("Boutique") + '</h3><p class="muted">' + T("Paiement par Moov Money ou T-Money. Compte en ligne requis.") + "</p>";
+    ["pts", "cash"].forEach(function (k) {
+      h += '<div class="sec-t">' + (k === "pts" ? T("Points d'héritage") : T("Argent")) + "</div>";
+      SHOP.forEach(function (p) { if (p.kind === k) h += '<button class="btn sec" data-a="shop:' + p.id + '"><span>' + p.ico + " " + (k === "pts" ? p.n + " ⭐" : money(p.n)) + '</span><span class="r">' + fcfa(p.price) + "</span></button>"; });
+    });
+    return h + '<button class="btn sec" data-a="shopchk">' + T("J'ai payé : vérifier mes achats") + "</button></div>";
   }
   // ===== Lot ecole : enfance, scolarité, études, entrée dans la vie active =====
   function ec_isStudent(P) { return !!P.school; }
@@ -4995,6 +5046,7 @@ Object.assign(EN, {
   "L'IA adapte les événements à votre style et au défi du moment. Vies analysées : {0}.":"The AI adapts events to your style and the current challenge. Lives analysed: {0}.","Conseils suivis : {0} %.":"Advice followed: {0}%."
 });
 Object.assign(EN, {"Option 1 : gratuit":"Option 1: free","Suivez notre compte Instagram, puis revenez ici et validez.":"Follow our Instagram account, then come back here and confirm.","Suivre sur Instagram":"Follow on Instagram","J'ai suivi le compte":"I followed the account","Option 2 : don de 1 $":"Option 2: $1 donation","Faites un don, vous recevez un code dans le message de remerciement.":"Make a donation and you'll get a code in the thank-you message.","Ouvrez Instagram, suivez le compte, puis revenez valider.":"Open Instagram, follow the account, then come back to confirm.","Modifiez librement vos jauges, votre argent et vos traits. Le mode Dieu se débloque en suivant notre Instagram, ou avec un don de 1 $.":"Freely edit your stats, money and traits. God Mode unlocks by following our Instagram, or with a $1 donation."});
+Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.","Merci ! Achat reçu":"Thank you! Purchase received","Paiement pas encore confirmé. Réessayez dans un instant.":"Payment not confirmed yet. Try again in a moment.","Aucun achat en attente.":"No pending purchase.","La boutique n'est pas encore disponible.":"The shop isn't available yet.","Connectez-vous pour acheter.":"Sign in to buy.","Paiement Mobile Money":"Mobile Money payment","Choisissez Moov Money ou T-Money sur la page de paiement, puis revenez ici.":"Choose Moov Money or T-Money on the payment page, then come back here.","Ouvrir la page de paiement":"Open payment page","J'ai payé : vérifier":"I paid: check","Boutique":"Shop","Paiement par Moov Money ou T-Money. Compte en ligne requis.":"Pay with Moov Money or T-Money. Online account required.","Points d'héritage":"Legacy points","J'ai payé : vérifier mes achats":"I paid: check my purchases"});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -5219,7 +5271,7 @@ Object.assign(EN, {"Option 1 : gratuit":"Option 1: free","Suivez notre compte In
     var h = '<div class="card"><h3>' + esc(P.name) + '</h3><p class="muted">' + TF("Génération {0}", P.gen) + " · " + T("Né(e) en") + " " + P.startYear + "</p></div>";
     h += '<div class="card"><h3>🧬 ' + T("Personnalité") + "</h3>" + P.traits.map(function (id) { var t = TRAITS.filter(function (x) { return x.id === id; })[0]; return '<div class="pr"><div class="ic">' + t.ico + '</div><div class="tx">' + T(t.n) + "<small>" + T(t.d) + "</small></div></div>"; }).join("") + "</div>";
     if (SUPPORT_URL) h += '<div class="card"><h3>☕ ' + T("Soutenir le jeu") + "</h3><p>" + T("Le jeu est gratuit. Si il vous plaît, un petit don aide à le faire grandir.") + '</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">' + T("Faire un don") + "</a></div>";
-    h += accountCard() + godCard() + timeCard() + lifeChart();
+    h += accountCard() + shopCard() + godCard() + timeCard() + lifeChart();
     h += '<div class="card"><h3>🛠️ ' + T("Compétences") + "</h3>" + SKILLS.map(function (s) { return '<div class="pr"><div class="ic">' + s.ico + '</div><div class="tx">' + T(s.name) + "</div>" + bar(skillOf(s.k)) + "</div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>🏆 ' + T("Succès") + "</h3>" + ACH.map(function (a) { return '<div class="pr"><div class="ic">' + (G.ach[a.id] ? "🏆" : "🔒") + '</div><div class="tx">' + T(a.n) + "<small>" + T(a.d) + "</small></div></div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>⚙️ ' + T("Réglages") + '</h3><div class="tabrow">' + [["auto", "Auto"], ["fr", "Français"], ["en", "English"]].map(function (l) { return '<button class="btn ' + (G.settings.lang === l[0] ? "" : "sec") + '" data-a="lang:' + l[0] + '">' + l[1] + "</button>"; }).join("") + "</div>";
@@ -5354,6 +5406,8 @@ Object.assign(EN, {"Option 1 : gratuit":"Option 1: free","Suivez notre compte In
       case "login": authMode = "in"; showLogin(); return;
       case "logout": showConfirm(T("Se déconnecter ? Votre partie reste sur cet appareil."), function () { doSignOut(); render(); }); return;
       case "cloudsync": cloudPush(false).then(function () { toast(syncState === "ok" ? T("Synchronisé.") : T("Échec de la synchronisation.")); render(); }); return;
+      case "shop": shopBuy(v); return;
+      case "shopchk": shopClaim(false); return;
       case "psub": PSUB = v; resetScroll = false; break;
       case "asset": showAsset(v); return;
       case "buyprop": r = buyProp(v); if (r) toast(r); break;
@@ -5472,6 +5526,8 @@ Object.assign(EN, {"Option 1 : gratuit":"Option 1: free","Suivez notre compte In
   });
   loadAll();
   setLang(pickLang(G.settings.lang));
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && typeof AUTH !== "undefined" && AUTH) shopClaim(true); });
+  if (typeof AUTH !== "undefined" && AUTH) setTimeout(function () { shopClaim(true); }, 2500);
   window.addEventListener("pagehide", function () { saveAll(true); if (typeof AUTH !== "undefined" && AUTH) cloudPush(true); });
   document.addEventListener("visibilitychange", function () { if (document.hidden) { saveAll(true); if (AUTH) cloudPush(true); } });
   render();
