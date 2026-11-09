@@ -44,7 +44,9 @@ jobs:
 
       - name: APK de test Une Vie (à installer sur votre téléphone)
         working-directory: android
-        run: ./gradlew assembleDebug --no-daemon
+        run: |
+          sed -i 's/networkTimeout=[0-9]*/networkTimeout=120000/' gradle/wrapper/gradle-wrapper.properties || true
+          for i in 1 2 3 4; do ./gradlew assembleDebug --no-daemon && exit 0; echo "Tentative $i échouée, nouvel essai..."; sleep 20; done; exit 1
       - uses: actions/upload-artifact@v4
         with:
           name: une-vie-test-apk
