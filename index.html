@@ -4729,6 +4729,7 @@ Object.assign(EN, {
   "Scooter": "Scooter", "SUV familial": "Family SUV", "Voiture électrique": "Electric car", "Cabriolet": "Convertible", "Berline de luxe": "Luxury sedan",
   "Supercar": "Supercar", "Voiture de collection": "Collector car", "Hypercar": "Hypercar", "Immobilier": "Real estate"
 });
+Object.assign(EN, {"🔒 Débloqué à 18 ans : bourse, cryptos, immobilier, voitures. Encore {0} an(s).": "🔒 Unlocked at 18: stocks, crypto, real estate, cars. {0} year(s) to go."});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -4906,7 +4907,7 @@ Object.assign(EN, {
     if (P.mortgage) h += "<p>" + TF("Prêt immobilier : {0} ({1} an(s))", money(P.mortgage.bal), P.mortgage.left) + "</p>";
     h += "<p>" + T("Patrimoine net") + " : <b>" + money(wealth()) + "</b></p>";
     h += '<p class="muted">' + TF("Revenus ≈ {0} / an · Dépenses ≈ {1} / an", money(inc), money(out)) + "</p></div>";
-    if (P.age < 18) return h + '<div class="card"><p>' + T("La gestion de l'argent commencera à votre majorité.") + "</p></div>";
+    if (P.age < 18) return h + '<div class="card"><p>' + T("La gestion de l'argent commencera à votre majorité.") + "</p><p class=\"muted\">" + TF("🔒 Débloqué à 18 ans : bourse, cryptos, immobilier, voitures. Encore {0} an(s).", Math.max(1, 18 - P.age)) + "</p></div>";
     h += '<div class="tabrow" style="flex-wrap:wrap">' + [["fin", "💶", "Argent"], ["bourse", "📈", "Bourse"], ["crypto", "₿", "Crypto"], ["immo", "🏠", "Immobilier"], ["auto", "🚗", "Auto"]].map(function (t) { return '<button class="btn ' + (PSUB === t[0] ? "" : "sec") + '" data-a="psub:' + t[0] + '">' + t[1] + " " + T(t[2]) + "</button>"; }).join("") + "</div>";
     if (PSUB === "fin") {
       h += '<div class="sec-t">' + T("Placements (risqués : ±)") + '</div><div class="tabrow"><button class="btn sec" data-a="inv:1000">+1 000</button><button class="btn sec" data-a="inv:5000">+5 000</button><button class="btn sec" data-a="inv:20000">+20 000</button><button class="btn sec" data-a="wd:all">' + T("Tout retirer") + "</button></div>";
