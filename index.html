@@ -366,7 +366,10 @@ var EN = {};
   function diffOf() { return DIFFS[(P && P.diff) || "normal"] || DIFFS.normal; }
 
   // ---------- Création d'une vie ----------
-  function newGlobal() { return { legacy: 0, spent: 0, lives: 0, perks: {}, ach: {}, best: 0, hist: [], settings: { lang: "auto", pref: "a" }, yearNow: 0, tuto: 0 }; }
+  var CODE_SALT = "uv-2026-obed";
+  function codeSum(b) { var h = 2166136261, i, str = b + CODE_SALT; for (i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return ("000" + (h % 46656).toString(36).toUpperCase()).slice(-3); }
+  function codeValid(c) { c = String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); return c.length === 11 && c.slice(0, 2) === "UV" && codeSum(c.slice(2, 8)) === c.slice(8) ? true : false; }
+  function newGlobal() { return { legacy: 0, spent: 0, lives: 0, perks: {}, ach: {}, best: 0, hist: [], settings: { lang: "auto", pref: "a" }, yearNow: 0, tuto: 0, premium: false }; }
   function perk(id) { return (G && G.perks[id]) || 0; }
   function mkPerson(g, age, last) {
     return { name: firstName(g) + " " + (last || lastName()), g: g, age: age };
@@ -4741,6 +4744,7 @@ Object.assign(EN, {
 Object.assign(EN, {"🔒 Débloqué à 18 ans : bourse, cryptos, immobilier, voitures. Encore {0} an(s).": "🔒 Unlocked at 18: stocks, crypto, real estate, cars. {0} year(s) to go."});
 Object.assign(EN, {"Vous avez déjà le permis.":"You already have a licence.","Il faut 1 800 pour l'auto-école.":"You need 1,800 for driving school.","Vous obtenez votre permis de conduire !":"You get your driving licence!","Permis obtenu ! 🎉":"Licence obtained! 🎉","Vous ratez l'examen du permis. Il faudra le repasser.":"You fail the driving test. You'll have to retake it.","Examen raté, réessayez.":"Test failed, try again.","Passer le permis de conduire":"Take the driving test","Auto-école : 1 800, réussite probable":"Driving school: 1,800, likely to pass"});
 Object.assign(EN, {"Soutenir le jeu":"Support the game","Le jeu est gratuit. Si il vous plaît, un petit don aide à le faire grandir.":"The game is free. If you like it, a small donation helps it grow.","Faire un don":"Donate"});
+Object.assign(EN, {"Modifiez librement vos jauges, votre argent et vos traits. Le mode Dieu se débloque pour 1 $ (une seule fois, pour toutes vos vies).":"Freely edit your stats, money and traits. God Mode unlocks for $1 (one time, for all your lives).","Débloquer le mode Dieu":"Unlock God Mode","1. Faites un don de 1 $ (ou plus) via le bouton ci-dessous.":"1. Donate $1 (or more) with the button below.","2. Vous recevez un code dans le message de remerciement.":"2. You receive a code in the thank-you message.","3. Entrez-le ici.":"3. Enter it here.","Donner 1 $":"Donate $1","Valider le code":"Validate code","Mode Dieu débloqué ! Merci 💛":"God Mode unlocked! Thank you 💛","Code invalide.":"Invalid code."});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -5092,6 +5096,7 @@ Object.assign(EN, {"Soutenir le jeu":"Support the game","Le jeu est gratuit. Si 
       case "home": P.home = v; break;
       case "buy": r = buyHome(v); if (r) toast(r); break;
       case "permis": toast(passPermis()); break;
+      case "unlock": showUnlock(); return;
       case "psub": PSUB = v; resetScroll = false; break;
       case "asset": showAsset(v); return;
       case "buyprop": r = buyProp(v); if (r) toast(r); break;
@@ -5145,7 +5150,12 @@ Object.assign(EN, {"Soutenir le jeu":"Support the game","Le jeu est gratuit. Si 
   }
   // ---------- Mode Dieu ----------
   var GODOPEN = false;
+  function showUnlock() {
+    showModal('<div class="ico">⚡</div><h2>' + T("Débloquer le mode Dieu") + '</h2><div class="tx">' + T("1. Faites un don de 1 $ (ou plus) via le bouton ci-dessous.") + "<br>" + T("2. Vous recevez un code dans le message de remerciement.") + "<br>" + T("3. Entrez-le ici.") + '</div><a class="btn" style="display:block;text-align:center;text-decoration:none" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">☕ ' + T("Donner 1 $") + '</a><input id="gcode" placeholder="UV-XXXXXX-XXX" autocapitalize="characters" style="width:100%;margin:10px 0"><button class="btn" data-m="ok">' + T("Valider le code") + '</button><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
+      { ok: function () { if (codeValid($("gcode").value)) { G.premium = true; saveAll(); closeModal(); toast(T("Mode Dieu débloqué ! Merci 💛")); render(); } else toast(T("Code invalide.")); }, x: closeModal });
+  }
   function godAction(k, v) {
+    if (!G.premium) return;
     if (k === "open") { GODOPEN = !GODOPEN; if (GODOPEN) P.cheat = true; return; }
     P.cheat = true;
     if (k === "money") P.money += +v;
@@ -5158,6 +5168,7 @@ Object.assign(EN, {"Soutenir le jeu":"Support the game","Le jeu est gratuit. Si 
   }
   function godCard() {
     var h = '<div class="card"><h3>⚡ ' + T("Mode Dieu") + "</h3>";
+    if (!G.premium) return h + '<p class="muted">' + T("Modifiez librement vos jauges, votre argent et vos traits. Le mode Dieu se débloque pour 1 $ (une seule fois, pour toutes vos vies).") + '</p><button class="btn" data-a="unlock">🔓 ' + T("Débloquer le mode Dieu") + "</button></div>";
     if (!GODOPEN) return h + '<p class="muted">' + T("Modifiez librement vos jauges, votre argent et vos traits. Les points d'héritage de cette vie seront réduits de moitié.") + '</p><button class="btn sec" data-a="god:open">' + T("Ouvrir") + "</button></div>";
     h += STATS.map(function (st) { return '<div class="pr"><div class="ic">' + st.ico + '</div><div class="tx">' + T(st.name) + '</div><input type="range" min="0" max="100" value="' + P[st.k] + '" data-god="' + st.k + '" style="width:130px"></div>'; }).join("");
     h += '<div class="tabrow"><button class="btn sec" data-a="god:money:1000">+' + money(1000) + '</button><button class="btn sec" data-a="god:money:100000">+' + money(100000) + '</button><button class="btn sec" data-a="god:money:1000000">+' + money(1000000) + "</button></div>";
