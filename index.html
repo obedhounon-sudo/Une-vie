@@ -199,6 +199,7 @@ var EN = {};
   var RETIRE_AGE = 62, RETIRE_FORCED = 70;
 
   // Logements : coût annuel de loyer ; 'achat' : prix d'un bien
+  var SUPPORT_URL = ""; // lien Ko-fi / Buy Me a Coffee à renseigner
   var HOMES = [
     { id: "parents", n: "Chez les parents", rent: 0,     joy: 0 },
     { id: "coloc",   n: "Chambre en colocation", rent: 3800, joy: -1 },
@@ -4739,6 +4740,7 @@ Object.assign(EN, {
 });
 Object.assign(EN, {"🔒 Débloqué à 18 ans : bourse, cryptos, immobilier, voitures. Encore {0} an(s).": "🔒 Unlocked at 18: stocks, crypto, real estate, cars. {0} year(s) to go."});
 Object.assign(EN, {"Vous avez déjà le permis.":"You already have a licence.","Il faut 1 800 pour l'auto-école.":"You need 1,800 for driving school.","Vous obtenez votre permis de conduire !":"You get your driving licence!","Permis obtenu ! 🎉":"Licence obtained! 🎉","Vous ratez l'examen du permis. Il faudra le repasser.":"You fail the driving test. You'll have to retake it.","Examen raté, réessayez.":"Test failed, try again.","Passer le permis de conduire":"Take the driving test","Auto-école : 1 800, réussite probable":"Driving school: 1,800, likely to pass"});
+Object.assign(EN, {"Soutenir le jeu":"Support the game","Le jeu est gratuit. Si il vous plaît, un petit don aide à le faire grandir.":"The game is free. If you like it, a small donation helps it grow.","Faire un don":"Donate"});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -4958,6 +4960,7 @@ Object.assign(EN, {"Vous avez déjà le permis.":"You already have a licence.","
   function tabMoi() {
     var h = '<div class="card"><h3>' + esc(P.name) + '</h3><p class="muted">' + TF("Génération {0}", P.gen) + " · " + T("Né(e) en") + " " + P.startYear + "</p></div>";
     h += '<div class="card"><h3>🧬 ' + T("Personnalité") + "</h3>" + P.traits.map(function (id) { var t = TRAITS.filter(function (x) { return x.id === id; })[0]; return '<div class="pr"><div class="ic">' + t.ico + '</div><div class="tx">' + T(t.n) + "<small>" + T(t.d) + "</small></div></div>"; }).join("") + "</div>";
+    if (SUPPORT_URL) h += '<div class="card"><h3>☕ ' + T("Soutenir le jeu") + "</h3><p>" + T("Le jeu est gratuit. Si il vous plaît, un petit don aide à le faire grandir.") + '</p><a class="btn" style="display:block;text-align:center;text-decoration:none" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">' + T("Faire un don") + "</a></div>";
     h += godCard() + timeCard() + lifeChart();
     h += '<div class="card"><h3>🛠️ ' + T("Compétences") + "</h3>" + SKILLS.map(function (s) { return '<div class="pr"><div class="ic">' + s.ico + '</div><div class="tx">' + T(s.name) + "</div>" + bar(skillOf(s.k)) + "</div>"; }).join("") + "</div>";
     h += '<div class="card"><h3>🏆 ' + T("Succès") + "</h3>" + ACH.map(function (a) { return '<div class="pr"><div class="ic">' + (G.ach[a.id] ? "🏆" : "🔒") + '</div><div class="tx">' + T(a.n) + "<small>" + T(a.d) + "</small></div></div>"; }).join("") + "</div>";
