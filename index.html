@@ -199,7 +199,7 @@ var EN = {};
   var RETIRE_AGE = 62, RETIRE_FORCED = 70;
 
   // Logements : coût annuel de loyer ; 'achat' : prix d'un bien
-  var CLOUD = { url: "", key: "" }; // Supabase : URL du projet + clé publique (anon)
+  var CLOUD = { url: "https://lspyggjdspnsuvljrrav.supabase.co", key: "sb_publishable_T-JWHP6lyjyUtYNxhrOO9A_qxUCRES-" }; // Supabase : URL du projet + clé publique (anon)
   var SUPPORT_URL = "https://buymeacoffee.com/obedhounonl"; // lien Ko-fi / Buy Me a Coffee à renseigner
   var HOMES = [
     { id: "parents", n: "Chez les parents", rent: 0,     joy: 0 },
@@ -1536,7 +1536,8 @@ var EN = {};
   try { AUTH = JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); } catch (e) { AUTH = null; }
   function authSave() { try { if (AUTH) localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); else localStorage.removeItem(AUTH_KEY); } catch (e) {} }
   function apiCall(path, method, body, token, extra) {
-    var h = { "apikey": CLOUD.key, "Content-Type": "application/json", "Authorization": "Bearer " + (token || CLOUD.key) };
+    var h = { "apikey": CLOUD.key, "Content-Type": "application/json" };
+    if (token) h["Authorization"] = "Bearer " + token;
     if (extra) for (var k in extra) h[k] = extra[k];
     return fetch(CLOUD.url.replace(/\/$/, "") + path, { method: method, headers: h, body: body ? JSON.stringify(body) : undefined, keepalive: !!(extra && extra.keepalive) }).then(function (r) {
       return r.text().then(function (t) { var j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {} if (!r.ok) { var m = (j && (j.msg || j.error_description || j.message || j.error)) || ("HTTP " + r.status); var er = new Error(m); er.status = r.status; throw er; } return j; });
