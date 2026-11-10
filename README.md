@@ -27,7 +27,7 @@ Chaque année, vous avez **3 actions**, des événements bouleversent votre pers
 - 📈 **Bourse, cryptomonnaies, immobilier locatif** (cours inspirés de l'histoire réelle, krachs inclus)
 - 🏠 Plus de 20 logements, 🚗 12 voitures, permis de conduire, animaux
 - 🚔 Prison, justice, actions risquées
-- ⏪ Machine à remonter le temps ; ⚡ mode Dieu (débloquable avec un don de 1 $)
+- ⏪ Machine à remonter le temps ; ⚡ mode Dieu (déblocage par code serveur, à configurer avant activation)
 - 550 événements, sauvegarde automatique, export/import de partie
 
 ## Jouer
