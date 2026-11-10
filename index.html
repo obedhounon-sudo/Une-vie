@@ -1533,7 +1533,7 @@ var EN = {};
   // =====================================================================
   //  COMPTES EN LIGNE (Supabase) : connexion, inscription, sauvegarde cloud
   // =====================================================================
-  var AUTH = null, AUTH_KEY = "uv_auth", pushTimer = null, syncState = "", lastSync = 0, authMode = "in";
+  var AUTH = null, syncErr = "", AUTH_KEY = "uv_auth", pushTimer = null, syncState = "", lastSync = 0, authMode = "in";
   function cloudOn() { return !!(CLOUD.url && CLOUD.key); }
   try { AUTH = JSON.parse(localStorage.getItem(AUTH_KEY) || "null"); } catch (e) { AUTH = null; }
   function authSave() { try { if (AUTH) localStorage.setItem(AUTH_KEY, JSON.stringify(AUTH)); else localStorage.removeItem(AUTH_KEY); } catch (e) {} }
@@ -1580,7 +1580,7 @@ var EN = {};
     syncState = "sync";
     return ensureToken().then(function (tk) {
       return apiCall("/rest/v1/saves?on_conflict=user_id", "POST", { user_id: AUTH.uid, data: snapshot(), updated_at: new Date().toISOString() }, tk, { "Prefer": "resolution=merge-duplicates,return=minimal", keepalive: !!now });
-    }).then(function () { syncState = "ok"; lastSync = Date.now(); }).catch(function () { syncState = "err"; });
+    }).then(function () { syncState = "ok"; syncErr = ""; lastSync = Date.now(); }).catch(function (e) { syncState = "err"; syncErr = (e && e.status ? "[" + e.status + "] " : "") + String(e && e.message || e).slice(0, 160); });
   }
   function schedulePush() {
     if (!cloudOn() || !AUTH) return;
@@ -1637,7 +1637,7 @@ var EN = {};
     if (!cloudOn()) return "";
     var h = '<div class="card"><h3>☁️ ' + T("Compte et sauvegarde en ligne") + "</h3>";
     if (AUTH) {
-      h += "<p>" + T("Connecté") + " : <b>" + esc(AUTH.email || "") + "</b></p><p class=\"muted\">" + (syncState === "sync" ? T("Synchronisation…") : syncState === "err" ? T("Dernière synchronisation échouée.") : lastSync ? T("Synchronisé") + " " + new Date(lastSync).toLocaleTimeString() : T("La partie se sauvegarde automatiquement en ligne.")) + "</p>" +
+      h += "<p>" + T("Connecté") + " : <b>" + esc(AUTH.email || "") + "</b></p><p class=\"muted\">" + (syncState === "sync" ? T("Synchronisation…") : syncState === "err" ? T("Dernière synchronisation échouée.") + (syncErr ? " " + esc(syncErr) : "") : lastSync ? T("Synchronisé") + " " + new Date(lastSync).toLocaleTimeString() : T("La partie se sauvegarde automatiquement en ligne.")) + "</p>" +
         '<button class="btn sec" data-a="cloudsync">' + T("Synchroniser maintenant") + '</button><button class="btn sec" data-a="logout">' + T("Se déconnecter") + "</button>";
     } else h += '<p class="muted">' + T("Jouez sur plusieurs appareils et ne perdez jamais votre partie.") + '</p><button class="btn" data-a="login">' + T("Se connecter / Créer un compte") + "</button>";
     return h + "</div>";
@@ -5405,7 +5405,7 @@ Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.",
       case "unlock": showUnlock(); return;
       case "login": authMode = "in"; showLogin(); return;
       case "logout": showConfirm(T("Se déconnecter ? Votre partie reste sur cet appareil."), function () { doSignOut(); render(); }); return;
-      case "cloudsync": cloudPush(false).then(function () { toast(syncState === "ok" ? T("Synchronisé.") : T("Échec de la synchronisation.")); render(); }); return;
+      case "cloudsync": cloudPush(false).then(function () { toast(syncState === "ok" ? T("Synchronisé.") : T("Échec de la synchronisation.") + (syncErr ? " " + syncErr : "")); render(); }); return;
       case "shop": shopBuy(v); return;
       case "shopchk": shopClaim(false); return;
       case "psub": PSUB = v; resetScroll = false; break;
