@@ -27,7 +27,7 @@ Chaque année, vous avez **3 actions**, des événements bouleversent votre pers
 - 📈 **Bourse, cryptomonnaies, immobilier locatif** (cours inspirés de l'histoire réelle, krachs inclus)
 - 🏠 Plus de 20 logements, 🚗 12 voitures, permis de conduire, animaux
 - 🚔 Prison, justice, actions risquées
-- ⏪ Machine à remonter le temps ; ⚡ mode Dieu (débloquable avec un don de 1 $)
+- ⏪ Machine à remonter le temps ; ⚡ mode Dieu (déblocage par code serveur, à configurer avant activation)
 - 550 événements, sauvegarde automatique, export/import de partie
 
 ## Jouer
@@ -43,8 +43,8 @@ Chaque année, vous avez **3 actions**, des événements bouleversent votre pers
 
 ## Technique
 
-Jeu en un seul fichier HTML/CSS/JS (`index.html`), emballé en application Android avec Capacitor. Une GitHub Action compile l'APK à chaque mise à jour et le publie dans les Releases. Voir aussi la [politique de confidentialité](confidentialite.html) : aucune donnée n'est collectée, tout reste sur votre appareil.
+Jeu en un seul fichier HTML/CSS/JS (`index.html`), emballé en application Android avec Capacitor. Une GitHub Action compile l'APK à chaque mise à jour et le publie dans les Releases. Voir aussi la [politique de confidentialité](confidentialite.html) : le jeu fonctionne sans compte avec une sauvegarde locale. La connexion et la sauvegarde cloud sont facultatives et impliquent un traitement de données par Supabase. Les achats intégrés sont traités par un prestataire de paiement externe.
 
 ## Soutenir
 
-Le jeu est gratuit. Si vous l'aimez, un [petit don](https://buymeacoffee.com/obedhounonl) aide à ajouter de nouveaux pays et événements.
+Le jeu est jouable gratuitement. Des achats facultatifs peuvent être proposés dans la boutique. Si vous souhaitez soutenir le développement, vous pouvez aussi faire un [don](https://buymeacoffee.com/obedhounonl).

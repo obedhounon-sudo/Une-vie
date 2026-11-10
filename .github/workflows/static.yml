@@ -36,8 +36,15 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          # Publish only the files required by the static game site.
+          path: |
+            index.html
+            confidentialite.html
+            icon-only.png
+            icon-foreground.png
+            icon-background.png
+            splash.png
+            docs/
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

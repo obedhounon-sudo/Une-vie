@@ -368,9 +368,17 @@ var EN = {};
   function diffOf() { return DIFFS[(P && P.diff) || "normal"] || DIFFS.normal; }
 
   // ---------- Création d'une vie ----------
-  var CODE_SALT = "uv-2026-obed";
-  function codeSum(b) { var h = 2166136261, i, str = b + CODE_SALT; for (i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } return ("000" + (h % 46656).toString(36).toUpperCase()).slice(-3); }
-  function codeValid(c) { c = String(c || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); return c.length === 11 && c.slice(0, 2) === "UV" && codeSum(c.slice(2, 8)) === c.slice(8) ? true : false; }
+  function premiumClaim(code) {
+    code = String(code || "").trim().toUpperCase();
+    if (!/^UV-[A-F0-9]{6}-[A-F0-9]{3}$/.test(code)) return Promise.reject(new Error(T("Code invalide.")));
+    if (!AUTH) return Promise.reject(new Error(T("Connectez-vous pour vérifier ce code.")));
+    return ensureToken().then(function (tk) {
+      return apiCall("/functions/v1/premium-claim", "POST", { code: code }, tk);
+    }).then(function (r) {
+      if (!r || r.ok !== true) throw new Error(T("Code invalide ou déjà utilisé."));
+      return r;
+    });
+  }
   function newGlobal() { return { legacy: 0, spent: 0, lives: 0, perks: {}, ach: {}, best: 0, hist: [], settings: { lang: "auto", pref: "a" }, yearNow: 0, tuto: 0, premium: false }; }
   function perk(id) { return (G && G.perks[id]) || 0; }
   function mkPerson(g, age, last) {
@@ -958,13 +966,18 @@ var EN = {};
   function loadAll() {
     var ok = false;
     try {
-      var g = localStorage.getItem(SAVE_G); if (g) { G = JSON.parse(g); ok = true; }
-      var p = localStorage.getItem(SAVE_P); if (p) P = JSON.parse(p);
-    } catch (e) { G = null; P = null; }
-    var base = newGlobal(); if (!G || typeof G !== "object") G = base;
+      var g = localStorage.getItem(SAVE_G);
+      if (g) { var parsedG = JSON.parse(g); if (parsedG && typeof parsedG === "object" && !Array.isArray(parsedG)) { G = parsedG; ok = true; } }
+    } catch (e) { G = null; }
+    try {
+      var p = localStorage.getItem(SAVE_P);
+      if (p) { var parsedP = JSON.parse(p); P = parsedP && typeof parsedP === "object" && !Array.isArray(parsedP) && parsedP.v ? parsedP : null; }
+      else P = null;
+    } catch (e) { P = null; }
+    var base = newGlobal(); if (!G || typeof G !== "object" || Array.isArray(G)) G = base;
     for (var k in base) if (G[k] === undefined) G[k] = base[k];
     if (!G.settings) G.settings = base.settings;
-    if (P && (typeof P !== "object" || !P.v)) P = null;
+    if (P && (typeof P !== "object" || Array.isArray(P) || !P.v)) P = null;
     fixP();
     return ok;
   }
@@ -998,7 +1011,14 @@ var EN = {};
   }
   function exportCode() { try { return btoa(unescape(encodeURIComponent(JSON.stringify({ G: G, P: P })))); } catch (e) { return ""; } }
   function importCode(c) {
-    try { var o = JSON.parse(decodeURIComponent(escape(atob(c.trim())))); if (!o || !o.G) return false; G = o.G; P = (o.P && o.P.v) ? o.P : null; loadFix(); fixP(); saveAll(); return true; } catch (e) { return false; }
+    try {
+      c = String(c || "").trim();
+      if (!c || c.length > 2000000) return false;
+      var o = JSON.parse(decodeURIComponent(escape(atob(c))));
+      if (!o || !o.G || typeof o.G !== "object" || Array.isArray(o.G)) return false;
+      if (o.P && (typeof o.P !== "object" || Array.isArray(o.P) || !o.P.v)) return false;
+      G = o.G; P = o.P || null; loadFix(); fixP(); saveAll(); return true;
+    } catch (e) { return false; }
   }
   function loadFix() { var base = newGlobal(); for (var k in base) if (G[k] === undefined) G[k] = base[k]; }
   // =====================================================================
@@ -1602,7 +1622,7 @@ var EN = {};
     return cloudPull().then(function (cd) {
       if (!cd) { return cloudPush(false).then(function () { toast(T("Connecté. Partie sauvegardée en ligne.")); render(); }); }
       if (!localHasProgress()) { applyCloud(cd); toast(T("Partie en ligne chargée.")); render(); return; }
-      var same = JSON.stringify(cd.G && cd.G.lives) === JSON.stringify(G.lives) && ((cd.P && cd.P.age) === (P && P.age));
+      var same = JSON.stringify(cd.G || null) === JSON.stringify(G || null) && JSON.stringify(cd.P || null) === JSON.stringify(P || null);
       if (same) { toast(T("Connecté.")); schedulePush(); render(); return; }
       showModal('<div class="ico">☁️</div><h2>' + T("Quelle partie garder ?") + '</h2><p class="muted">' + T("Une partie existe déjà en ligne et une autre sur cet appareil.") + '</p><div class="card"><b>' + T("En ligne") + "</b><br>" + esc(describeSave(cd)) + (cd.t ? "<br><small>" + new Date(cd.t).toLocaleString() + "</small>" : "") + '</div><div class="card"><b>' + T("Cet appareil") + "</b><br>" + esc(describeSave({ G: G, P: P })) + "</div>" +
         '<button class="btn" data-m="cl">' + T("Garder la partie en ligne") + '</button><button class="btn sec" data-m="lo">' + T("Garder celle de cet appareil") + "</button>",
@@ -1778,7 +1798,10 @@ var EN = {};
     toast(T("Un instant…"));
     ensureToken().then(function (tk) { return apiCall("/functions/v1/pay-create", "POST", { pack: id, back: SHOP_URL_BACK }, tk); }).then(function (r) {
       if (!r || !r.url) throw new Error((r && r.error) || "no url");
-      showModal('<div class="ico">📲</div><h2>' + T("Paiement Mobile Money") + '</h2><p>' + T("Choisissez Moov Money ou T-Money sur la page de paiement, puis revenez ici.") + '</p><a class="btn" data-m="go" style="display:block;text-align:center;text-decoration:none" href="' + esc(r.url) + '" target="_blank" rel="noopener">' + T("Ouvrir la page de paiement") + '</a><button class="btn sec" data-m="chk">' + T("J'ai payé : vérifier") + '</button><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
+      var paymentUrl;
+      try { paymentUrl = new URL(r.url); } catch (e) { throw new Error("Adresse de paiement invalide."); }
+      if (paymentUrl.protocol !== "https:" || !paymentUrl.hostname || paymentUrl.username || paymentUrl.password) throw new Error("Adresse de paiement non sécurisée.");
+      showModal('<div class="ico">📲</div><h2>' + T("Paiement Mobile Money") + '</h2><p>' + T("Choisissez Moov Money ou T-Money sur la page de paiement, puis revenez ici.") + '</p><a class="btn" data-m="go" style="display:block;text-align:center;text-decoration:none" href="' + esc(paymentUrl.href) + '" target="_blank" rel="noopener">' + T("Ouvrir la page de paiement") + '</a><button class="btn sec" data-m="chk">' + T("J'ai payé : vérifier") + '</button><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
         { go: function () {}, chk: function () { shopClaim(false).then(function () { closeModal(); }); }, x: closeModal });
     }).catch(function (e) { toast(shopErr(e)); });
   }
@@ -5061,7 +5084,7 @@ Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.",
     { id: "rang", ico: "🏛️", n: "Bonne famille", d: "Plus de chances de naître dans une famille aisée" },
     { id: "sagesse", ico: "☮️", n: "Sagesse", d: "+2 de bonheur durable par niveau" }
   ];
-  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/\'/g, "&#39;"); }
   function toast(t) { var e = $("toast"); e.textContent = t; e.className = "on"; clearTimeout(toast.t); toast.t = setTimeout(function () { e.className = ""; }, 2200); }
   function bar(v, bad) { var c = (bad ? v > 70 : v < 25) ? " low" : bad ? " bad" : ""; return '<div class="bar' + (bad ? " bad" : "") + c + '"><i style="width:' + clamp(v, 0, 100) + '%"></i></div>'; }
   function chipsHtml(chips) {
@@ -5462,12 +5485,19 @@ Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.",
   // ---------- Mode Dieu ----------
   var GODOPEN = false;
   function showUnlock() {
-    showModal('<div class="ico">⚡</div><h2>' + T("Débloquer le mode Dieu") + '</h2><div class="card"><b>' + T("Option 1 : gratuit") + "</b><br>" + T("Suivez notre compte Instagram, puis revenez ici et validez.") + '<br><a class="btn" data-m="ig" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="' + INSTA_URL + '" target="_blank" rel="noopener">📷 ' + T("Suivre sur Instagram") + '</a><button class="btn sec" data-m="igok">' + T("J'ai suivi le compte") + '</button></div>' +
-      '<div class="card"><b>' + T("Option 2 : don de 1 $") + "</b><br>" + T("Faites un don, vous recevez un code dans le message de remerciement.") + '<a class="btn sec" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">☕ ' + T("Donner 1 $") + '</a><input id="gcode" placeholder="UV-XXXXXX-XXX" autocapitalize="characters" style="width:100%;margin:6px 0"><button class="btn" data-m="ok">' + T("Valider le code") + '</button></div><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
+    showModal('<div class="ico">⚡</div><h2>' + T("Débloquer le mode Dieu") + '</h2><div class="card"><b>' + T("Déblocage gratuit") + "</b><br>" + T("Le suivi Instagram ne peut pas être vérifié automatiquement. Cette option est temporairement désactivée pour éviter les validations fictives.") + '</div>' +
+      '<div class="card"><b>' + T("Code de soutien") + "</b><br>" + T("Après votre don, utilisez le code officiel reçu. Le code est vérifié par le serveur et ne peut être utilisé qu’une seule fois.") + '<a class="btn sec" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">☕ ' + T("Soutenir le jeu") + '</a><input id="gcode" placeholder="UV-XXXXXX-XXX" autocapitalize="characters" style="width:100%;margin:6px 0"><button class="btn" data-m="ok">' + T("Vérifier le code") + '</button></div><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
       {
-        ig: function () { G.igT = Date.now(); },
-        igok: function () { if (!G.igT || Date.now() - G.igT < 8000) { toast(T("Ouvrez Instagram, suivez le compte, puis revenez valider.")); return; } G.premium = true; saveAll(); closeModal(); toast(T("Mode Dieu débloqué ! Merci 💛")); render(); },
-        ok: function () { if (codeValid($("gcode").value)) { G.premium = true; saveAll(); closeModal(); toast(T("Mode Dieu débloqué ! Merci 💛")); render(); } else toast(T("Code invalide.")); }, x: closeModal });
+        ok: function () {
+          var code = $("gcode").value;
+          toast(T("Vérification du code…"));
+          premiumClaim(code).then(function () {
+            G.premium = true; saveAll(); closeModal();
+            toast(T("Mode Dieu débloqué ! Merci 💛")); render();
+          }).catch(function (e) { toast(String(e && e.message || T("Vérification impossible."))); });
+        },
+        x: closeModal
+      });
   }
   function godAction(k, v) {
     if (!G.premium) return;
