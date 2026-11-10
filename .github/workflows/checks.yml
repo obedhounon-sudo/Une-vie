@@ -1,0 +1,53 @@
+name: Vérifications du jeu
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Vérifier le JSON des dépendances
+        run: node -e "const p=require('./package.json'); for (const [n,v] of Object.entries({...p.dependencies,...p.devDependencies})) { if (!/^\\d+\\.\\d+\\.\\d+$/.test(v)) throw new Error(n + ' doit être épinglé'); }"
+      - name: Vérifier la syntaxe JavaScript intégrée
+        run: |
+          python3 - <<'PY'
+          from html.parser import HTMLParser
+          from pathlib import Path
+          class Scripts(HTMLParser):
+              def __init__(self):
+                  super().__init__()
+                  self.capture = False
+                  self.items = []
+                  self.current = []
+              def handle_starttag(self, tag, attrs):
+                  if tag.lower() == "script" and not dict(attrs).get("src"):
+                      self.capture = True
+                      self.current = []
+              def handle_data(self, data):
+                  if self.capture:
+                      self.current.append(data)
+              def handle_endtag(self, tag):
+                  if tag.lower() == "script" and self.capture:
+                      self.items.append("".join(self.current))
+                      self.capture = False
+          parser = Scripts()
+          parser.feed(Path("index.html").read_text(encoding="utf-8"))
+          if not parser.items:
+              raise SystemExit("Aucun script intégré trouvé")
+          for i, source in enumerate(parser.items, 1):
+              Path(f"/tmp/une-vie-{i}.js").write_text(source, encoding="utf-8")
+          print(f"{len(parser.items)} script(s) extrait(s)")
+          PY
+          for file in /tmp/une-vie-*.js; do node --check "$file"; done
