@@ -94,3 +94,23 @@ jobs:
         with:
           name: une-vie-play-store-aab
           path: une-vie-signe.aab
+
+      - name: APK signé (pour Uptodown et autres stores)
+        if: env.HAS_KEY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon
+          echo "$KEYSTORE_BASE64" | base64 -d > ../upload.jks
+          BT=$(ls -d $ANDROID_HOME/build-tools/* | sort -V | tail -1)
+          UNS=$(ls app/build/outputs/apk/release/*.apk | head -1)
+          $BT/zipalign -p -f 4 "$UNS" ../aligned.apk
+          $BT/apksigner sign --ks ../upload.jks --ks-pass pass:"$KEYSTORE_PASSWORD" --ks-key-alias "$KEY_ALIAS" --out ../une-vie-1.0.${{ github.run_number }}.apk ../aligned.apk
+          $BT/apksigner verify ../une-vie-1.0.${{ github.run_number }}.apk
+          rm ../upload.jks
+          cd ..
+          gh release upload "test-${{ github.run_number }}" "une-vie-1.0.${{ github.run_number }}.apk"
