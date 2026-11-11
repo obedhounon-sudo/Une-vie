@@ -606,7 +606,7 @@ var EN = {};
     if (P.debt > 0) P.debt = Math.round(P.debt * 1.08);
     if (P.money < 0) { P.debt += Math.round(-P.money); P.money = 0; }
     if (P.debt > 0 && P.money > 1500) { var pay = Math.min(P.debt, P.money - 1500); P.debt -= pay; P.money -= pay; }
-    marketYear(); aiYear(); shopApplyBank();
+    marketYear();
     if (P.debt > 10000) P.flags.bigDebt = 1;
     P.maxMoney = Math.max(P.maxMoney, wealth());
     return { inc: inc, out: out };
@@ -833,6 +833,7 @@ var EN = {};
     if (P.flags.recentBreakup && P.year - P.flags.recentBreakup > 1) delete P.flags.recentBreakup;
     P.hSum += P.bonheur; P.hN++;
     P.hist.push([P.age, P.bonheur, P.sante, Math.round(wealth() / 1000)]); if (P.hist.length > 130) P.hist.shift();
+    aiYear(); shopApplyBank(); adsYear();
     var newAmb = checkAmbition();
     // 5) mort ?
     if (deathRoll()) return { dead: true, events: [] };
@@ -1754,6 +1755,7 @@ var EN = {};
   function shopApply(list) {
     var pts = 0, cash = 0;
     list.forEach(function (d) { if (d.kind === "pts") pts += d.n; else if (d.kind === "cash") cash += d.n; });
+    G.noAds = true;
     if (pts) G.legacy += pts;
     if (cash) { G.cashBank = (G.cashBank || 0) + cash; shopApplyBank(); }
     saveAll(true); if (cloudOn() && AUTH) cloudPush(false);
@@ -1790,6 +1792,48 @@ var EN = {};
       SHOP.forEach(function (p) { if (p.kind === k) h += '<button class="btn sec" data-a="shop:' + p.id + '"><span>' + p.ico + " " + (k === "pts" ? p.n + " ⭐" : money(p.n)) + '</span><span class="r">' + fcfa(p.price) + "</span></button>"; });
     });
     return h + '<button class="btn sec" data-a="shopchk">' + T("J'ai payé : vérifier mes achats") + "</button></div>";
+  }
+  // =====================================================================
+  //  PUBLICITÉS (Unity Ads, application Android uniquement)
+  //  - une pub toutes les 5 années de vie ; - 6 pubs regardées = mode Dieu débloqué
+  // =====================================================================
+  var ADS = { gameId: "800433452", rewarded: "Rewarded_Android", inter: "Interstitial_Android", test: true, every: 5, need: 6 };
+  var adsPlug = null, adsReady = false, adsBusy = false;
+  function adsPlugin() {
+    if (adsPlug !== null) return adsPlug || null;
+    try { var C = window.Capacitor; adsPlug = (C && C.getPlatform && C.getPlatform() === "android" && C.registerPlugin) ? C.registerPlugin("UnityAds") : false; } catch (e) { adsPlug = false; }
+    return adsPlug || null;
+  }
+  function adsOn() { return !!adsPlugin(); }
+  function adsInit() {
+    var pl = adsPlugin(); if (!pl || adsReady) return Promise.resolve(adsReady);
+    return pl.init({ gameId: ADS.gameId, test: ADS.test }).then(function () { adsReady = true; return true; }).catch(function () { return false; });
+  }
+  function adsShow(placement) {
+    var pl = adsPlugin(); if (!pl || adsBusy) return Promise.resolve({ completed: false, error: "indisponible" });
+    adsBusy = true;
+    return adsInit().then(function (ok) { if (!ok) throw new Error("init"); return pl.showAd({ placement: placement }); })
+      .then(function (r) { adsBusy = false; return r || { completed: false }; })
+      .catch(function (e) { adsBusy = false; return { completed: false, error: String(e && e.message || e) }; });
+  }
+  // une pub tous les N ans de vie (jamais pour qui a acheté dans la boutique)
+  function adsYear() {
+    try {
+      if (!adsOn() || G.noAds || !P || P.dead) return;
+      if (P.adAge === undefined) { P.adAge = P.age; return; }
+      if (P.age - P.adAge >= ADS.every) { P.adAge = P.age; saveAll(true); adsShow(ADS.inter); }
+    } catch (e) {}
+  }
+  // 6 pubs avec récompense = mode Dieu
+  function adsWatchForGod() {
+    if (G.premium) return;
+    adsShow(ADS.rewarded).then(function (r) {
+      if (r.completed) {
+        G.adsSeen = (G.adsSeen || 0) + 1;
+        if (G.adsSeen >= ADS.need) { G.premium = true; saveAll(); closeModal(); toast(T("Mode Dieu débloqué ! Merci 💛")); render(); return; }
+        saveAll(); toast(TF("Pub {0}/{1} regardée.", G.adsSeen, ADS.need)); showUnlock();
+      } else toast(T("Pub non terminée ou indisponible. Réessayez.") + (r.error ? " (" + r.error.slice(0, 80) + ")" : ""));
+    });
   }
   // ===== Lot ecole : enfance, scolarité, études, entrée dans la vie active =====
   function ec_isStudent(P) { return !!P.school; }
@@ -8931,6 +8975,8 @@ Object.assign(EN, {
 });
 Object.assign(EN, {"Option 1 : gratuit":"Option 1: free","Suivez notre compte Instagram, puis revenez ici et validez.":"Follow our Instagram account, then come back here and confirm.","Suivre sur Instagram":"Follow on Instagram","J'ai suivi le compte":"I followed the account","Option 2 : don de 1 $":"Option 2: $1 donation","Faites un don, vous recevez un code dans le message de remerciement.":"Make a donation and you'll get a code in the thank-you message.","Ouvrez Instagram, suivez le compte, puis revenez valider.":"Open Instagram, follow the account, then come back to confirm.","Modifiez librement vos jauges, votre argent et vos traits. Le mode Dieu se débloque en suivant notre Instagram, ou avec un don de 1 $.":"Freely edit your stats, money and traits. God Mode unlocks by following our Instagram, or with a $1 donation."});
 Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.","Merci ! Achat reçu":"Thank you! Purchase received","Paiement pas encore confirmé. Réessayez dans un instant.":"Payment not confirmed yet. Try again in a moment.","Aucun achat en attente.":"No pending purchase.","La boutique n'est pas encore disponible.":"The shop isn't available yet.","Connectez-vous pour acheter.":"Sign in to buy.","Paiement Mobile Money":"Mobile Money payment","Choisissez Moov Money ou T-Money sur la page de paiement, puis revenez ici.":"Choose Moov Money or T-Money on the payment page, then come back here.","Ouvrir la page de paiement":"Open payment page","J'ai payé : vérifier":"I paid: check","Boutique":"Shop","Paiement par Moov Money ou T-Money. Compte en ligne requis.":"Pay with Moov Money or T-Money. Online account required.","Points d'héritage":"Legacy points","J'ai payé : vérifier mes achats":"I paid: check my purchases"});
+Object.assign(EN, {"Option 3 : gratuit, avec des pubs":"Option 3: free, with ads","Regardez {0} pubs jusqu'au bout ({1}/{0}).":"Watch {0} ads to the end ({1}/{0}).","Regarder une pub":"Watch an ad","Pub {0}/{1} regardée.":"Ad {0}/{1} watched.","Pub non terminée ou indisponible. Réessayez.":"Ad not finished or unavailable. Try again."});
+Object.assign(EN, {"Option 3 : gratuit, avec des pubs":"Option 3: free, with ads","Regardez {0} pubs jusqu'au bout ({1}/{0}).":"Watch {0} ads to the end ({1}/{0}).","Regarder une pub":"Watch an ad","Pub {0}/{1} regardée.":"Ad {0}/{1} watched.","Pub non terminée ou indisponible. Réessayez.":"Ad not finished or unavailable. Try again."});
   // =====================================================================
   //  INTERFACE
   // =====================================================================
@@ -9347,8 +9393,9 @@ Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.",
   var GODOPEN = false;
   function showUnlock() {
     showModal('<div class="ico">⚡</div><h2>' + T("Débloquer le mode Dieu") + '</h2><div class="card"><b>' + T("Option 1 : gratuit") + "</b><br>" + T("Suivez notre compte Instagram, puis revenez ici et validez.") + '<br><a class="btn" data-m="ig" style="display:block;text-align:center;text-decoration:none;margin-top:8px" href="' + INSTA_URL + '" target="_blank" rel="noopener">📷 ' + T("Suivre sur Instagram") + '</a><button class="btn sec" data-m="igok">' + T("J'ai suivi le compte") + '</button></div>' +
-      '<div class="card"><b>' + T("Option 2 : don de 1 $") + "</b><br>" + T("Faites un don, vous recevez un code dans le message de remerciement.") + '<a class="btn sec" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">☕ ' + T("Donner 1 $") + '</a><input id="gcode" placeholder="UV-XXXXXX-XXX" autocapitalize="characters" style="width:100%;margin:6px 0"><button class="btn" data-m="ok">' + T("Valider le code") + '</button></div><button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
+      '<div class="card"><b>' + T("Option 2 : don de 1 $") + "</b><br>" + T("Faites un don, vous recevez un code dans le message de remerciement.") + '<a class="btn sec" style="display:block;text-align:center;text-decoration:none;margin:8px 0" href="' + SUPPORT_URL + '" target="_blank" rel="noopener">☕ ' + T("Donner 1 $") + '</a><input id="gcode" placeholder="UV-XXXXXX-XXX" autocapitalize="characters" style="width:100%;margin:6px 0"><button class="btn" data-m="ok">' + T("Valider le code") + '</button></div>' + (adsOn() ? '<div class="card"><b>' + T("Option 3 : gratuit, avec des pubs") + "</b><br>" + TF("Regardez {0} pubs jusqu'au bout ({1}/{0}).", ADS.need, G.adsSeen || 0) + '<button class="btn" data-m="ads" style="margin-top:8px">▶️ ' + T("Regarder une pub") + "</button></div>" : "") + '<button class="btn sec" data-m="x">' + T("Fermer") + "</button>",
       {
+        ads: adsWatchForGod,
         ig: function () { G.igT = Date.now(); },
         igok: function () { if (!G.igT || Date.now() - G.igT < 8000) { toast(T("Ouvrez Instagram, suivez le compte, puis revenez valider.")); return; } G.premium = true; saveAll(); closeModal(); toast(T("Mode Dieu débloqué ! Merci 💛")); render(); },
         ok: function () { if (codeValid($("gcode").value)) { G.premium = true; saveAll(); closeModal(); toast(T("Mode Dieu débloqué ! Merci 💛")); render(); } else toast(T("Code invalide.")); }, x: closeModal });
@@ -9412,6 +9459,7 @@ Object.assign(EN, {"Achat boutique : {0} ajoutés.":"Shop purchase: {0} added.",
   setLang(pickLang(G.settings.lang));
   document.addEventListener("visibilitychange", function () { if (!document.hidden && typeof AUTH !== "undefined" && AUTH) shopClaim(true); });
   if (typeof AUTH !== "undefined" && AUTH) setTimeout(function () { shopClaim(true); }, 2500);
+  if (typeof adsOn === "function" && adsOn()) setTimeout(adsInit, 3000);
   window.addEventListener("pagehide", function () { saveAll(true); if (typeof AUTH !== "undefined" && AUTH) cloudPush(true); });
   document.addEventListener("visibilitychange", function () { if (document.hidden) { saveAll(true); if (AUTH) cloudPush(true); } });
   render();

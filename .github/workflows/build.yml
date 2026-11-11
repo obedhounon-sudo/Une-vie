@@ -35,6 +35,21 @@ jobs:
           npx capacitor-assets generate --android
           npx cap sync android
 
+      - name: Pubs Unity Ads (module Android)
+        run: |
+          D=android/app/src/main/java/com/uneviejeu/simulation
+          ls $D
+          cp android-plugin/UnityAdsPlugin.java android-plugin/MainActivity.java $D/
+          python3 - <<'PY'
+          p='android/app/build.gradle'; s=open(p).read()
+          dep="    implementation 'com.unity3d.ads:unity-ads:4.+'\n"
+          if 'unity-ads' not in s:
+              i=s.index('dependencies {', s.index('android {'))+len('dependencies {')
+              s=s[:i]+'\n'+dep+s[i:]
+          open(p,'w').write(s)
+          PY
+          grep -n "unity-ads" android/app/build.gradle
+
       - name: Numéro de version
         run: |
           F=android/app/build.gradle
