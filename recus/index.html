@@ -350,7 +350,7 @@ function viewJournal(){
 function viewSettings(){
   var sc=db.school,trs=sc.tranches.slice();while(trs.length<4)trs.push({label:"",date:"",pct:""});
   var h='<div class="stack"><h2>Réglages</h2>';
-  h+='<form class="card stack" data-form="school"><h3>Établissement (affiché sur les reçus)</h3><div class="form"><label>Nom<input id="sn" name="name" value="'+esc(sc.name)+'" placeholder="Nom de l\'établissement" maxlength="80"></label><label>Année scolaire<input id="sy" name="year" value="'+esc(sc.year)+'" maxlength="20"></label><label>Ville<input id="sv" name="city" value="'+esc(sc.city)+'" maxlength="40"></label><label>Téléphone<input id="st" name="phone" value="'+esc(sc.phone)+'" maxlength="30"></label></div><label>Format du reçu<select id="sf" name="format"><option value="a5"'+(sc.format==="a5"?" selected":"")+'>A5 (demi-page)</option><option value="a4"'+(sc.format==="a4"?" selected":"")+'>A4 (page entière)</option><option value="ticket"'+(sc.format==="ticket"?" selected":"")+'>Ticket 58 mm (imprimante thermique)</option></select></label><button class="btn primary" type="submit">Enregistrer</button></form>';
+  h+='<form class="card stack" data-form="school"><h3>Établissement (affiché sur les reçus)</h3><div class="form"><label>Nom<input id="sn" name="name" value="'+esc(sc.name)+'" placeholder="Nom de l\'établissement" maxlength="80"></label><label>Année scolaire<input id="sy" name="year" value="'+esc(sc.year)+'" maxlength="20"></label><label>Ville<input id="sv" name="city" value="'+esc(sc.city)+'" maxlength="40"></label><label>Téléphone<input id="st" name="phone" value="'+esc(sc.phone)+'" maxlength="30"></label></div><label>Format du reçu<select id="sf" name="format"><option value="a5"'+(sc.format==="a5"?" selected":"")+'>A5 (demi-page)</option><option value="a4"'+(sc.format==="a4"?" selected":"")+'>A4 (page entière)</option><option value="ticket"'+(sc.format==="ticket"?" selected":"")+'>Ticket 58 mm (imprimante thermique)</option></select></label><label style="flex-direction:row;align-items:center;gap:10px"><input id="shc" name="hideCredit" type="checkbox" style="width:auto;min-height:0"'+(sc.hideCredit?" checked":"")+'> Masquer la signature @obedklein sur les reçus et les PDF</label><button class="btn primary" type="submit">Enregistrer</button></form>';
   h+='<form class="card stack" data-form="tranches"><h3>Tranches de paiement</h3><p class="muted small" style="margin:0">Partage de la scolarité en versements. Après la date limite, un élève qui n\'a pas payé le cumul est signalé en retard. Le total doit faire 100 %.</p>'+
     trs.map(function(t,i){return '<div class="form"><label>Nom<input id="tl'+i+'" name="tl'+i+'" value="'+esc(t.label)+'" maxlength="30"></label><label>Date limite<input id="td'+i+'" name="td'+i+'" type="date" value="'+esc(t.date)+'"></label><label>Part (%)<input id="tp'+i+'" name="tp'+i+'" type="number" min="0" max="100" inputmode="numeric" value="'+esc(t.pct)+'"></label></div>'}).join("")+'<button class="btn primary" type="submit">Enregistrer les tranches</button></form>';
   h+='<div class="card stack"><h3>Logo de l\'école</h3>'+(sc.logo?'<img class="logoprev" src="'+sc.logo+'" alt="Logo actuel">':'<p class="muted small" style="margin:0">Aucun logo. Il apparaîtra en haut de chaque reçu.</p>')+'<label>Choisir une image (PNG ou JPG)<input id="logo" type="file" accept="image/*"></label>'+(sc.logo?'<button class="btn danger sm" data-act="logo-del">Retirer le logo</button>':'')+'</div>';
@@ -398,7 +398,7 @@ function showReceipt(id){
   '<div class="amount"><span>Montant versé</span><b>'+money(p.amount)+'</b></div><div class="words">Arrêté à la somme de : '+esc(amountWords(p.amount))+'.</div>'+
   '<dl><dt>Total payé à ce jour</dt><dd class="num">'+money(p.after)+'</dd><dt>Scolarité</dt><dd class="num">'+money(r.s.fee)+'</dd><dt>Reste à payer</dt><dd class="num">'+money(p.rest)+'</dd></dl>'+
   '<div class="foot"><div class="qr">'+QR.svg(qrText(p),104)+'</div><div class="ctl"><span>Code de contrôle</span><b>'+esc(p.code)+'</b><span>Scanne le QR code pour lire les détails du reçu.</span></div></div>'+
-  '<div class="sign"><div>Le parent</div><div>La caisse</div></div><div class="credit">Reçus Scolaires · @obedklein</div></div>'+
+  '<div class="sign"><div>Le parent</div><div>La caisse</div></div>'+(db.school.hideCredit?'':'<div class="credit">Reçus Scolaires · @obedklein</div>')+'</div>'+
   '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="pdf" data-id="'+p.id+'">PDF</button><button class="btn grow" data-act="wa" data-id="'+p.id+'">WhatsApp</button><button class="btn grow" data-act="copy-receipt" data-id="'+p.id+'">Copier</button></div>'+
   (adm&&!p.void&&ui.voidFor===p.id?'<form class="card stack noprint" data-form="void" data-id="'+p.id+'"><label>Motif de l\'annulation<input id="vr" name="reason" required maxlength="80" placeholder="Ex : erreur de montant"></label><div class="row"><button class="btn danger" type="submit">Confirmer l\'annulation</button><button class="btn" type="button" data-act="void-off" data-id="'+p.id+'">Retour</button></div></form>':'')+
   '<div class="row noprint"><button class="btn grow" data-act="close">Fermer</button>'+(adm&&!p.void&&ui.voidFor!==p.id?'<button class="btn danger" data-act="void-on" data-id="'+p.id+'">Annuler ce reçu</button>':'')+'</div></div></div>';
@@ -421,7 +421,7 @@ function showReport(from,to){
   '<div class="amount"><span>Total encaissé</span><b>'+money(activeTotal(ok))+'</b></div>'+
   '<h3>Par classe</h3>'+tbl(byC)+'<h3>Par mode de paiement</h3>'+tbl(byM)+
   '<h3>Détail</h3>'+(ok.length?'<table>'+ok.sort(function(a,b){return a.no<b.no?-1:1}).map(function(p){var s=stu(p.studentId);return '<tr><td class="num">'+esc(p.no)+'</td><td>'+esc(s?s.name:"")+'</td><td class="num r">'+money(p.amount)+'</td></tr>'}).join("")+'</table>':'<div class="muted small">Aucun paiement.</div>')+
-  '<div class="sign"><div>Le caissier</div><div>La direction</div></div><div class="credit">Reçus Scolaires · @obedklein</div></div>'+
+  '<div class="sign"><div>Le caissier</div><div>La direction</div></div>'+(db.school.hideCredit?'':'<div class="credit">Reçus Scolaires · @obedklein</div>')+'</div>'+
   '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="close">Fermer</button></div></div></div>';
 }
 
@@ -459,7 +459,7 @@ async function makePDF(p){
   Tx("F1",fs-1,kx,ky,"Code de contrôle");Tx("F3",fs+3,kx,ky-fs-6,p.code);
   y=Math.min(qy,ky-fs-8)-22;
   Ln(m,y,m+iw*0.42,y,.6);Ln(W-m-iw*0.42,y,W-m,y,.6);Tx("F1",fs-1.5,m+4,y-fs-2,"Le parent");Tx("F1",fs-1.5,W-m-iw*0.42+4,y-fs-2,"La caisse");
-  Tx("F1",fs-2,m,Math.max(14,m-6),"Reçus Scolaires - @obedklein");
+  if(!sc.hideCredit)Tx("F1",fs-2,m,Math.max(14,m-6),"Reçus Scolaires - @obedklein");
   if(p.void){ops.push("q 0.7 0.7 -0.7 0.7 "+(W*0.2).toFixed(0)+" "+(H*0.35).toFixed(0)+" cm BT /F2 "+(W*0.16).toFixed(0)+" Tf 0.85 0.2 0.2 rg 0 0 Td (ANNULE) Tj ET Q")}
   var parts=[],off=0,xr=[];
   function add(u){parts.push(u);off+=u.length}
@@ -589,7 +589,7 @@ document.addEventListener("submit",function(e){
   else if(k==="edit-student"){var s=stu(ui.studentId);s.name=v("name").trim();var nfee=Math.max(0,+v("fee")||0);
     if(adm){var nc=v("classId");if(nc&&nc!==s.classId){var oc=cls(s.classId),ncl=cls(nc);if(ncl){if(oc&&s.fee===oc.fee&&nfee===s.fee)nfee=ncl.fee;s.classId=nc;ui.classId=nc}}s.fee=nfee}
     s.phone=v("phone").trim();if(adm){var pr=f.elements.prorata?+f.elements.prorata.value:0;if(pr>0&&pr<=100)s.fee=Math.round(cls(s.classId).fee*pr/100)}save();render();toast("Élève enregistré")}
-  else if(k==="school"){db.school.name=v("name").trim();db.school.year=v("year").trim();db.school.city=v("city").trim();db.school.phone=v("phone").trim();db.school.format=v("format");save();render();toast("Établissement enregistré")}
+  else if(k==="school"){db.school.name=v("name").trim();db.school.year=v("year").trim();db.school.city=v("city").trim();db.school.phone=v("phone").trim();db.school.format=v("format");db.school.hideCredit=f.elements.hideCredit.checked;save();render();toast("Établissement enregistré")}
   else if(k==="tranches"){var tr=[],tot=0;for(var i=0;i<4;i++){var lb=v("tl"+i).trim();if(!lb)continue;var pc=Math.max(0,+v("tp"+i)||0);tr.push({label:lb,date:v("td"+i),pct:pc});tot+=pc}
     if(!tr.length){toast("Ajoute au moins une tranche");return}
     db.school.tranches=tr;save();render();toast(tot===100?"Tranches enregistrées":"Enregistré, mais le total fait "+tot+" % au lieu de 100 %")}
