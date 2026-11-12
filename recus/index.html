@@ -1,0 +1,615 @@
+<title>Reçus Scolaires</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Concept: un registre de caisse d'école. Papier froid, encre bleu nuit, reçu imprimable en papier blanc. */
+:root{
+  --bg:#edf0f3; --surface:#ffffff; --ink:#14202b; --muted:#5b6977; --line:#d6dce2;
+  --accent:#0f5c7a; --accent-ink:#ffffff; --soft:#e3eef3;
+  --late-bg:#fbe3e1;--ok:#1b7a4a; --ok-bg:#e0f2e8; --warn:#a8531a; --warn-bg:#fbebdd; --bad:#b3261e;
+  --paper:#ffffff; --paper-ink:#14202b; --paper-line:#c9d0d7;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f161d; --surface:#18222c; --ink:#e8eef3; --muted:#93a1ae; --line:#2b3947;
+  --accent:#5bb4d6; --accent-ink:#06222e; --soft:#1d2e3a;
+  --ok:#5fcf93; --ok-bg:#16301f; --warn:#f0a56a; --warn-bg:#3a2515; --bad:#ff8a80; --late-bg:#3d1c19; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f161d; --surface:#18222c; --ink:#e8eef3; --muted:#93a1ae; --line:#2b3947;
+  --accent:#5bb4d6; --accent-ink:#06222e; --soft:#1d2e3a;
+  --ok:#5fcf93; --ok-bg:#16301f; --warn:#f0a56a; --warn-bg:#3a2515; --bad:#ff8a80; --late-bg:#3d1c19; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.45;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app{max-width:760px;margin:0 auto;padding-block:16px 64px}
+h1,h2,h3{font-family:var(--f-display);margin:0;line-height:1.15;text-wrap:balance}
+h2{font-size:1.35rem} h3{font-size:1.05rem}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:12px}
+.brand{min-width:0}
+.brand small{display:block;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+.brand h1{font-size:1.3rem;overflow-wrap:anywhere}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:4px;margin-bottom:16px;overflow-x:auto}
+.tabs button{flex:1;white-space:nowrap;border:0;background:none;padding:9px 12px;border-radius:7px;cursor:pointer;color:var(--muted);font-weight:600}
+.tabs button[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.stack{display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.grow{flex:1;min-width:0}
+.muted{color:var(--muted)} .small{font-size:.88rem}
+.btn{border:1px solid var(--line);background:var(--surface);padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:600;min-height:44px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:6px 10px;min-height:36px;font-size:.9rem}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.item:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+label{display:flex;flex-direction:column;gap:4px;font-weight:600;font-size:.9rem}
+input,select,textarea{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:44px}
+textarea{min-height:110px;resize:vertical}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat b{display:block;font-family:var(--f-mono);font-size:1.15rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat span{color:var(--muted);font-size:.82rem;text-transform:uppercase;letter-spacing:.06em}
+.logoprev{max-height:72px;max-width:120px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:4px}
+.bar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--surface);overflow:hidden}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-top:0;text-align:left;width:100%}
+.item:last-child{border-bottom:0}
+.item:hover{background:var(--soft)}
+.item .name{font-weight:600;overflow-wrap:anywhere}
+.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.none{background:var(--soft);color:var(--muted)}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:10px;padding:12px 14px;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:16px;font-weight:600}
+.back{background:none;border:0;color:var(--accent);font-weight:700;cursor:pointer;padding:6px 0;min-height:40px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:99px;font-weight:600;z-index:60;max-width:90vw}
+.modal-bg{position:fixed;inset:0;background:rgba(10,18,25,.6);z-index:50;overflow-y:auto;padding:16px max(16px,env(safe-area-inset-left,0px)) calc(16px + env(safe-area-inset-bottom,0px));padding-top:calc(16px + env(safe-area-inset-top,0px))}
+.modal{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.receipt{background:var(--paper);color:var(--paper-ink);border-radius:6px;padding:22px 20px;font-size:.95rem;border:1px solid var(--paper-line)}
+.receipt .head{display:flex;align-items:center;justify-content:center;gap:12px;text-align:center;border-bottom:2px solid var(--paper-ink);padding-bottom:10px;margin-bottom:12px}
+.receipt .head .hd{min-width:0}
+.receipt .head .logo{max-height:64px;max-width:84px;object-fit:contain}
+.receipt .head h2{font-size:1.25rem;overflow-wrap:anywhere}
+.receipt .head div{font-size:.85rem}
+.receipt .title{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline;margin-bottom:12px}
+.receipt .title b{font-family:var(--f-display);font-size:1.15rem;letter-spacing:.06em}
+.receipt .title span{font-family:var(--f-mono);font-size:.85rem}
+.receipt dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 14px}
+.receipt dt{color:#55626f} .receipt dd{margin:0;text-align:right;font-weight:600;overflow-wrap:anywhere}
+.receipt .amount{margin:14px 0;border:2px solid var(--paper-ink);border-radius:6px;padding:10px 12px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.receipt .amount b{font-family:var(--f-mono);font-size:1.35rem}
+.receipt .words{font-size:.85rem;font-style:italic;margin-bottom:12px}
+.receipt .foot{display:flex;gap:14px;align-items:center;margin-top:16px}
+.receipt .qr{flex:none;line-height:0;border:1px solid var(--paper-line);border-radius:4px}
+.receipt .ctl{display:flex;flex-direction:column;gap:2px;font-size:.8rem;color:#55626f}
+.receipt .ctl b{font-family:var(--f-mono);font-size:1.1rem;color:var(--paper-ink);letter-spacing:.12em}
+.receipt .sign{display:flex;justify-content:space-between;gap:20px;margin-top:18px;font-size:.82rem;color:#55626f}
+.receipt .sign div{flex:1;border-top:1px solid var(--paper-line);padding-top:4px;text-align:center}
+@media print{
+  body.rc .app,body.rc .toast,.noprint{display:none!important}
+  body.rc{background:#fff;padding:0}
+  body.rc .modal-bg{position:static;background:none;padding:0;overflow:visible}
+  body.rc .receipt{border:1px solid #999}
+}
+@media (prefers-reduced-motion:no-preference){.toast{animation:up .18s ease-out}@keyframes up{from{opacity:0;transform:translate(-50%,8px)}}}
+.pill.late{background:var(--late-bg);color:var(--bad)}
+.lock{max-width:380px;margin:12vh auto 0}
+.lock h1{font-size:1.4rem}
+.receipt.fmt-a4{max-width:none}
+.receipt.fmt-ticket{max-width:290px;margin:0 auto;padding:12px;font-size:.78rem}
+.receipt.fmt-ticket .head .logo{max-height:36px;max-width:56px}
+.receipt.fmt-ticket .head h2{font-size:1rem}
+.receipt.fmt-ticket .amount b{font-size:1rem}
+.receipt.fmt-ticket .foot{flex-direction:column;text-align:center}
+.receipt.void{position:relative;overflow:hidden}
+.receipt.void::after{content:"ANNULÉ";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 3.6rem var(--f-display);color:rgba(179,38,30,.26);transform:rotate(-18deg);pointer-events:none}
+.voidbar{background:#fbe3e1;color:#b3261e;font-weight:700;font-size:.85rem;padding:8px 10px;border-radius:4px;margin-bottom:12px}
+.receipt.report h3{margin:14px 0 6px;font-size:1rem}
+.receipt.report table{width:100%;border-collapse:collapse;font-size:.88rem}
+.receipt.report td{padding:5px 4px;border-bottom:1px solid var(--paper-line);overflow-wrap:anywhere}
+.receipt.report td.r{text-align:right}
+</style>
+
+<div class="app" id="app"></div>
+<div id="layer"></div>
+
+<script>
+/* Générateur de QR code (octets, niveaux L/M, versions 1 à 10). */
+var QR=(function(){
+var ECC={L:{fmt:1,per:[7,10,15,20,26,18,20,24,30,18],blk:[1,1,1,1,1,2,2,2,2,4]},M:{fmt:0,per:[10,16,26,18,24,16,18,22,22,26],blk:[1,1,1,2,2,4,4,4,5,5]}};
+function raw(v){var r=(16*v+128)*v+64;if(v>=2){var n=Math.floor(v/7)+2;r-=(25*n-10)*n-55;if(v>=7)r-=36}return r}
+function mul(x,y){var z=0;for(var i=7;i>=0;i--){z=(z<<1)^((z>>7)*0x11D);z^=((y>>i)&1)*x}return z}
+function divisor(d){var r=[];for(var i=0;i<d;i++)r.push(0);r[d-1]=1;var root=1;for(i=0;i<d;i++){for(var j=0;j<d;j++){r[j]=mul(r[j],root);if(j+1<d)r[j]^=r[j+1]}root=mul(root,2)}return r}
+function remainder(data,div){var r=div.map(function(){return 0});data.forEach(function(b){var f=b^r.shift();r.push(0);div.forEach(function(c,i){r[i]^=mul(c,f)})});return r}
+function utf8(s){var o=[],e=unescape(encodeURIComponent(s));for(var i=0;i<e.length;i++)o.push(e.charCodeAt(i));return o}
+function bit(x,i){return((x>>>i)&1)!==0}
+function make(text){
+  var bytes=utf8(text),lv=null,ver=0,e;
+  outer:for(var L=["M","L"],k=0;k<2;k++){e=ECC[L[k]];for(var v=1;v<=10;v++){var cap=Math.floor(raw(v)/8)-e.per[v-1]*e.blk[v-1];if(4+(v<10?8:16)+bytes.length*8<=cap*8){lv=L[k];ver=v;break outer}}}
+  if(!ver)throw new Error("Texte trop long pour le QR");
+  e=ECC[lv];var size=ver*4+17,nb=e.blk[ver-1],eccLen=e.per[ver-1],rawCw=Math.floor(raw(ver)/8),dataCw=rawCw-eccLen*nb;
+  var bits=[];function put(v,n){for(var i=n-1;i>=0;i--)bits.push((v>>>i)&1)}
+  put(4,4);put(bytes.length,ver<10?8:16);bytes.forEach(function(b){put(b,8)});
+  var capBits=dataCw*8;put(0,Math.min(4,capBits-bits.length));while(bits.length%8)bits.push(0);
+  for(var pad=0xEC;bits.length<capBits;pad^=0xEC^0x11)put(pad,8);
+  var data=[];for(var i=0;i<bits.length;i+=8){var b=0;for(var j=0;j<8;j++)b=(b<<1)|bits[i+j];data.push(b)}
+  var shortLen=Math.floor(rawCw/nb),nShort=nb-rawCw%nb,div=divisor(eccLen),blocks=[],off=0;
+  for(i=0;i<nb;i++){var dl=shortLen-eccLen+(i<nShort?0:1),d=data.slice(off,off+dl);off+=dl;var ecc=remainder(d,div);if(i<nShort)d.push(0);blocks.push(d.concat(ecc))}
+  var all=[];for(i=0;i<blocks[0].length;i++)blocks.forEach(function(bl,j){if(i!==shortLen-eccLen||j>=nShort)all.push(bl[i])});
+  var M=[],F=[];for(i=0;i<size;i++){M.push(new Array(size).fill(false));F.push(new Array(size).fill(false))}
+  function setF(x,y,c){M[y][x]=c;F[y][x]=true}
+  for(i=0;i<size;i++){setF(6,i,i%2===0);setF(i,6,i%2===0)}
+  function finder(x,y){for(var dy=-4;dy<=4;dy++)for(var dx=-4;dx<=4;dx++){var dist=Math.max(Math.abs(dx),Math.abs(dy)),xx=x+dx,yy=y+dy;if(xx>=0&&xx<size&&yy>=0&&yy<size)setF(xx,yy,dist!==2&&dist!==4)}}
+  finder(3,3);finder(size-4,3);finder(3,size-4);
+  var pos=[];if(ver>1){var na=Math.floor(ver/7)+2,step=Math.ceil((ver*4+4)/(na*2-2))*2;pos=[6];for(var p=size-7;pos.length<na;p-=step)pos.splice(1,0,p)}
+  pos.forEach(function(a,ia){pos.forEach(function(b,ib){if((ia===0&&ib===0)||(ia===0&&ib===pos.length-1)||(ia===pos.length-1&&ib===0))return;for(var dy=-2;dy<=2;dy++)for(var dx=-2;dx<=2;dx++)setF(a+dx,b+dy,Math.max(Math.abs(dx),Math.abs(dy))!==1)})});
+  function fmt(mask){var d=(e.fmt<<3)|mask,r=d;for(var i=0;i<10;i++)r=(r<<1)^((r>>>9)*0x537);var bs=((d<<10)|r)^0x5412;
+    for(i=0;i<=5;i++)setF(8,i,bit(bs,i));setF(8,7,bit(bs,6));setF(8,8,bit(bs,7));setF(7,8,bit(bs,8));for(i=9;i<15;i++)setF(14-i,8,bit(bs,i));
+    for(i=0;i<8;i++)setF(size-1-i,8,bit(bs,i));for(i=8;i<15;i++)setF(8,size-15+i,bit(bs,i));setF(8,size-8,true)}
+  fmt(0);
+  if(ver>=7){var r=ver;for(i=0;i<12;i++)r=(r<<1)^((r>>>11)*0x1F25);var vb=(ver<<12)|r;for(i=0;i<18;i++){var c=bit(vb,i),a=size-11+i%3,b2=Math.floor(i/3);setF(a,b2,c);setF(b2,a,c)}}
+  var n=0;for(var right=size-1;right>=1;right-=2){if(right===6)right=5;for(var vert=0;vert<size;vert++)for(j=0;j<2;j++){var x=right-j,up=((right+1)&2)===0,y=up?size-1-vert:vert;if(!F[y][x]&&n<all.length*8){M[y][x]=bit(all[n>>>3],7-(n&7));n++}}}
+  function mask(m){for(var y=0;y<size;y++)for(var x=0;x<size;x++){var inv;switch(m){case 0:inv=(x+y)%2===0;break;case 1:inv=y%2===0;break;case 2:inv=x%3===0;break;case 3:inv=(x+y)%3===0;break;case 4:inv=(Math.floor(x/3)+Math.floor(y/2))%2===0;break;case 5:inv=x*y%2+x*y%3===0;break;case 6:inv=(x*y%2+x*y%3)%2===0;break;default:inv=((x+y)%2+x*y%3)%2===0}if(!F[y][x]&&inv)M[y][x]=!M[y][x]}}
+  function penalty(){var s=0,y,x,run,dark=0;
+    for(y=0;y<size;y++){run=1;for(x=1;x<size;x++){if(M[y][x]===M[y][x-1]){run++;if(run===5)s+=3;else if(run>5)s++}else run=1}}
+    for(x=0;x<size;x++){run=1;for(y=1;y<size;y++){if(M[y][x]===M[y-1][x]){run++;if(run===5)s+=3;else if(run>5)s++}else run=1}}
+    for(y=0;y<size-1;y++)for(x=0;x<size-1;x++){var c=M[y][x];if(c===M[y][x+1]&&c===M[y+1][x]&&c===M[y+1][x+1])s+=3}
+    for(y=0;y<size;y++)for(x=0;x<size;x++)if(M[y][x])dark++;
+    return s+(Math.ceil(Math.abs(dark*20-size*size*10)/(size*size))-1)*10}
+  var best=0,bp=1e9;for(var m=0;m<8;m++){mask(m);fmt(m);var pe=penalty();if(pe<bp){bp=pe;best=m}mask(m)}
+  mask(best);fmt(best);
+  return {size:size,modules:M};
+}
+function svg(text,px){var q=make(text),s=q.size,z=4,t=s+z*2,d="";
+  for(var y=0;y<s;y++)for(var x=0;x<s;x++)if(q.modules[y][x])d+="M"+(x+z)+","+(y+z)+"h1v1h-1z";
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+t+' '+t+'" width="'+(px||120)+'" height="'+(px||120)+'" shape-rendering="crispEdges" role="img" aria-label="QR code du reçu"><rect width="'+t+'" height="'+t+'" fill="#ffffff"/><path d="'+d+'" fill="#000000"/></svg>'}
+return {make:make,svg:svg};
+})();
+
+(function(){
+"use strict";
+var KEY="recus_scolaires_v1",FREE=300,LSALT="RS-2026-k9";
+var $=function(s,r){return (r||document).querySelector(s)};
+function uid(){return Math.random().toString(36).slice(2,9)}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fmtDate(iso){if(!iso)return"";var p=iso.split("-");return p[2]+"/"+p[1]+"/"+p[0]}
+function money(n){return Math.round(n||0).toLocaleString("fr-FR").replace(/[  ]/g," ")+" F"}
+function fnv(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
+
+/* ---------- Montant en lettres ---------- */
+var U=["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze","douze","treize","quatorze","quinze","seize"];
+var T=["","","vingt","trente","quarante","cinquante","soixante"];
+function b100(n,fin){
+  if(n<17)return U[n];
+  if(n<20)return "dix-"+U[n-10];
+  if(n<70){var t=T[Math.floor(n/10)],u=n%10;return u===0?t:(u===1?t+" et un":t+"-"+U[u])}
+  if(n<80){return n===71?"soixante et onze":"soixante-"+b100(n-60,false)}
+  if(n===80)return fin?"quatre-vingts":"quatre-vingt";
+  return "quatre-vingt-"+b100(n-80,false);
+}
+function b1000(n,fin){
+  var h=Math.floor(n/100),r=n%100;
+  if(h===0)return b100(r,fin);
+  var s=h===1?"cent":U[h]+" cent";
+  if(r===0)return h===1?s:(fin?s+"s":s);
+  return s+" "+b100(r,fin);
+}
+function words(n){
+  n=Math.round(n);if(n===0)return "zéro";
+  var out=[],m=Math.floor(n/1e6),t=Math.floor((n%1e6)/1000),r=n%1000;
+  if(m)out.push(m===1?"un million":b1000(m,false)+" millions");
+  if(t)out.push(t===1?"mille":b1000(t,false)+" mille");
+  if(r)out.push(b1000(r,true));
+  return out.join(" ");
+}
+function amountWords(n){var w=words(n);return w.charAt(0).toUpperCase()+w.slice(1)+(n>=1e6&&Math.round(n)%1e6===0?" de francs CFA":" francs CFA")}
+
+/* ---------- Données ---------- */
+var db=null,mem=null,ui={view:"home",tab:"home",classId:null,studentId:null,q:"",confirm:null,role:null,voidFor:null,forgot:false,rec:null,focusQ:false};
+function defTr(){return [{label:"1ère tranche",date:"2026-10-15",pct:40},{label:"2e tranche",date:"2027-01-15",pct:30},{label:"3e tranche",date:"2027-04-15",pct:30}]}
+function blank(){return {school:{name:"",year:"2026-2027",city:"",phone:"",logo:"",format:"a5",tranches:defTr()},classes:[],students:[],payments:[],seq:0,demo:false,salt:uid()+uid(),pins:{admin:"",caisse:"",rec:""},license:"",lastBackup:""}}
+function load(){
+  try{var raw=localStorage.getItem(KEY);if(raw){db=JSON.parse(raw);return}}catch(e){}
+  if(mem){db=JSON.parse(mem);return}
+  db=sample();
+}
+function save(){var s=JSON.stringify(db);mem=s;try{localStorage.setItem(KEY,s)}catch(e){}}
+function migrate(){
+  var b=blank();
+  if(!db.salt)db.salt=b.salt;
+  if(!db.pins)db.pins=b.pins;
+  if(db.license==null)db.license="";if(db.lastBackup==null)db.lastBackup="";
+  var sc=db.school;
+  if(!sc.logo)sc.logo="";if(!sc.format)sc.format="a5";if(!sc.tranches||!sc.tranches.length)sc.tranches=defTr();
+  db.payments.forEach(function(p){if(!p.code)p.code=ctl(p)});
+}
+function sample(){
+  var d=blank();d.demo=true;
+  d.school.name="Collège Les Palmiers (exemple)";d.school.city="Lomé";d.school.phone="90 00 00 00";
+  var c1={id:uid(),name:"6ème",fee:85000},c2={id:uid(),name:"5ème",fee:90000},c3={id:uid(),name:"3ème",fee:110000};
+  d.classes=[c1,c2,c3];
+  var names={};names[c1.id]=["Afi Mensah","Koffi Agbodjan","Ama Lawson","Komla Dossou"];
+  names[c2.id]=["Yao Tchalla","Esso Amegah","Abla Gbeto"];names[c3.id]=["Kodjo Ayivi","Mawuli Sodji"];
+  [c1,c2,c3].forEach(function(c){names[c.id].forEach(function(n){d.students.push({id:uid(),classId:c.id,name:n,fee:c.fee,phone:""})})});
+  db=d;
+  function pay(i,amt,date,mode){var s=d.students[i];var before=paidOf(s.id);d.seq++;
+    var p={id:uid(),studentId:s.id,amount:amt,date:date,mode:mode,note:"Scolarité",no:"R-"+date.slice(0,4)+"-"+String(d.seq).padStart(4,"0"),after:before+amt,rest:s.fee-before-amt,by:"admin"};p.code=ctl(p);d.payments.push(p)}
+  pay(0,85000,"2026-09-14","Espèces");pay(1,40000,"2026-09-15","Espèces");pay(1,20000,"2026-10-12","Mobile Money");
+  pay(2,30000,"2026-09-20","Espèces");pay(4,90000,"2026-09-16","Mobile Money");pay(5,45000,"2026-10-02","Espèces");pay(7,60000,"2026-10-05","Espèces");
+  return d;
+}
+function ctl(p){return fnv([p.no,p.studentId,p.amount,p.date,db.salt].join("|")).toString(36).toUpperCase().padStart(6,"0").slice(-6)}
+function pinH(v){return fnv(v+"|"+db.salt).toString(36)}
+function cls(id){return db.classes.filter(function(c){return c.id===id})[0]}
+function stu(id){return db.students.filter(function(s){return s.id===id})[0]}
+function paidOf(sid){return db.payments.reduce(function(a,p){return a+(p.studentId===sid&&!p.void?p.amount:0)},0)}
+function restOf(s){return Math.max(0,s.fee-paidOf(s.id))}
+function dueNow(s){var pc=0,t=today();db.school.tranches.forEach(function(x){if(x.date&&x.date<=t)pc+=+x.pct||0});return Math.round(s.fee*Math.min(pc,100)/100)}
+function late(s){var p=paidOf(s.id);return p>=s.fee?0:Math.max(0,dueNow(s)-p)}
+function status(s){var p=paidOf(s.id),l=late(s);
+  if(s.fee>0&&p>=s.fee)return ["ok","Soldé"];
+  if(l>0)return ["late","Retard "+money(l)];
+  if(p>0)return ["warn","Reste "+money(s.fee-p)];
+  return ["none","Aucun paiement"]}
+function schedule(s){var cum=0,paid=paidOf(s.id);return db.school.tranches.map(function(t){cum+=+t.pct||0;var amt=Math.round(s.fee*Math.min(cum,100)/100);return {t:t,amt:amt,st:paid>=amt?"ok":(t.date&&t.date<=today()?"late":"none")}})}
+function classStats(c){
+  var ss=db.students.filter(function(s){return s.classId===c.id});
+  var exp=ss.reduce(function(a,s){return a+s.fee},0),got=ss.reduce(function(a,s){return a+Math.min(paidOf(s.id),s.fee)},0);
+  return {n:ss.length,exp:exp,got:got,rest:exp-got,solde:ss.filter(function(s){return s.fee>0&&paidOf(s.id)>=s.fee}).length}
+}
+function isAdmin(){return ui.role==="admin"}
+function locked(){return !!(db.pins.admin||db.pins.caisse)}
+
+/* ---------- Licence ---------- */
+function licCode(b){return fnv("ecole|"+b+"|"+LSALT).toString(36).toUpperCase().padStart(3,"0").slice(-3)}
+function licCheck(c){var m=/^EC-([A-Z0-9]{6})-([A-Z0-9]{3})$/.exec(String(c).trim().toUpperCase());return !!m&&licCode(m[1])===m[2]}
+function licOK(){return !!db.license&&licCheck(db.license)}
+function canAdd(n){if(licOK()||db.students.length+n<=FREE)return true;toast("Version d'essai limitée à "+FREE+" élèves. Active une licence dans les Réglages.");return false}
+
+/* ---------- Vues ---------- */
+var app=$("#app");
+function toast(msg){var t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(function(){t.remove()},3200)}
+function tabs(){
+  var items=[["home","Accueil"],["journal","Journal"]];if(isAdmin())items.push(["settings","Réglages"]);
+  return '<nav class="tabs" aria-label="Sections">'+items.map(function(i){return '<button data-act="tab" data-v="'+i[0]+'" aria-current="'+(ui.tab===i[0])+'">'+i[1]+'</button>'}).join("")+'</nav>';
+}
+function header(){
+  return '<header class="top"><div class="brand"><small>Reçus de scolarité · '+esc(db.school.year)+(locked()?' · '+(isAdmin()?'Direction':'Caisse'):'')+'</small><h1>'+esc(db.school.name||"Mon établissement")+'</h1></div>'+(locked()?'<button class="btn sm" data-act="lock">Verrouiller</button>':'')+'</header>';
+}
+function backupBanner(){if(!isAdmin()||db.demo||!db.students.length)return"";var d=db.lastBackup?Math.floor((Date.now()-new Date(db.lastBackup).getTime())/864e5):null;if(d!==null&&d<7)return"";return '<div class="banner"><span>'+(d===null?"Aucune sauvegarde faite.":"Dernière sauvegarde il y a "+d+" jours.")+' Protège tes données.</span><button class="btn sm" data-act="backup-file">Sauvegarder maintenant</button></div>'}
+function banner(){return backupBanner()+(db.demo?'<div class="banner"><span>Données d\'exemple. Efface-les pour saisir ton établissement.</span>'+(isAdmin()?'<button class="btn sm" data-act="clear-demo">Commencer avec mes données</button>':'')+'</div>':"")}
+function viewHome(){
+  var adm=isAdmin(),tot={exp:0,got:0,n:0,sol:0,late:0},ll=[];
+  db.classes.forEach(function(c){var s=classStats(c);tot.exp+=s.exp;tot.got+=s.got;tot.n+=s.n;tot.sol+=s.solde});
+  db.students.forEach(function(s){var l=late(s);if(l>0){tot.late+=l;ll.push({s:s,l:l})}});
+  ll.sort(function(a,b){return b.l-a.l});
+  var h='<div class="stack">';
+  h+='<div class="stats"><div class="stat"><span>Attendu</span><b>'+money(tot.exp)+'</b></div><div class="stat"><span>Encaissé</span><b>'+money(tot.got)+'</b></div><div class="stat"><span>Reste à payer</span><b>'+money(tot.exp-tot.got)+'</b></div><div class="stat"><span>En retard</span><b style="color:var(--bad)">'+money(tot.late)+'</b></div><div class="stat"><span>Élèves soldés</span><b>'+tot.sol+' / '+tot.n+'</b></div></div>';
+  if(!licOK())h+='<div class="muted small">Version d\'essai : '+db.students.length+' / '+FREE+' élèves</div>';
+  if(ll.length){h+='<div class="row between"><h2>À relancer</h2><span class="muted small">'+ll.length+' en retard</span></div><div class="list">'+ll.slice(0,8).map(function(x){var c=cls(x.s.classId);return '<button class="item" data-act="open-student" data-id="'+x.s.id+'"><div class="grow"><div class="name">'+esc(x.s.name)+'</div><div class="muted small">'+esc(c?c.name:"")+'</div></div><span class="pill late">'+money(x.l)+'</span></button>'}).join("")+'</div>'+(ll.length>8?'<div class="muted small">+ '+(ll.length-8)+' autres élèves en retard</div>':'')}
+  h+='<div class="row between"><h2>Classes</h2></div>';
+  if(!db.classes.length)h+='<div class="card empty">Aucune classe. '+(adm?'Ajoute la première avec le formulaire ci-dessous.':'')+'</div>';
+  else h+='<div class="list">'+db.classes.map(function(c){var s=classStats(c),pc=s.exp?Math.round(s.got/s.exp*100):0;
+    return '<button class="item" data-act="open-class" data-id="'+c.id+'"><div class="grow"><div class="name">'+esc(c.name)+'</div><div class="muted small">'+s.n+' élève'+(s.n>1?'s':'')+' · scolarité '+money(c.fee)+'</div><div class="bar" style="margin-top:8px"><i style="width:'+pc+'%"></i></div></div><div style="text-align:right"><div class="num">'+pc+' %</div><div class="muted small">reste '+money(s.rest)+'</div></div></button>'}).join("")+'</div>';
+  if(adm)h+='<form class="card form" data-form="add-class"><label>Nouvelle classe<input id="cn" name="name" placeholder="Ex : 6ème A" required maxlength="40"></label><label>Scolarité (F CFA)<input id="cf" name="fee" type="number" inputmode="numeric" min="0" placeholder="Ex : 85000" required></label><button class="btn primary" type="submit">Ajouter la classe</button></form>';
+  return h+'</div>';
+}
+function viewClass(){
+  var c=cls(ui.classId);if(!c){ui.view="home";return viewHome()}
+  var adm=isAdmin(),s=classStats(c);
+  var h='<div class="stack"><button class="back" data-act="tab" data-v="home">← Toutes les classes</button>';
+  h+='<div><h2>'+esc(c.name)+'</h2><div class="muted small">'+s.n+' élèves · '+s.solde+' soldé'+(s.solde>1?'s':'')+' · reste '+money(s.rest)+'</div></div>';
+  if(adm)h+='<form class="card form" data-form="edit-class"><label>Nom de la classe<input id="ecn" name="name" value="'+esc(c.name)+'" required maxlength="40"></label><label>Scolarité (F CFA)<input id="ecf" name="fee" type="number" inputmode="numeric" min="0" value="'+c.fee+'" required></label><button class="btn" type="submit">Enregistrer</button></form>';
+  h+='<h3>Élèves</h3><input id="q" type="search" placeholder="Rechercher un élève" value="'+esc(ui.q)+'" aria-label="Rechercher un élève"><div id="studlist">'+studList(c)+'</div>';
+  h+='<form class="card stack" data-form="add-students"><label>Ajouter des élèves<textarea id="names" name="names" placeholder="Un élève par ligne&#10;Afi Mensah&#10;Koffi Agbodjan ; 90 11 22 33"></textarea></label><label>Mois restants dans l\'année (facultatif, sur 9)<input id="mo" name="months" type="number" min="1" max="9" inputmode="numeric" placeholder="9 = année complète"></label><span class="muted small">Un nom par ligne. Tu peux ajouter un numéro après un point-virgule. La scolarité de la classe s\'applique à chaque élève. Pour un élève arrivé en cours d\'année, indique les mois restants : la scolarité est calculée au prorata.</span><button class="btn primary" type="submit">Ajouter à la classe</button></form>';
+  if(adm)h+='<button class="btn danger" data-act="del-class">'+(ui.confirm==="del-class"?'Confirmer : supprimer la classe et ses élèves':'Supprimer cette classe')+'</button>';
+  return h+'</div>';
+}
+function studList(c){
+  var q=ui.q.trim().toLowerCase();
+  var ss=db.students.filter(function(s){return s.classId===c.id&&(!q||s.name.toLowerCase().indexOf(q)>=0)}).sort(function(a,b){return a.name.localeCompare(b.name,"fr")});
+  if(!ss.length)return '<div class="card empty">'+(q?'Aucun élève ne correspond.':'Cette classe n\'a pas encore d\'élèves.')+'</div>';
+  return '<div class="list">'+ss.map(function(s){var st=status(s);
+    return '<button class="item" data-act="open-student" data-id="'+s.id+'"><div class="grow"><div class="name">'+esc(s.name)+'</div><div class="muted small num">'+money(paidOf(s.id))+' / '+money(s.fee)+'</div></div><span class="pill '+st[0]+'">'+esc(st[1])+'</span></button>'}).join("")+'</div>';
+}
+function histSorted(sid){return db.payments.filter(function(p){return !sid||p.studentId===sid}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(a.no<b.no?1:-1)})}
+function viewStudent(){
+  var s=stu(ui.studentId);if(!s){ui.view="home";return viewHome()}
+  var adm=isAdmin(),c=cls(s.classId),paid=paidOf(s.id),rest=Math.max(0,s.fee-paid),pc=s.fee?Math.min(100,Math.round(paid/s.fee*100)):0,st=status(s),l=late(s);
+  var pays=histSorted(s.id);
+  var h='<div class="stack"><button class="back" data-act="open-class" data-id="'+c.id+'">← '+esc(c.name)+'</button>';
+  h+='<div class="row between"><div><h2>'+esc(s.name)+'</h2><div class="muted small">'+esc(c.name)+(s.phone?' · '+esc(s.phone):'')+'</div></div><span class="pill '+st[0]+'">'+esc(st[1])+'</span></div>';
+  h+='<div class="stats"><div class="stat"><span>Scolarité</span><b>'+money(s.fee)+'</b></div><div class="stat"><span>Déjà payé</span><b>'+money(paid)+'</b></div><div class="stat"><span>Reste</span><b>'+money(rest)+'</b></div></div><div class="bar"><i style="width:'+pc+'%"></i></div>';
+  if(rest>0)h+='<form class="card stack" data-form="pay"><h3>Encaisser un paiement</h3><div class="form"><label>Montant (F CFA)<input id="pa" name="amount" type="number" inputmode="numeric" min="1" value="'+(l>0?l:rest)+'" required></label><label>Date<input id="pd" name="date" type="date" value="'+today()+'" required></label><label>Mode<select id="pm" name="mode"><option>Espèces</option><option>Mobile Money</option><option>Virement</option><option>Chèque</option></select></label></div><label>Motif<input id="pn" name="note" value="Scolarité" maxlength="80"></label><button class="btn primary" type="submit">Valider et créer le reçu</button></form>';
+  else h+='<div class="card empty" style="color:var(--ok)">Scolarité entièrement payée.</div>';
+  h+='<h3>Échéances</h3><div class="list">'+schedule(s).map(function(x){var lab=x.st==="ok"?"Payée":x.st==="late"?"En retard":"À venir";return '<div class="item" style="cursor:default"><div class="grow"><div class="name">'+esc(x.t.label)+'</div><div class="muted small">avant le '+fmtDate(x.t.date)+' · cumul '+money(x.amt)+'</div></div><span class="pill '+(x.st==="ok"?"ok":x.st==="late"?"late":"none")+'">'+lab+'</span></div>'}).join("")+'</div>';
+  h+='<h3>Historique des paiements</h3>';
+  h+=pays.length?'<div class="list">'+pays.map(function(p){return '<button class="item" data-act="receipt" data-id="'+p.id+'"><div class="grow"><div class="name num"'+(p.void?' style="text-decoration:line-through"':'')+'>'+money(p.amount)+'</div><div class="muted small">'+fmtDate(p.date)+' · '+esc(p.mode)+' · '+esc(p.no)+'</div></div>'+(p.void?'<span class="pill late">Annulé</span>':'<span class="small" style="color:var(--accent);font-weight:700">Voir le reçu</span>')+'</button>'}).join("")+'</div>':'<div class="card empty">Aucun paiement enregistré.</div>';
+  h+='<form class="card form" data-form="edit-student"><label>Nom<input id="esn" name="name" value="'+esc(s.name)+'" required maxlength="80"></label><label>Scolarité de cet élève<input id="esf" name="fee" type="number" min="0" inputmode="numeric" value="'+s.fee+'" required'+(adm?'':' readonly')+'></label><label>Classe<select id="esc" name="classId"'+(adm?'':' disabled')+'>'+db.classes.map(function(x){return '<option value="'+x.id+'"'+(x.id===s.classId?" selected":"")+'>'+esc(x.name)+'</option>'}).join("")+'</select></label><label>Téléphone (parent)<input id="esp" name="phone" inputmode="tel" value="'+esc(s.phone)+'" placeholder="90 11 22 33"></label><button class="btn" type="submit">Enregistrer</button></form>';
+  if(adm)h+='<button class="btn danger" data-act="del-student">'+(ui.confirm==="del-student"?'Confirmer : supprimer l\'élève et ses paiements':'Supprimer cet élève')+'</button>';
+  return h+'</div>';
+}
+function activeTotal(list){return list.reduce(function(a,p){return a+(p.void?0:p.amount)},0)}
+function viewJournal(){
+  var pays=histSorted(),total=activeTotal(pays);
+  var h='<div class="stack"><div class="row between"><div><h2>Journal des paiements</h2><div class="muted small">'+pays.filter(function(p){return !p.void}).length+' reçus valides · total '+money(total)+'</div></div></div><div class="row"><button class="btn primary sm" data-act="report">Rapport de caisse</button>'+(isAdmin()?'<button class="btn sm" data-act="csv">Exporter (CSV)</button>':'')+'</div>';
+  h+=pays.length?'<div class="list">'+pays.map(function(p){var s=stu(p.studentId),c=s?cls(s.classId):null;
+    return '<button class="item" data-act="receipt" data-id="'+p.id+'"><div class="grow"><div class="name">'+esc(s?s.name:"Élève supprimé")+'</div><div class="muted small">'+esc(c?c.name:"")+' · '+fmtDate(p.date)+' · '+esc(p.no)+(p.void?' · annulé':'')+'</div></div><div class="num"'+(p.void?' style="text-decoration:line-through;color:var(--muted)"':'')+'>'+money(p.amount)+'</div></button>'}).join("")+'</div>':'<div class="card empty">Aucun paiement pour le moment.</div>';
+  h+='<div class="card stack"><h3>Vérifier un reçu</h3><p class="muted small" style="margin:0">Scanne le QR code d\'un reçu avec n\'importe quel lecteur, copie le texte obtenu et colle-le ici.</p><textarea id="vtxt" placeholder="REÇU N° R-2026-0001 ..."></textarea><button class="btn" data-act="verify">Vérifier</button><div id="vres" class="small" role="status"></div></div>';
+  return h+'</div>';
+}
+function viewSettings(){
+  var sc=db.school,trs=sc.tranches.slice();while(trs.length<4)trs.push({label:"",date:"",pct:""});
+  var h='<div class="stack"><h2>Réglages</h2>';
+  h+='<form class="card stack" data-form="school"><h3>Établissement (affiché sur les reçus)</h3><div class="form"><label>Nom<input id="sn" name="name" value="'+esc(sc.name)+'" placeholder="Nom de l\'établissement" maxlength="80"></label><label>Année scolaire<input id="sy" name="year" value="'+esc(sc.year)+'" maxlength="20"></label><label>Ville<input id="sv" name="city" value="'+esc(sc.city)+'" maxlength="40"></label><label>Téléphone<input id="st" name="phone" value="'+esc(sc.phone)+'" maxlength="30"></label></div><label>Format du reçu<select id="sf" name="format"><option value="a5"'+(sc.format==="a5"?" selected":"")+'>A5 (demi-page)</option><option value="a4"'+(sc.format==="a4"?" selected":"")+'>A4 (page entière)</option><option value="ticket"'+(sc.format==="ticket"?" selected":"")+'>Ticket 58 mm (imprimante thermique)</option></select></label><button class="btn primary" type="submit">Enregistrer</button></form>';
+  h+='<form class="card stack" data-form="tranches"><h3>Tranches de paiement</h3><p class="muted small" style="margin:0">Partage de la scolarité en versements. Après la date limite, un élève qui n\'a pas payé le cumul est signalé en retard. Le total doit faire 100 %.</p>'+
+    trs.map(function(t,i){return '<div class="form"><label>Nom<input id="tl'+i+'" name="tl'+i+'" value="'+esc(t.label)+'" maxlength="30"></label><label>Date limite<input id="td'+i+'" name="td'+i+'" type="date" value="'+esc(t.date)+'"></label><label>Part (%)<input id="tp'+i+'" name="tp'+i+'" type="number" min="0" max="100" inputmode="numeric" value="'+esc(t.pct)+'"></label></div>'}).join("")+'<button class="btn primary" type="submit">Enregistrer les tranches</button></form>';
+  h+='<div class="card stack"><h3>Logo de l\'école</h3>'+(sc.logo?'<img class="logoprev" src="'+sc.logo+'" alt="Logo actuel">':'<p class="muted small" style="margin:0">Aucun logo. Il apparaîtra en haut de chaque reçu.</p>')+'<label>Choisir une image (PNG ou JPG)<input id="logo" type="file" accept="image/*"></label>'+(sc.logo?'<button class="btn danger sm" data-act="logo-del">Retirer le logo</button>':'')+'</div>';
+  h+='<form class="card stack" data-form="pins"><h3>Codes d\'accès</h3><p class="muted small" style="margin:0">Le code Direction ouvre tout. Le code Caisse permet d\'encaisser et de consulter, mais pas de supprimer, annuler ni modifier les tarifs. Laisse vide pour ne pas verrouiller l\'application. 4 à 6 chiffres.</p>'+(ui.rec?'<div class="banner" style="margin:0"><span>Code de secours : <b class="num">'+esc(ui.rec)+'</b>. Note-le sur papier, il ne sera plus affiché.</span></div>':'')+'<div class="form"><label>Code Direction<input id="pin1" name="admin" type="password" inputmode="numeric" maxlength="6" placeholder="'+(db.pins.admin?'(défini)':'aucun')+'" autocomplete="off"></label><label>Code Caisse<input id="pin2" name="caisse" type="password" inputmode="numeric" maxlength="6" placeholder="'+(db.pins.caisse?'(défini)':'aucun')+'" autocomplete="off"></label></div><div class="row"><button class="btn primary" type="submit">Enregistrer les codes</button>'+(locked()?'<button class="btn danger" type="button" data-act="pins-off">Supprimer les codes</button>':'')+'</div></form>';
+  h+='<div class="card stack"><h3>Importer des élèves (Excel ou CSV)</h3><p class="muted small" style="margin:0">Dans Excel, mets les colonnes <b>Nom · Classe · Téléphone · Scolarité</b> (les deux dernières sont facultatives), copie-les et colle-les ici. Tu peux aussi choisir un fichier CSV. Les classes manquantes sont créées.</p><textarea id="imp" placeholder="Afi Mensah&#9;6ème&#9;90112233&#9;85000"></textarea><button class="btn" data-act="import">Importer le texte collé</button><label>Ou un fichier CSV<input id="impfile" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain"></label></div>';
+  h+='<form class="card stack" data-form="license"><h3>Licence</h3><p class="muted small" style="margin:0">'+(licOK()?'Licence active : élèves illimités.':'Version d\'essai : '+FREE+' élèves au maximum. Entre un code de licence pour en ajouter davantage.')+'</p>'+(licOK()?'':'<label>Code de licence<input id="lic" name="code" placeholder="EC-XXXXXX-XXX" autocomplete="off" autocapitalize="characters"></label><button class="btn primary" type="submit">Activer</button>')+'</form>';
+  h+='<div class="card stack"><h3>Sauvegarde</h3><p class="muted small" style="margin:0">Les données restent sur cet appareil. Fais une sauvegarde régulièrement et garde-la ailleurs (WhatsApp, e-mail).</p><div class="row"><button class="btn" data-act="backup-copy">Copier la sauvegarde</button><button class="btn" data-act="backup-file">Télécharger</button></div><label>Restaurer une sauvegarde<textarea id="restore" placeholder="Colle ici le texte de la sauvegarde"></textarea></label><button class="btn" data-act="restore">Restaurer</button></div>';
+  h+='<div class="card stack"><h3>Tout effacer</h3><button class="btn danger" data-act="wipe">'+(ui.confirm==="wipe"?'Confirmer : effacer toutes les données':'Effacer toutes les données')+'</button></div></div>';
+  return h;
+}
+function renderLock(){
+  app.innerHTML='<div class="lock card stack"><div><small class="muted">Reçus de scolarité</small><h1>'+esc(db.school.name||"Mon établissement")+'</h1></div>'+
+  (ui.forgot?'<form data-form="recover" class="stack"><label>Code de secours<input id="rc" name="code" autocomplete="off" autocapitalize="characters" required></label><button class="btn primary" type="submit">Réinitialiser les codes</button><button class="btn" type="button" data-act="forgot-off">Retour</button></form>':
+  '<form data-form="unlock" class="stack"><label>Code d\'accès<input id="pin" name="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" required autofocus></label><button class="btn primary" type="submit">Ouvrir</button><button class="btn" type="button" data-act="forgot-on">Code oublié ?</button></form>')+'</div>';
+}
+function render(){
+  if(!ui.role){renderLock();return}
+  var body;
+  if(ui.view==="class")body=viewClass();
+  else if(ui.view==="student")body=viewStudent();
+  else if(ui.tab==="journal")body=viewJournal();
+  else if(ui.tab==="settings"&&isAdmin())body=viewSettings();
+  else body=viewHome();
+  app.innerHTML=header()+banner()+tabs()+body;
+  var t=$("#q");if(t&&ui.focusQ){t.focus();t.setSelectionRange(t.value.length,t.value.length)}
+}
+
+/* ---------- Reçu ---------- */
+function receiptData(p){var s=stu(p.studentId)||{name:"(élève supprimé)",fee:0};return {p:p,s:s,c:s.classId?cls(s.classId):null,sc:db.school}}
+function receiptText(p){
+  var r=receiptData(p),sc=r.sc;
+  return [(p.void?"*** ANNULÉ *** ":"")+(sc.name||"Établissement").toUpperCase()+(sc.city?" - "+sc.city:""),"REÇU DE PAIEMENT N° "+p.no,"Date : "+fmtDate(p.date),"Élève : "+r.s.name+(r.c?" ("+r.c.name+")":""),"Motif : "+(p.note||"Scolarité")+" "+sc.year,"Mode : "+p.mode,"Montant versé : "+money(p.amount),"Total payé : "+money(p.after)+" sur "+money(r.s.fee),"Reste à payer : "+money(p.rest),"Code de contrôle : "+p.code,"",amountWords(p.amount)].join("\n");
+}
+function qrText(p){var r=receiptData(p);return "REÇU N° "+p.no+"\n"+(r.sc.name||"Établissement")+"\n"+r.s.name+(r.c?" ("+r.c.name+")":"")+"\n"+fmtDate(p.date)+"\nVersé : "+p.amount+" F\nReste : "+p.rest+" F\nCode : "+p.code+(p.void?"\nANNULÉ":"")}
+function pageStyle(){var f=db.school.format,css=f==="a4"?"@page{size:A4;margin:12mm}":f==="ticket"?"@page{size:58mm auto;margin:2mm}":"@page{size:A5;margin:8mm}";var st=$("#pgs");if(!st){st=document.createElement("style");st.id="pgs";document.head.appendChild(st)}st.textContent=css}
+function showReceipt(id){
+  var p=db.payments.filter(function(x){return x.id===id})[0];if(!p)return;
+  var r=receiptData(p),sc=r.sc,adm=isAdmin();pageStyle();
+  document.body.classList.add("rc");
+  $("#layer").innerHTML='<div class="modal-bg" data-act="close-bg"><div class="modal" role="dialog" aria-label="Reçu"><div class="receipt fmt-'+esc(sc.format)+(p.void?' void':'')+'">'+
+  (p.void?'<div class="voidbar">REÇU ANNULÉ le '+fmtDate(p.void.date)+' · '+esc(p.void.reason)+'</div>':'')+
+  '<div class="head">'+(sc.logo?'<img class="logo" src="'+sc.logo+'" alt="Logo">':'')+'<div class="hd"><h2>'+esc(sc.name||"Établissement scolaire")+'</h2><div>'+esc([sc.city,sc.phone].filter(Boolean).join(" · "))+'</div></div></div>'+
+  '<div class="title"><b>REÇU DE PAIEMENT</b><span>N° '+esc(p.no)+'</span></div>'+
+  '<dl><dt>Date</dt><dd>'+fmtDate(p.date)+'</dd><dt>Élève</dt><dd>'+esc(r.s.name)+'</dd><dt>Classe</dt><dd>'+esc(r.c?r.c.name:"-")+'</dd><dt>Motif</dt><dd>'+esc((p.note||"Scolarité")+" "+sc.year)+'</dd><dt>Mode</dt><dd>'+esc(p.mode)+'</dd></dl>'+
+  '<div class="amount"><span>Montant versé</span><b>'+money(p.amount)+'</b></div><div class="words">Arrêté à la somme de : '+esc(amountWords(p.amount))+'.</div>'+
+  '<dl><dt>Total payé à ce jour</dt><dd class="num">'+money(p.after)+'</dd><dt>Scolarité</dt><dd class="num">'+money(r.s.fee)+'</dd><dt>Reste à payer</dt><dd class="num">'+money(p.rest)+'</dd></dl>'+
+  '<div class="foot"><div class="qr">'+QR.svg(qrText(p),104)+'</div><div class="ctl"><span>Code de contrôle</span><b>'+esc(p.code)+'</b><span>Scanne le QR code pour lire les détails du reçu.</span></div></div>'+
+  '<div class="sign"><div>Le parent</div><div>La caisse</div></div></div>'+
+  '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="pdf" data-id="'+p.id+'">PDF</button><button class="btn grow" data-act="wa" data-id="'+p.id+'">WhatsApp</button><button class="btn grow" data-act="copy-receipt" data-id="'+p.id+'">Copier</button></div>'+
+  (adm&&!p.void&&ui.voidFor===p.id?'<form class="card stack noprint" data-form="void" data-id="'+p.id+'"><label>Motif de l\'annulation<input id="vr" name="reason" required maxlength="80" placeholder="Ex : erreur de montant"></label><div class="row"><button class="btn danger" type="submit">Confirmer l\'annulation</button><button class="btn" type="button" data-act="void-off" data-id="'+p.id+'">Retour</button></div></form>':'')+
+  '<div class="row noprint"><button class="btn grow" data-act="close">Fermer</button>'+(adm&&!p.void&&ui.voidFor!==p.id?'<button class="btn danger" data-act="void-on" data-id="'+p.id+'">Annuler ce reçu</button>':'')+'</div></div></div>';
+}
+function closeLayer(){document.body.classList.remove("rc");$("#layer").innerHTML="";ui.voidFor=null}
+
+/* ---------- Rapport de caisse ---------- */
+function showReport(from,to){
+  var d=today();from=from||d.slice(0,8)+"01";to=to||d;pageStyle();
+  var all=db.payments.filter(function(p){return p.date>=from&&p.date<=to}),ok=all.filter(function(p){return !p.void}),vo=all.length-ok.length;
+  var byC={},byM={};
+  ok.forEach(function(p){var s=stu(p.studentId),c=s&&cls(s.classId),k=c?c.name:"(supprimé)";byC[k]=(byC[k]||0)+p.amount;byM[p.mode]=(byM[p.mode]||0)+p.amount});
+  function tbl(o){var k=Object.keys(o);return k.length?'<table>'+k.map(function(x){return '<tr><td>'+esc(x)+'</td><td class="num r">'+money(o[x])+'</td></tr>'}).join("")+'</table>':'<div class="muted small">Aucun paiement.</div>'}
+  ui.lastReport=(db.school.name||"Établissement")+"\nRapport de caisse du "+fmtDate(from)+" au "+fmtDate(to)+"\nTotal encaissé : "+money(activeTotal(ok))+" ("+ok.length+" reçus, "+vo+" annulés)\n\n"+Object.keys(byC).map(function(k){return k+" : "+money(byC[k])}).join("\n")+"\n\n"+ok.map(function(p){var s=stu(p.studentId);return p.no+" | "+(s?s.name:"")+" | "+money(p.amount)}).join("\n");
+  document.body.classList.add("rc");
+  $("#layer").innerHTML='<div class="modal-bg" data-act="close-bg"><div class="modal" role="dialog" aria-label="Rapport de caisse">'+
+  '<form class="card form noprint" data-form="report"><label>Du<input id="rf" name="from" type="date" value="'+from+'"></label><label>Au<input id="rt" name="to" type="date" value="'+to+'"></label><button class="btn" type="submit">Afficher</button></form>'+
+  '<div class="receipt report"><div class="head"><div class="hd"><h2>'+esc(db.school.name||"Établissement")+'</h2><div>Rapport de caisse</div></div></div>'+
+  '<dl><dt>Période</dt><dd>'+fmtDate(from)+' au '+fmtDate(to)+'</dd><dt>Reçus valides</dt><dd>'+ok.length+'</dd><dt>Reçus annulés</dt><dd>'+vo+'</dd></dl>'+
+  '<div class="amount"><span>Total encaissé</span><b>'+money(activeTotal(ok))+'</b></div>'+
+  '<h3>Par classe</h3>'+tbl(byC)+'<h3>Par mode de paiement</h3>'+tbl(byM)+
+  '<h3>Détail</h3>'+(ok.length?'<table>'+ok.sort(function(a,b){return a.no<b.no?-1:1}).map(function(p){var s=stu(p.studentId);return '<tr><td class="num">'+esc(p.no)+'</td><td>'+esc(s?s.name:"")+'</td><td class="num r">'+money(p.amount)+'</td></tr>'}).join("")+'</table>':'<div class="muted small">Aucun paiement.</div>')+
+  '<div class="sign"><div>Le caissier</div><div>La direction</div></div></div>'+
+  '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="close">Fermer</button></div></div></div>';
+}
+
+/* ---------- PDF du reçu ---------- */
+function pdfStr(s){var o="(";for(var i=0;i<s.length;i++){var c=s.charCodeAt(i),b;
+  if(c<128)b=c;else{var m={0x153:0x9C,0x152:0x8C,0x2019:0x92,0x20AC:0x80,0x2013:0x96,0x2014:0x97,0x2026:0x85};b=c<256?c:(m[c]||63)}
+  if(b===40||b===41||b===92)o+="\\"+String.fromCharCode(b);else if(b<32||b>126)o+="\\"+("00"+b.toString(8)).slice(-3);else o+=String.fromCharCode(b)}return o+")"}
+function bytes(str){var u=new Uint8Array(str.length);for(var i=0;i<str.length;i++)u[i]=str.charCodeAt(i)&255;return u}
+function loadJpeg(src){return new Promise(function(res,rej){var im=new Image();im.onload=function(){var c=document.createElement("canvas");c.width=im.width;c.height=im.height;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0);var d=c.toDataURL("image/jpeg",.9).split(",")[1],bin=atob(d),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);res({w:c.width,h:c.height,data:u})};im.onerror=rej;im.src=src})}
+function wrapTxt(txt,size,maxw){var per=Math.max(8,Math.floor(maxw/(size*0.5))),ws=txt.split(" "),lines=[],cur="";ws.forEach(function(w){if((cur+" "+w).trim().length>per&&cur){lines.push(cur);cur=w}else cur=(cur+" "+w).trim()});if(cur)lines.push(cur);return lines}
+async function makePDF(p){
+  var r=receiptData(p),sc=r.sc,f=sc.format,W,H;
+  if(f==="a4"){W=595;H=842}else if(f==="ticket"){W=164;H=560}else{W=420;H=595}
+  var m=f==="ticket"?10:30,iw=W-2*m,fs=f==="ticket"?7.5:10,ops=[],y=H-m,img=null;
+  if(sc.logo){try{img=await loadJpeg(sc.logo)}catch(e){img=null}}
+  function Tx(font,size,x,yy,t){ops.push("BT /"+font+" "+size+" Tf "+x.toFixed(1)+" "+yy.toFixed(1)+" Td "+pdfStr(t)+" Tj ET")}
+  function Ln(x1,y1,x2,y2,w){ops.push(w+" w "+x1.toFixed(1)+" "+y1.toFixed(1)+" m "+x2.toFixed(1)+" "+y2.toFixed(1)+" l S")}
+  var lh=f==="ticket"?24:40,tx=m;
+  if(img){var iw2=Math.min(lh*img.w/img.h,W*0.28),ih=iw2*img.h/img.w;ops.push("q "+iw2.toFixed(1)+" 0 0 "+ih.toFixed(1)+" "+m+" "+(y-ih).toFixed(1)+" cm /Im1 Do Q");tx=m+iw2+8}
+  var nm=wrapTxt(sc.name||"Établissement scolaire",fs+4,W-tx-m),yy=y-(fs+4);
+  nm.forEach(function(l){Tx("F2",fs+4,tx,yy,l);yy-=fs+6});
+  var sub=[sc.city,sc.phone].filter(Boolean).join(" - ");if(sub){Tx("F1",fs-1,tx,yy,sub);yy-=fs+2}
+  y=Math.min(yy,img?y-lh:yy)-6;Ln(m,y,W-m,y,1.5);y-=fs+10;
+  Tx("F2",fs+3,m,y,"REÇU DE PAIEMENT");y-=fs+5;Tx("F3",fs,m,y,"N° "+p.no);y-=fs+8;
+  var rows=[["Date",fmtDate(p.date)],["Élève",r.s.name],["Classe",r.c?r.c.name:"-"],["Motif",(p.note||"Scolarité")+" "+sc.year],["Mode",p.mode]],cx=m+iw*0.32;
+  rows.forEach(function(rw){Tx("F1",fs,m,y,rw[0]);wrapTxt(rw[1],fs,W-cx-m).forEach(function(l,i){Tx("F2",fs,cx,y,l);y-=fs+4});if(!wrapTxt(rw[1],fs,W-cx-m).length)y-=fs+4});
+  y-=4;var bh=fs+16;ops.push("1.2 w "+m+" "+(y-bh+6)+" "+iw+" "+bh+" re S");Tx("F1",fs,m+6,y-bh/2-fs/2+8,"Montant versé");Tx("F3",fs+3,m+iw*0.42,y-bh/2-fs/2+7,money(p.amount).replace(/ /g," "));y-=bh+8;
+  wrapTxt("Arrêté à la somme de : "+amountWords(p.amount)+".",fs-1,iw).forEach(function(l){Tx("F1",fs-1,m,y,l);y-=fs+2});y-=6;
+  [[f==="ticket"?"Total payé":"Total payé à ce jour",money(p.after)],["Scolarité",money(r.s.fee)],["Reste à payer",money(p.rest)]].forEach(function(rw){Tx("F1",fs,m,y,rw[0]);Tx("F3",fs,m+iw*0.58,y,rw[1].replace(/ /g," "));y-=fs+4});
+  y-=8;var q=QR.make(qrText(p)),cell=Math.min(3,(f==="ticket"?iw*0.7:84)/(q.size+8)),qs=(q.size+8)*cell,qx=m,qy=y-qs;
+  ops.push("q 1 g "+qx+" "+qy.toFixed(1)+" "+qs.toFixed(1)+" "+qs.toFixed(1)+" re f 0 g");
+  for(var ry=0;ry<q.size;ry++){var rx=0;while(rx<q.size){if(q.modules[ry][rx]){var st=rx;while(rx<q.size&&q.modules[ry][rx])rx++;ops.push((qx+(st+4)*cell).toFixed(2)+" "+(qy+qs-(ry+5)*cell).toFixed(2)+" "+((rx-st)*cell).toFixed(2)+" "+cell.toFixed(2)+" re f")}else rx++}}
+  ops.push("Q");
+  var kx=f==="ticket"?m:m+qs+12,ky=f==="ticket"?qy-fs-6:y-fs-4;
+  Tx("F1",fs-1,kx,ky,"Code de contrôle");Tx("F3",fs+3,kx,ky-fs-6,p.code);
+  y=Math.min(qy,ky-fs-8)-22;
+  Ln(m,y,m+iw*0.42,y,.6);Ln(W-m-iw*0.42,y,W-m,y,.6);Tx("F1",fs-1.5,m+4,y-fs-2,"Le parent");Tx("F1",fs-1.5,W-m-iw*0.42+4,y-fs-2,"La caisse");
+  if(p.void){ops.push("q 0.7 0.7 -0.7 0.7 "+(W*0.2).toFixed(0)+" "+(H*0.35).toFixed(0)+" cm BT /F2 "+(W*0.16).toFixed(0)+" Tf 0.85 0.2 0.2 rg 0 0 Td (ANNULE) Tj ET Q")}
+  var parts=[],off=0,xr=[];
+  function add(u){parts.push(u);off+=u.length}
+  function obj(n,b){xr[n]=off;add(bytes(n+" 0 obj\n"+b+"\nendobj\n"))}
+  add(bytes("%PDF-1.4\n"));
+  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");obj(2,"<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+  obj(3,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+W+" "+H+"] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R /F3 7 0 R >>"+(img?" /XObject << /Im1 8 0 R >>":"")+" >> >>");
+  var ct=ops.join("\n");obj(4,"<< /Length "+ct.length+" >>\nstream\n"+ct+"\nendstream");
+  obj(5,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  obj(6,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  obj(7,"<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold /Encoding /WinAnsiEncoding >>");
+  var n=8;
+  if(img){xr[8]=off;add(bytes("8 0 obj\n<< /Type /XObject /Subtype /Image /Width "+img.w+" /Height "+img.h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+img.data.length+" >>\nstream\n"));add(img.data);add(bytes("\nendstream\nendobj\n"));n=9}
+  var sx=off,x="xref\n0 "+n+"\n0000000000 65535 f \n";for(var i=1;i<n;i++)x+=String(xr[i]).padStart(10,"0")+" 00000 n \n";
+  add(bytes(x+"trailer\n<< /Size "+n+" /Root 1 0 R >>\nstartxref\n"+sx+"\n%%EOF"));
+  return new Blob(parts,{type:"application/pdf"});
+}
+
+/* ---------- Actions ---------- */
+function copy(text,ok){
+  function fb(){var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast(ok)}catch(e){toast("Copie impossible")}ta.remove()}
+  try{navigator.clipboard.writeText(text).then(function(){toast(ok)},fb)}catch(e){fb()}
+}
+function cap(){var C=window.Capacitor;return C&&C.isNativePlatform&&C.isNativePlatform()?C:null}
+function nativeShare(name,blob){var C=cap(),P=C.Plugins||{},FS=P.Filesystem,SH=P.Share;
+  return new Promise(function(res,rej){if(!FS||!SH){rej(new Error("plugin"));return}var fr=new FileReader();fr.onload=function(){var b64=String(fr.result).split(",")[1];
+    FS.writeFile({path:name,data:b64,directory:"CACHE"}).then(function(r){return SH.share({title:name,files:[r.uri]})}).then(res,rej)};fr.readAsDataURL(blob)})}
+function saveBlob(name,blob){
+  if(cap()){nativeShare(name,blob).catch(function(){toast("Partage impossible sur cet appareil")});return}
+  try{var file=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).catch(function(){});return}}catch(x){}
+  saveBlob2(name,blob)}
+function saveBlob2(name,blob){
+  try{var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast("Fichier prêt. S'il ne se télécharge pas, utilise la version installée.")}catch(e){toast("Téléchargement impossible ici.")}
+}
+function saveFile(name,text,mime){saveBlob(name,new Blob([text],{type:mime}))}
+function csv(){
+  var rows=[["N° reçu","Date","Classe","Élève","Montant","Mode","Motif","Total payé","Reste","Statut"]];
+  db.payments.slice().sort(function(a,b){return a.date<b.date?-1:1}).forEach(function(p){var s=stu(p.studentId),c=s?cls(s.classId):null;rows.push([p.no,p.date,c?c.name:"",s?s.name:"",p.amount,p.mode,p.note,p.after,p.rest,p.void?"Annulé: "+p.void.reason:"Valide"])});
+  return "﻿"+rows.map(function(r){return r.map(function(v){return '"'+String(v).replace(/"/g,'""')+'"'}).join(";")}).join("\n");
+}
+function setView(v){ui.view=v;ui.confirm=null;ui.q="";ui.focusQ=false}
+function pay(sid,amount,date,mode,note){
+  var s=stu(sid),before=paidOf(sid);db.seq++;
+  var p={id:uid(),studentId:sid,amount:amount,date:date,mode:mode,note:note||"Scolarité",no:"R-"+date.slice(0,4)+"-"+String(db.seq).padStart(4,"0"),after:before+amount,rest:Math.max(0,s.fee-before-amount),by:ui.role};
+  p.code=ctl(p);db.payments.push(p);return p;
+}
+function importText(text){
+  var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});
+  if(!lines.length){toast("Rien à importer");return}
+  var d=text.indexOf("\t")>=0?"\t":(text.indexOf(";")>=0?";":",");
+  var rows=lines.map(function(l){return l.split(d).map(function(x){return x.trim().replace(/^"|"$/g,"")})});
+  if(/^(noms?|nom et prénoms?|élèves?|eleves?|name)$/i.test(rows[0][0]))rows.shift();
+  rows=rows.filter(function(r){return r[0]});
+  if(!rows.length){toast("Aucun nom trouvé");return}
+  if(!canAdd(rows.length))return;
+  var add=0,nc=0;
+  rows.forEach(function(r){var cn=r[1]||"Sans classe",ph=r[2]||"",fee=parseInt(String(r[3]||"").replace(/\D/g,""),10)||0;
+    var c=db.classes.filter(function(x){return x.name.toLowerCase()===cn.toLowerCase()})[0];
+    if(!c){c={id:uid(),name:cn,fee:fee};db.classes.push(c);nc++}
+    db.students.push({id:uid(),classId:c.id,name:r[0],fee:fee||c.fee,phone:ph});add++});
+  db.demo=false;save();render();toast(add+" élève"+(add>1?"s":"")+" importé"+(add>1?"s":"")+", "+nc+" classe"+(nc>1?"s":"")+" créée"+(nc>1?"s":""));
+}
+document.addEventListener("click",function(e){
+  var el=e.target.closest("[data-act]");if(!el)return;
+  var act=el.getAttribute("data-act"),id=el.getAttribute("data-id"),adm=isAdmin();
+  var needAdm=["del-class","del-student","wipe","csv","void-on","clear-demo","pins-off","logo-del","restore"];
+  if(needAdm.indexOf(act)>=0&&!adm){toast("Réservé à la direction");return}
+  if(act==="close-bg"){if(e.target===el)closeLayer();return}
+  if(act==="tab"){ui.tab=el.getAttribute("data-v");setView("home");render();return}
+  if(act==="open-class"){ui.classId=id;ui.tab="home";setView("class");render();window.scrollTo(0,0);return}
+  if(act==="open-student"){ui.studentId=id;setView("student");render();window.scrollTo(0,0);return}
+  if(act==="lock"){ui.role=null;ui.forgot=false;closeLayer();render();return}
+  if(act==="forgot-on"){ui.forgot=true;render();return}
+  if(act==="forgot-off"){ui.forgot=false;render();return}
+  if(act==="close"){closeLayer();return}
+  if(act==="print"){if(cap()){var pb=$("[data-act=pdf]");if(pb){pb.click()}else if(ui.lastReport){saveBlob("rapport-caisse.txt",new Blob([ui.lastReport],{type:"text/plain"}))}return}
+    try{window.print()}catch(x){toast("Impression non disponible ici")}return}
+  if(act==="receipt"){showReceipt(id);return}
+  if(act==="report"){showReport();return}
+  if(act==="copy-receipt"){copy(receiptText(db.payments.filter(function(p){return p.id===id})[0]),"Reçu copié");return}
+  if(act==="wa"){var p=db.payments.filter(function(x){return x.id===id})[0],s=stu(p.studentId),ph=s&&s.phone?s.phone.replace(/\D/g,""):"";
+    window.open("https://wa.me/"+(ph.length===8?"228"+ph:ph)+"?text="+encodeURIComponent(receiptText(p)),cap()?"_system":"_blank");return}
+  if(act==="pdf"){var pp=db.payments.filter(function(x){return x.id===id})[0];toast("Création du PDF…");
+    makePDF(pp).then(function(b){saveBlob("recu-"+pp.no+".pdf",b)}).catch(function(){toast("Impossible de créer le PDF")});return}
+  if(act==="void-on"){ui.voidFor=id;showReceipt(id);return}
+  if(act==="void-off"){ui.voidFor=null;showReceipt(id);return}
+  if(act==="del-class"){if(ui.confirm==="del-class"){var ids=db.students.filter(function(s){return s.classId===ui.classId}).map(function(s){return s.id});db.payments=db.payments.filter(function(p){return ids.indexOf(p.studentId)<0});db.students=db.students.filter(function(s){return s.classId!==ui.classId});db.classes=db.classes.filter(function(c){return c.id!==ui.classId});save();setView("home");render();toast("Classe supprimée")}else{ui.confirm="del-class";render()}return}
+  if(act==="del-student"){if(ui.confirm==="del-student"){var cid=stu(ui.studentId).classId;db.payments=db.payments.filter(function(p){return p.studentId!==ui.studentId});db.students=db.students.filter(function(s){return s.id!==ui.studentId});save();ui.classId=cid;setView("class");render();toast("Élève supprimé")}else{ui.confirm="del-student";render()}return}
+  if(act==="logo-del"){db.school.logo="";save();render();toast("Logo retiré");return}
+  if(act==="pins-off"){db.pins={admin:"",caisse:"",rec:""};ui.rec=null;save();render();toast("Codes supprimés");return}
+  if(act==="verify"){var tx=$("#vtxt").value,mn=/R-\d{4}-\d{4}/.exec(tx),mc=/Code\s*:\s*([A-Z0-9]{6})/i.exec(tx),box=$("#vres");
+    if(!mn||!mc){box.textContent="Texte non reconnu. Colle le texte complet du QR code.";box.style.color="var(--bad)";return}
+    var vp=db.payments.filter(function(x){return x.no===mn[0]})[0];
+    if(vp&&vp.code===mc[1].toUpperCase()){var ss=stu(vp.studentId);box.textContent=(vp.void?"Reçu émis mais ANNULÉ : ":"Reçu authentique : ")+(ss?ss.name:"")+", "+money(vp.amount)+", le "+fmtDate(vp.date)+".";box.style.color=vp.void?"var(--warn)":"var(--ok)"}
+    else{box.textContent="Reçu introuvable ou code incorrect. Ce reçu n'a pas été émis par cette caisse.";box.style.color="var(--bad)"}return}
+  if(act==="csv"){saveFile("journal-paiements.csv",csv(),"text/csv");return}
+  if(act==="import"){importText($("#imp").value);return}
+  if(act==="backup-copy"){if(!adm){toast("Réservé à la direction");return}db.lastBackup=new Date().toISOString();save();copy(JSON.stringify(db),"Sauvegarde copiée");return}
+  if(act==="backup-file"){if(!adm){toast("Réservé à la direction");return}db.lastBackup=new Date().toISOString();save();saveFile("sauvegarde-recus.json",JSON.stringify(db),"application/json");render();return}
+  if(act==="restore"){try{var d=JSON.parse($("#restore").value);if(!d||!d.classes||!d.students||!d.payments)throw 0;db=d;migrate();save();render();toast("Sauvegarde restaurée")}catch(x){toast("Texte de sauvegarde invalide")}return}
+  if(act==="wipe"){if(ui.confirm==="wipe"){var lic=db.license;db=blank();db.license=lic;save();setView("home");ui.tab="settings";render();toast("Données effacées")}else{ui.confirm="wipe";render()}return}
+  if(act==="clear-demo"){db=blank();save();setView("home");ui.tab="settings";render();toast("Saisis le nom de ton établissement")}
+});
+document.addEventListener("input",function(e){
+  var pf=e.target.closest&&e.target.closest("form[data-form=pay]");if(pf&&pf.getAttribute("data-ok")){pf.removeAttribute("data-ok");var wb=pf.querySelector(".warnbox");if(wb)wb.remove()}
+  if(e.target.id==="q"){ui.q=e.target.value;ui.focusQ=true;var c=cls(ui.classId);$("#studlist").innerHTML=studList(c)}
+});
+document.addEventListener("submit",function(e){
+  var f=e.target.closest("[data-form]");if(!f)return;e.preventDefault();
+  var k=f.getAttribute("data-form"),v=function(n){return f.elements[n].value},adm=isAdmin();
+  var needAdm=["add-class","edit-class","school","tranches","pins","license","void"];
+  if(needAdm.indexOf(k)>=0&&!adm){toast("Réservé à la direction");return}
+  if(k==="unlock"){var h=pinH(v("pin"));if(db.pins.admin&&h===db.pins.admin)ui.role="admin";else if(db.pins.caisse&&h===db.pins.caisse)ui.role="caisse";else{toast("Code incorrect");return}ui.tab="home";setView("home");render();return}
+  if(k==="recover"){if(db.pins.rec&&pinH(v("code").trim().toUpperCase())===db.pins.rec){db.pins={admin:"",caisse:"",rec:""};save();ui.role="admin";ui.forgot=false;ui.tab="settings";setView("home");render();toast("Codes réinitialisés")}else toast("Code de secours incorrect");return}
+  if(k==="add-class"){db.classes.push({id:uid(),name:v("name").trim(),fee:Math.max(0,+v("fee")||0)});save();render();toast("Classe ajoutée")}
+  else if(k==="edit-class"){var c=cls(ui.classId),old=c.fee,nf=Math.max(0,+v("fee")||0);c.name=v("name").trim();c.fee=nf;db.students.forEach(function(s){if(s.classId===c.id&&s.fee===old)s.fee=nf});save();render();toast("Classe enregistrée")}
+  else if(k==="add-students"){var names=v("names").split("\n").map(function(l){return l.split(";")}).filter(function(p){return p[0].trim()});
+    if(!names.length){toast("Écris au moins un nom");return}if(!canAdd(names.length))return;
+    var mo=Math.min(9,Math.max(0,parseInt(v("months"),10)||9)),cf=cls(ui.classId).fee,fee=mo<9?Math.round(cf*mo/9/500)*500:cf;
+    names.forEach(function(p){db.students.push({id:uid(),classId:ui.classId,name:p[0].trim(),fee:fee,phone:(p[1]||"").trim()})});save();ui.q="";render();toast(names.length+" élève"+(names.length>1?"s ajoutés":" ajouté"))}
+  else if(k==="pay"){var a=Math.round(+v("amount"));if(!(a>0)){toast("Montant invalide");return}
+    if(f.getAttribute("data-ok")!=="1"){var sx=stu(ui.studentId),warn=[],rs=Math.max(0,sx.fee-paidOf(sx.id));
+      if(a>rs)warn.push("Ce montant dépasse le reste à payer ("+money(rs)+").");
+      var dup=db.payments.filter(function(x){return x.studentId===sx.id&&!x.void&&x.amount===a&&x.date===v("date")})[0];
+      if(dup)warn.push("Un paiement identique ("+dup.no+") existe déjà à cette date.");
+      if(warn.length){var bx=f.querySelector(".warnbox");if(!bx){bx=document.createElement("div");bx.className="banner warnbox";f.insertBefore(bx,f.querySelector("button[type=submit]"))}bx.textContent=warn.join(" ")+" Appuie encore sur Valider pour confirmer.";f.setAttribute("data-ok","1");return}}var p=pay(ui.studentId,a,v("date"),v("mode"),v("note").trim());save();render();showReceipt(p.id)}
+  else if(k==="edit-student"){var s=stu(ui.studentId);s.name=v("name").trim();var nfee=Math.max(0,+v("fee")||0);
+    if(adm){var nc=v("classId");if(nc&&nc!==s.classId){var oc=cls(s.classId),ncl=cls(nc);if(ncl){if(oc&&s.fee===oc.fee&&nfee===s.fee)nfee=ncl.fee;s.classId=nc;ui.classId=nc}}s.fee=nfee}
+    s.phone=v("phone").trim();save();render();toast("Élève enregistré")}
+  else if(k==="school"){db.school.name=v("name").trim();db.school.year=v("year").trim();db.school.city=v("city").trim();db.school.phone=v("phone").trim();db.school.format=v("format");save();render();toast("Établissement enregistré")}
+  else if(k==="tranches"){var tr=[],tot=0;for(var i=0;i<4;i++){var lb=v("tl"+i).trim();if(!lb)continue;var pc=Math.max(0,+v("tp"+i)||0);tr.push({label:lb,date:v("td"+i),pct:pc});tot+=pc}
+    if(!tr.length){toast("Ajoute au moins une tranche");return}
+    db.school.tranches=tr;save();render();toast(tot===100?"Tranches enregistrées":"Enregistré, mais le total fait "+tot+" % au lieu de 100 %")}
+  else if(k==="pins"){var a1=v("admin").trim(),c1=v("caisse").trim(),ok=/^\d{4,6}$/;
+    if(a1&&!ok.test(a1)||c1&&!ok.test(c1)){toast("Le code doit avoir 4 à 6 chiffres");return}
+    if(a1){db.pins.admin=pinH(a1);var rc=(uid()+uid()).slice(0,8).toUpperCase();db.pins.rec=pinH(rc);ui.rec=rc}
+    if(c1){if(!db.pins.admin){toast("Définis d'abord le code Direction");return}db.pins.caisse=pinH(c1)}
+    if(!a1&&!c1){toast("Saisis au moins un code");return}save();render();toast("Codes enregistrés")}
+  else if(k==="license"){var cd=v("code").trim().toUpperCase();if(licCheck(cd)){db.license=cd;save();render();toast("Licence activée, merci !")}else toast("Code de licence invalide")}
+  else if(k==="void"){var vp=db.payments.filter(function(x){return x.id===f.getAttribute("data-id")})[0];vp.void={reason:v("reason").trim(),date:today(),by:ui.role};ui.voidFor=null;save();render();showReceipt(vp.id);toast("Reçu annulé")}
+  else if(k==="report"){showReport(v("from"),v("to"))}
+});
+document.addEventListener("change",function(e){
+  var t=e.target;if(!t.files||!t.files[0])return;
+  if(t.id==="logo"){var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){
+    var kf=Math.min(1,260/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*kf));c.height=Math.max(1,Math.round(im.height*kf));
+    c.getContext("2d").drawImage(im,0,0,c.width,c.height);db.school.logo=c.toDataURL("image/png");save();render();toast("Logo enregistré")};
+    im.onerror=function(){toast("Image illisible")};im.src=fr.result};fr.readAsDataURL(t.files[0])}
+  else if(t.id==="impfile"){var fr2=new FileReader();fr2.onload=function(){importText(String(fr2.result))};fr2.readAsText(t.files[0])}
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("#layer").innerHTML)closeLayer()});
+
+load();migrate();save();
+ui.role=locked()?null:"admin";
+render();
+})();
+</script>

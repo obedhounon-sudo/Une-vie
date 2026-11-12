@@ -1,0 +1,8 @@
+{
+  "appId": "com.ecolerecus.paiements",
+  "appName": "Reçus Scolaires",
+  "webDir": "www",
+  "backgroundColor": "#0f5c7a",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
