@@ -333,7 +333,18 @@ function locked(){return !!(db.pins.admin||db.pins.caisse)}
 function licCode(b){return fnv("ecole|"+b+"|"+LSALT).toString(36).toUpperCase().padStart(3,"0").slice(-3)}
 function licCheck(c){var m=/^EC-([A-Z0-9]{6})-([A-Z0-9]{3})$/.exec(String(c).trim().toUpperCase());return !!m&&licCode(m[1])===m[2]}
 function licOK(){return !!db.license&&licCheck(db.license)}
-function canAdd(n){if(licOK()||db.students.length+n<=FREE)return true;toast("Version d'essai limitée à "+FREE+" élèves. Active une licence dans les Réglages.");return false}
+var PAY={link:"",mm:[],bank:{},contact:"Instagram @obedklein"};
+function unlockPrice(){var c=ci().cur;return c==="XOF"||c==="XAF"?"50 000 FCFA":c==="EUR"?"100 €":"100 $"}
+function payRows(){var r=[],b=PAY.bank||{};PAY.mm.forEach(function(m){r.push([m[0],m[1]])});[["Banque",b.name],["Titulaire",b.holder],["IBAN / Compte",b.iban],["BIC / SWIFT",b.bic]].forEach(function(x){if(x[1])r.push(x)});return r}
+function showUnlock(){
+  var rows=payRows();
+  $("#layer").innerHTML='<div class="modal-bg" data-act="close-bg"><div class="modal" role="dialog" aria-label="Débloquer l\'application"><div class="card stack"><h3 style="margin:0">Débloquer les élèves illimités</h3>'+
+  '<p class="muted small" style="margin:0">La version gratuite est limitée à '+FREE+' élèves. Licence à vie, une seule fois :</p><div style="font-size:1.6em;font-weight:700">'+unlockPrice()+'</div>'+
+  '<button class="btn primary" data-act="pay-card">Payer par carte bancaire</button>'+
+  (rows.length?'<div class="card stack"><b>Virement / Mobile Money</b>'+rows.map(function(r){return '<div class="small"><span class="muted">'+esc(r[0])+' :</span> <b>'+esc(r[1])+'</b></div>'}).join("")+'</div>':'')+
+  '<p class="muted small" style="margin:0">Après le paiement, envoie la preuve à <b>'+esc(PAY.contact)+'</b>. Tu reçois ton code de licence (EC-XXXXXX-XXX) à entrer dans Réglages › Licence.</p>'+
+  '<button class="btn grow" data-act="close">Fermer</button></div></div></div>'}
+function canAdd(n){if(licOK()||db.students.length+n<=FREE)return true;showUnlock();return false}
 
 /* ---------- Vues ---------- */
 var app=$("#app");
@@ -417,7 +428,7 @@ function viewSettings(){
   h+='<div class="card stack"><h3>Logo de l\'école</h3>'+(sc.logo?'<img class="logoprev" src="'+sc.logo+'" alt="Logo actuel">':'<p class="muted small" style="margin:0">Aucun logo. Il apparaîtra en haut de chaque reçu.</p>')+'<label>Choisir une image (PNG ou JPG)<input id="logo" type="file" accept="image/*"></label>'+(sc.logo?'<button class="btn danger sm" data-act="logo-del">Retirer le logo</button>':'')+'</div>';
   h+='<form class="card stack" data-form="pins"><h3>Codes d\'accès</h3><p class="muted small" style="margin:0">Le code Direction ouvre tout. Le code Caisse permet d\'encaisser et de consulter, mais pas de supprimer, annuler ni modifier les tarifs. Laisse vide pour ne pas verrouiller l\'application. 4 à 6 chiffres.</p>'+(ui.rec?'<div class="banner" style="margin:0"><span>Code de secours : <b class="num">'+esc(ui.rec)+'</b>. Note-le sur papier, il ne sera plus affiché.</span></div>':'')+'<div class="form"><label>Code Direction<input id="pin1" name="admin" type="password" inputmode="numeric" maxlength="6" placeholder="'+(db.pins.admin?'(défini)':'aucun')+'" autocomplete="off"></label><label>Code Caisse<input id="pin2" name="caisse" type="password" inputmode="numeric" maxlength="6" placeholder="'+(db.pins.caisse?'(défini)':'aucun')+'" autocomplete="off"></label></div><div class="row"><button class="btn primary" type="submit">Enregistrer les codes</button>'+(locked()?'<button class="btn danger" type="button" data-act="pins-off">Supprimer les codes</button>':'')+'</div></form>';
   h+='<div class="card stack"><h3>Importer des élèves (Excel ou CSV)</h3><p class="muted small" style="margin:0">Dans Excel, mets les colonnes <b>Nom · Classe · Téléphone · Scolarité</b> (les deux dernières sont facultatives), copie-les et colle-les ici. Tu peux aussi choisir un fichier CSV. Les classes manquantes sont créées.</p><textarea id="imp" placeholder="Afi Mensah&#9;6ème&#9;90112233&#9;85000"></textarea><button class="btn" data-act="import">Importer le texte collé</button><label>Ou un fichier CSV<input id="impfile" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain"></label></div>';
-  h+='<form class="card stack" data-form="license"><h3>Licence</h3><p class="muted small" style="margin:0">'+(licOK()?'Licence active : élèves illimités.':'Version d\'essai : '+FREE+' élèves au maximum. Entre un code de licence pour en ajouter davantage.')+'</p>'+(licOK()?'':'<label>Code de licence<input id="lic" name="code" placeholder="EC-XXXXXX-XXX" autocomplete="off" autocapitalize="characters"></label><button class="btn primary" type="submit">Activer</button>')+'</form>';
+  h+='<form class="card stack" data-form="license"><h3>Licence</h3><p class="muted small" style="margin:0">'+(licOK()?'Licence active : élèves illimités.':'Version d\'essai : '+FREE+' élèves au maximum. Entre un code de licence pour en ajouter davantage.')+'</p>'+(licOK()?'':'<button class="btn" type="button" data-act="unlock">Débloquer ('+unlockPrice()+')</button><label>Code de licence<input id="lic" name="code" placeholder="EC-XXXXXX-XXX" autocomplete="off" autocapitalize="characters"></label><button class="btn primary" type="submit">Activer</button>')+'</form>';
   h+='<div class="card stack"><h3>Sauvegarde</h3><p class="muted small" style="margin:0">Les données restent sur cet appareil. Fais une sauvegarde régulièrement et garde-la ailleurs (WhatsApp, e-mail).</p><div class="row"><button class="btn" data-act="backup-copy">Copier la sauvegarde</button><button class="btn" data-act="backup-file">Télécharger</button></div><label>Restaurer une sauvegarde<textarea id="restore" placeholder="Colle ici le texte de la sauvegarde"></textarea></label><button class="btn" data-act="restore">Restaurer</button></div>';
   h+='<div class="card stack"><h3>Tout effacer</h3><button class="btn danger" data-act="wipe">'+(ui.confirm==="wipe"?'Confirmer : effacer toutes les données':'Effacer toutes les données')+'</button></div></div>';
   return h;
@@ -605,6 +616,8 @@ document.addEventListener("click",function(e){
   if(act==="logout"){doSignOut();render();toast("Déconnecté");return}
   if(act==="auth-sw"){ui.authMode=ui.authMode==="up"?"in":"up";render();return}
   if(act==="pick-country"){var cc=countryOf(id);db.school.country=id;if(cc.cal&&db.school.year==="2026-2027")db.school.year="2026";if(cc.lang!=="fr"&&cc.lang!=="en")toast("Les reçus restent en français ; le montant en lettres n'est pas disponible pour cette langue.");save();render();return}
+  if(act==="unlock"){showUnlock();return}
+  if(act==="pay-card"){if(PAY.link)window.open(PAY.link,"_blank","noopener");else toast("Le lien de paiement par carte arrive bientôt. Contacte "+PAY.contact);return}
   if(act==="close-bg"){if(e.target===el)closeLayer();return}
   if(act==="tab"){ui.tab=el.getAttribute("data-v");setView("home");render();return}
   if(act==="open-class"){ui.classId=id;ui.tab="home";setView("class");render();window.scrollTo(0,0);return}
