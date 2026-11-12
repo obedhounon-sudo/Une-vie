@@ -4,9 +4,11 @@
 
 # Une Vie
 
-**Simulation de vie réaliste, année après année — gratuite, sans pub, en français et en anglais.**
+**Simulation de vie réaliste, année après année — gratuite, en français et en anglais.**
 
 [▶️ Jouer dans le navigateur](https://obedhounon-sudo.github.io/Une-vie/) · [📱 Télécharger l'APK Android](../../releases/latest) · [☕ Soutenir le jeu](https://buymeacoffee.com/obedhounonl)
+
+Créé par [**Obed Hounon (@obedklein)**](https://obedhounon-sudo.github.io/Une-vie/obed/) · [Instagram](https://www.instagram.com/obedklein/) · Autre projet : [Reçus Scolaires](https://obedhounon-sudo.github.io/Une-vie/recus/)
 
 </div>
 
