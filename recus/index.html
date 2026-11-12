@@ -197,7 +197,36 @@ function uid(){return Math.random().toString(36).slice(2,9)}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function today(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function fmtDate(iso){if(!iso)return"";var p=iso.split("-");return p[2]+"/"+p[1]+"/"+p[0]}
-function money(n){return Math.round(n||0).toLocaleString("fr-FR").replace(/[  ]/g," ")+" F"}
+
+/* ---------- Pays, devises, paiements mobiles ---------- */
+var CUR={
+XOF:{s:"FCFA",fr:"francs CFA",en:"CFA francs"},XAF:{s:"FCFA",fr:"francs CFA",en:"CFA francs"},
+EUR:{s:"€",fr:"euros",en:"euros"},USD:{s:"$",b:1,fr:"dollars américains",en:"US dollars"},GBP:{s:"£",b:1,fr:"livres sterling",en:"pounds sterling"},
+CAD:{s:"$ CA",fr:"dollars canadiens",en:"Canadian dollars"},CHF:{s:"CHF",fr:"francs suisses",en:"Swiss francs"},AUD:{s:"A$",b:1,fr:"dollars australiens",en:"Australian dollars"},
+GHS:{s:"GH₵",b:1,fr:"cédis",en:"Ghana cedis"},NGN:{s:"₦",b:1,fr:"nairas",en:"naira"},KES:{s:"KSh",b:1,fr:"shillings kényans",en:"Kenyan shillings"},
+UGX:{s:"USh",b:1,fr:"shillings ougandais",en:"Ugandan shillings"},TZS:{s:"TSh",b:1,fr:"shillings tanzaniens",en:"Tanzanian shillings"},
+RWF:{s:"FRw",fr:"francs rwandais",en:"Rwandan francs"},BIF:{s:"FBu",fr:"francs burundais",en:"Burundian francs"},CDF:{s:"FC",fr:"francs congolais",en:"Congolese francs"},
+GNF:{s:"FG",fr:"francs guinéens",en:"Guinean francs"},MGA:{s:"Ar",fr:"ariary",en:"ariary"},MUR:{s:"Rs",b:1,fr:"roupies mauriciennes",en:"Mauritian rupees"},
+MAD:{s:"MAD",fr:"dirhams",en:"dirhams"},DZD:{s:"DA",fr:"dinars algériens",en:"Algerian dinars"},TND:{s:"DT",fr:"dinars tunisiens",en:"Tunisian dinars"},
+EGP:{s:"E£",b:1,fr:"livres égyptiennes",en:"Egyptian pounds"},ZAR:{s:"R",b:1,fr:"rands",en:"rand"},ZMW:{s:"ZK",b:1,fr:"kwachas",en:"kwacha"},
+ETB:{s:"Br",fr:"birrs",en:"birr"},SLE:{s:"Le",b:1,fr:"leones",en:"leones"},LRD:{s:"L$",b:1,fr:"dollars libériens",en:"Liberian dollars"},GMD:{s:"D",b:1,fr:"dalasis",en:"dalasi"},
+HTG:{s:"G",fr:"gourdes",en:"gourdes"},INR:{s:"₹",b:1,fr:"roupies",en:"rupees"},PKR:{s:"Rs",b:1,fr:"roupies pakistanaises",en:"Pakistani rupees"},
+PHP:{s:"₱",b:1,fr:"pesos philippins",en:"Philippine pesos"},BRL:{s:"R$",b:1,fr:"réaux",en:"reais"},MXN:{s:"$ MX",fr:"pesos mexicains",en:"Mexican pesos"}
+};
+var COUNTRIES=("TG|Togo|XOF|228|fr|Moov Money,T-Money|0\nBJ|Bénin|XOF|229|fr|MTN MoMo,Moov Money,Celtiis Cash|0\nCI|Côte d'Ivoire|XOF|225|fr|Orange Money,MTN MoMo,Moov Money,Wave|0\nSN|Sénégal|XOF|221|fr|Wave,Orange Money,Free Money|0\nML|Mali|XOF|223|fr|Orange Money,Moov Money|0\nBF|Burkina Faso|XOF|226|fr|Orange Money,Moov Money|0\nNE|Niger|XOF|227|fr|Airtel Money,Moov Money,Orange Money|0\nGW|Guinée-Bissau|XOF|245|fr|Orange Money|0\n"+
+"CM|Cameroun|XAF|237|fr|MTN MoMo,Orange Money|0\nGA|Gabon|XAF|241|fr|Airtel Money,Moov Money|0\nCG|Congo-Brazzaville|XAF|242|fr|MTN MoMo,Airtel Money|0\nTD|Tchad|XAF|235|fr|Airtel Money,Moov Money|0\nCF|Centrafrique|XAF|236|fr|Orange Money|0\nGQ|Guinée équatoriale|XAF|240|fr||0\n"+
+"CD|RD Congo|CDF|243|fr|M-Pesa,Orange Money,Airtel Money|0\nGN|Guinée|GNF|224|fr|Orange Money,MTN MoMo|0\nMG|Madagascar|MGA|261|fr|MVola,Orange Money,Airtel Money|0\nMU|Maurice|MUR|230|fr|MyT Money|0\nBI|Burundi|BIF|257|fr|Lumicash,Ecocash|0\nRW|Rwanda|RWF|250|en|MTN MoMo,Airtel Money|1\nHT|Haïti|HTG|509|fr|MonCash|0\n"+
+"MA|Maroc|MAD|212|fr||0\nDZ|Algérie|DZD|213|fr||0\nTN|Tunisie|TND|216|fr||0\nEG|Égypte|EGP|20|en|Vodafone Cash,Fawry|0\n"+
+"GH|Ghana|GHS|233|en|MTN MoMo,Telecel Cash,AirtelTigo Money|0\nNG|Nigeria|NGN|234|en|OPay,PalmPay,Paga|0\nKE|Kenya|KES|254|en|M-Pesa,Airtel Money|1\nUG|Ouganda|UGX|256|en|MTN MoMo,Airtel Money|1\nTZ|Tanzanie|TZS|255|en|M-Pesa,Tigo Pesa,Airtel Money|1\nET|Éthiopie|ETB|251|en|Telebirr,CBE Birr|0\nZA|Afrique du Sud|ZAR|27|en||1\nZM|Zambie|ZMW|260|en|MTN MoMo,Airtel Money|1\nSL|Sierra Leone|SLE|232|en|Orange Money,Afrimoney|0\nLR|Liberia|LRD|231|en|Orange Money,MTN MoMo|0\nGM|Gambie|GMD|220|en|Wave,Afrimoney|0\n"+
+"FR|France|EUR|33|fr||0\nBE|Belgique|EUR|32|fr||0\nLU|Luxembourg|EUR|352|fr||0\nCH|Suisse|CHF|41|fr||0\nCA|Canada|CAD|1|fr||0\nGB|Royaume-Uni|GBP|44|en||0\nUS|États-Unis|USD|1|en||0\nAU|Australie|AUD|61|en||1\nIN|Inde|INR|91|en||0\nPK|Pakistan|PKR|92|en||0\nPH|Philippines|PHP|63|en||0\nBR|Brésil|BRL|55|pt||1\nMX|Mexique|MXN|52|es||1").split("\n").map(function(l){var p=l.split("|");return {code:p[0],name:p[1],cur:p[2],dial:p[3],lang:p[4],mm:p[5]?p[5].split(","):[],cal:p[6]==="1"}});
+function countryOf(code){return COUNTRIES.filter(function(c){return c.code===code})[0]}
+function ci(){return countryOf(db&&db.school&&db.school.country)||countryOf("TG")}
+function cur(){var c=ci();return CUR[c.cur]||{s:c.cur,fr:c.cur,en:c.cur}}
+function money(n){var c=cur(),v=Math.round(n||0).toLocaleString(ci().lang==="en"?"en-GB":"fr-FR").replace(/[  ]/g," ");return c.b?c.s+" "+v:v+" "+c.s}
+function pm(n){var v=Math.round(n||0).toLocaleString("fr-FR").replace(/[  ]/g," ");return v+" "+(ci().cur==="XOF"||ci().cur==="XAF"?"FCFA":ci().cur)}
+function modes(){var m=ci().mm;return ["Espèces"].concat(m.length?m:["Mobile Money"]).concat(["Virement","Chèque"])}
+function waNum(ph){var d=String(ph||"").replace(/\D/g,""),dial=ci().dial;if(/^\s*\+/.test(String(ph))||d.indexOf("00")===0)return d.replace(/^00/,"");if(d.indexOf(dial)===0&&d.length>dial.length+6)return d;return dial+d.replace(/^0+/,"")}
+
 function fnv(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
 
 /* ---------- Montant en lettres ---------- */
@@ -226,7 +255,15 @@ function words(n){
   if(r)out.push(b1000(r,true));
   return out.join(" ");
 }
-function amountWords(n){var w=words(n);return w.charAt(0).toUpperCase()+w.slice(1)+(n>=1e6&&Math.round(n)%1e6===0?" de francs CFA":" francs CFA")}
+var EO=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"],ET=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+function e100(n){return n<20?EO[n]:ET[Math.floor(n/10)]+(n%10?"-"+EO[n%10]:"")}
+function e1000(n){var h=Math.floor(n/100),r=n%100;return (h?EO[h]+" hundred"+(r?" and ":""):"")+(r?e100(r):"")}
+function wordsEn(n){n=Math.round(n);if(n===0)return "zero";var o=[],b=Math.floor(n/1e9),m=Math.floor(n%1e9/1e6),t=Math.floor(n%1e6/1000),r=n%1000;
+  if(b)o.push(e1000(b)+" billion");if(m)o.push(e1000(m)+" million");if(t)o.push(e1000(t)+" thousand");if(r)o.push((o.length&&r<100?"and ":"")+e1000(r));return o.join(" ")}
+function amountWords(n){var l=ci().lang,c=cur();
+  if(l==="fr"){var w=words(n);return w.charAt(0).toUpperCase()+w.slice(1)+" "+((n>=1e6&&Math.round(n)%1e6===0&&c.fr!==ci().cur)?"de ":"")+c.fr}
+  if(l==="en"){var e=wordsEn(n);return e.charAt(0).toUpperCase()+e.slice(1)+" "+c.en}
+  return ""}
 
 /* ---------- Données ---------- */
 var db=null,mem=null,ui={view:"home",tab:"home",classId:null,studentId:null,q:"",confirm:null,role:null,voidFor:null,forgot:false,rec:null,focusQ:false};
@@ -323,7 +360,7 @@ function viewHome(){
   if(!db.classes.length)h+='<div class="card empty">Aucune classe. '+(adm?'Ajoute la première avec le formulaire ci-dessous.':'')+'</div>';
   else h+='<div class="list">'+db.classes.map(function(c){var s=classStats(c),pc=s.exp?Math.round(s.got/s.exp*100):0;
     return '<button class="item" data-act="open-class" data-id="'+c.id+'"><div class="grow"><div class="name">'+esc(c.name)+'</div><div class="muted small">'+s.n+' élève'+(s.n>1?'s':'')+' · scolarité '+money(c.fee)+'</div><div class="bar" style="margin-top:8px"><i style="width:'+pc+'%"></i></div></div><div style="text-align:right"><div class="num">'+pc+' %</div><div class="muted small">reste '+money(s.rest)+'</div></div></button>'}).join("")+'</div>';
-  if(adm)h+='<form class="card form" data-form="add-class"><label>Nouvelle classe<input id="cn" name="name" placeholder="Ex : 6ème A" required maxlength="40"></label><label>Scolarité (F CFA)<input id="cf" name="fee" type="number" inputmode="numeric" min="0" placeholder="Ex : 85000" required></label><button class="btn primary" type="submit">Ajouter la classe</button></form>';
+  if(adm)h+='<form class="card form" data-form="add-class"><label>Nouvelle classe<input id="cn" name="name" placeholder="Ex : 6ème A" required maxlength="40"></label><label>Scolarité ('+cur().s+')<input id="cf" name="fee" type="number" inputmode="numeric" min="0" placeholder="Ex : 85000" required></label><button class="btn primary" type="submit">Ajouter la classe</button></form>';
   return h+'</div>';
 }
 function viewClass(){
@@ -331,7 +368,7 @@ function viewClass(){
   var adm=isAdmin(),s=classStats(c);
   var h='<div class="stack"><button class="back" data-act="tab" data-v="home">← Toutes les classes</button>';
   h+='<div><h2>'+esc(c.name)+'</h2><div class="muted small">'+s.n+' élèves · '+s.solde+' soldé'+(s.solde>1?'s':'')+' · reste '+money(s.rest)+'</div></div>';
-  if(adm)h+='<form class="card form" data-form="edit-class"><label>Nom de la classe<input id="ecn" name="name" value="'+esc(c.name)+'" required maxlength="40"></label><label>Scolarité (F CFA)<input id="ecf" name="fee" type="number" inputmode="numeric" min="0" value="'+c.fee+'" required></label><button class="btn" type="submit">Enregistrer</button></form>';
+  if(adm)h+='<form class="card form" data-form="edit-class"><label>Nom de la classe<input id="ecn" name="name" value="'+esc(c.name)+'" required maxlength="40"></label><label>Scolarité ('+cur().s+')<input id="ecf" name="fee" type="number" inputmode="numeric" min="0" value="'+c.fee+'" required></label><button class="btn" type="submit">Enregistrer</button></form>';
   h+='<h3>Élèves</h3><input id="q" type="search" placeholder="Rechercher un élève" value="'+esc(ui.q)+'" aria-label="Rechercher un élève"><div id="studlist">'+studList(c)+'</div>';
   h+='<form class="card stack" data-form="add-students"><label>Ajouter des élèves<textarea id="names" name="names" placeholder="Un élève par ligne&#10;Afi Mensah&#10;Koffi Agbodjan ; 90 11 22 33"></textarea></label><label>Mois restants dans l\'année (facultatif, sur 9)<input id="mo" name="months" type="number" min="1" max="9" inputmode="numeric" placeholder="9 = année complète"></label><span class="muted small">Un nom par ligne. Tu peux ajouter un numéro après un point-virgule. La scolarité de la classe s\'applique à chaque élève. Pour un élève arrivé en cours d\'année, indique les mois restants : la scolarité est calculée au prorata.</span><button class="btn primary" type="submit">Ajouter à la classe</button></form>';
   if(adm)h+='<button class="btn danger" data-act="del-class">'+(ui.confirm==="del-class"?'Confirmer : supprimer la classe et ses élèves':'Supprimer cette classe')+'</button>';
@@ -352,7 +389,7 @@ function viewStudent(){
   var h='<div class="stack"><button class="back" data-act="open-class" data-id="'+c.id+'">← '+esc(c.name)+'</button>';
   h+='<div class="row between"><div><h2>'+esc(s.name)+'</h2><div class="muted small">'+esc(c.name)+(s.phone?' · '+esc(s.phone):'')+'</div></div><span class="pill '+st[0]+'">'+esc(st[1])+'</span></div>';
   h+='<div class="stats"><div class="stat"><span>Scolarité</span><b>'+money(s.fee)+'</b></div><div class="stat"><span>Déjà payé</span><b>'+money(paid)+'</b></div><div class="stat"><span>Reste</span><b>'+money(rest)+'</b></div></div><div class="bar"><i style="width:'+pc+'%"></i></div>';
-  if(rest>0)h+='<form class="card stack" data-form="pay"><h3>Encaisser un paiement</h3><div class="form"><label>Montant (F CFA)<input id="pa" name="amount" type="number" inputmode="numeric" min="1" value="'+(l>0?l:rest)+'" required></label><label>Date<input id="pd" name="date" type="date" value="'+today()+'" required></label><label>Mode<select id="pm" name="mode"><option>Espèces</option><option>Mobile Money</option><option>Virement</option><option>Chèque</option></select></label></div><label>Motif<input id="pn" name="note" value="Scolarité" maxlength="80"></label><button class="btn primary" type="submit">Valider et créer le reçu</button></form>';
+  if(rest>0)h+='<form class="card stack" data-form="pay"><h3>Encaisser un paiement</h3><div class="form"><label>Montant ('+cur().s+')<input id="pa" name="amount" type="number" inputmode="numeric" min="1" value="'+(l>0?l:rest)+'" required></label><label>Date<input id="pd" name="date" type="date" value="'+today()+'" required></label><label>Mode<select id="pm" name="mode">'+modes().map(function(x){return "<option>"+esc(x)+"</option>"}).join("")+'</select></label></div><label>Motif<input id="pn" name="note" value="Scolarité" maxlength="80"></label><button class="btn primary" type="submit">Valider et créer le reçu</button></form>';
   else h+='<div class="card empty" style="color:var(--ok)">Scolarité entièrement payée.</div>';
   h+='<h3>Échéances</h3><div class="list">'+schedule(s).map(function(x){var lab=x.st==="ok"?"Payée":x.st==="late"?"En retard":"À venir";return '<div class="item" style="cursor:default"><div class="grow"><div class="name">'+esc(x.t.label)+'</div><div class="muted small">avant le '+fmtDate(x.t.date)+' · cumul '+money(x.amt)+'</div></div><span class="pill '+(x.st==="ok"?"ok":x.st==="late"?"late":"none")+'">'+lab+'</span></div>'}).join("")+'</div>';
   h+='<h3>Historique des paiements</h3>';
@@ -373,7 +410,7 @@ function viewJournal(){
 function viewSettings(){
   var sc=db.school,trs=sc.tranches.slice();while(trs.length<4)trs.push({label:"",date:"",pct:""});
   var h='<div class="stack"><h2>Réglages</h2>';
-  h+='<form class="card stack" data-form="school"><h3>Établissement (affiché sur les reçus)</h3><div class="form"><label>Nom<input id="sn" name="name" value="'+esc(sc.name)+'" placeholder="Nom de l\'établissement" maxlength="80"></label><label>Année scolaire<input id="sy" name="year" value="'+esc(sc.year)+'" maxlength="20"></label><label>Ville<input id="sv" name="city" value="'+esc(sc.city)+'" maxlength="40"></label><label>Téléphone<input id="st" name="phone" value="'+esc(sc.phone)+'" maxlength="30"></label></div><label>Format du reçu<select id="sf" name="format"><option value="a5"'+(sc.format==="a5"?" selected":"")+'>A5 (demi-page)</option><option value="a4"'+(sc.format==="a4"?" selected":"")+'>A4 (page entière)</option><option value="ticket"'+(sc.format==="ticket"?" selected":"")+'>Ticket 58 mm (imprimante thermique)</option></select></label><label style="flex-direction:row;align-items:center;gap:10px"><input id="shc" name="hideCredit" type="checkbox" style="width:auto;min-height:0"'+(sc.hideCredit?" checked":"")+'> Masquer la signature @obedklein sur les reçus et les PDF</label><button class="btn primary" type="submit">Enregistrer</button></form>';
+  h+='<form class="card stack" data-form="school"><h3>Établissement (affiché sur les reçus)</h3><div class="form"><label>Nom<input id="sn" name="name" value="'+esc(sc.name)+'" placeholder="Nom de l\'établissement" maxlength="80"></label><label>Année scolaire<input id="sy" name="year" value="'+esc(sc.year)+'" maxlength="20"></label><label>Ville<input id="sv" name="city" value="'+esc(sc.city)+'" maxlength="40"></label><label>Téléphone<input id="st" name="phone" value="'+esc(sc.phone)+'" maxlength="30"></label></div><label>Pays et devise<select id="sco" name="country">'+COUNTRIES.slice().sort(function(a,b){return a.name.localeCompare(b.name,"fr")}).map(function(c){return '<option value="'+c.code+'"'+(c.code===ci().code?" selected":"")+'>'+esc(c.name)+" ("+esc((CUR[c.cur]||{s:c.cur}).s)+")</option>"}).join("")+'</select></label><label>Format du reçu<select id="sf" name="format"><option value="a5"'+(sc.format==="a5"?" selected":"")+'>A5 (demi-page)</option><option value="a4"'+(sc.format==="a4"?" selected":"")+'>A4 (page entière)</option><option value="ticket"'+(sc.format==="ticket"?" selected":"")+'>Ticket 58 mm (imprimante thermique)</option></select></label><label style="flex-direction:row;align-items:center;gap:10px"><input id="shc" name="hideCredit" type="checkbox" style="width:auto;min-height:0"'+(sc.hideCredit?" checked":"")+'> Masquer la signature @obedklein sur les reçus et les PDF</label><button class="btn primary" type="submit">Enregistrer</button></form>';
   h+=accountCard();
   h+='<form class="card stack" data-form="tranches"><h3>Tranches de paiement</h3><p class="muted small" style="margin:0">Partage de la scolarité en versements. Après la date limite, un élève qui n\'a pas payé le cumul est signalé en retard. Le total doit faire 100 %.</p>'+
     trs.map(function(t,i){return '<div class="form"><label>Nom<input id="tl'+i+'" name="tl'+i+'" value="'+esc(t.label)+'" maxlength="30"></label><label>Date limite<input id="td'+i+'" name="td'+i+'" type="date" value="'+esc(t.date)+'"></label><label>Part (%)<input id="tp'+i+'" name="tp'+i+'" type="number" min="0" max="100" inputmode="numeric" value="'+esc(t.pct)+'"></label></div>'}).join("")+'<button class="btn primary" type="submit">Enregistrer les tranches</button></form>';
@@ -384,6 +421,13 @@ function viewSettings(){
   h+='<div class="card stack"><h3>Sauvegarde</h3><p class="muted small" style="margin:0">Les données restent sur cet appareil. Fais une sauvegarde régulièrement et garde-la ailleurs (WhatsApp, e-mail).</p><div class="row"><button class="btn" data-act="backup-copy">Copier la sauvegarde</button><button class="btn" data-act="backup-file">Télécharger</button></div><label>Restaurer une sauvegarde<textarea id="restore" placeholder="Colle ici le texte de la sauvegarde"></textarea></label><button class="btn" data-act="restore">Restaurer</button></div>';
   h+='<div class="card stack"><h3>Tout effacer</h3><button class="btn danger" data-act="wipe">'+(ui.confirm==="wipe"?'Confirmer : effacer toutes les données':'Effacer toutes les données')+'</button></div></div>';
   return h;
+}
+function renderCountry(){
+  var q=(ui.cq||"").trim().toLowerCase(),list=COUNTRIES.slice().sort(function(a,b){return a.name.localeCompare(b.name,"fr")}).filter(function(c){return !q||c.name.toLowerCase().indexOf(q)>=0||c.cur.toLowerCase().indexOf(q)>=0});
+  var html='<div class="lock card stack" style="margin-top:6vh"><div><small class="muted">Bienvenue</small><h1>Dans quel pays se trouve ton école ?</h1><p class="muted small" style="margin:6px 0 0">La devise, les paiements mobiles et le format des numéros s\'adaptent à ton pays. Tu pourras changer ce choix dans les Réglages.</p></div><input id="cq" type="search" placeholder="Rechercher un pays ou une devise" value="'+esc(ui.cq||"")+'" aria-label="Rechercher un pays"><div class="list" id="clist" style="max-height:52vh;overflow:auto">'+
+  (list.length?list.map(function(c){return '<button class="item" data-act="pick-country" data-id="'+c.code+'"><div class="grow"><div class="name">'+esc(c.name)+'</div><div class="muted small">'+esc((CUR[c.cur]||{fr:c.cur}).fr)+' ('+esc(c.cur)+')'+(c.mm.length?' · '+esc(c.mm.join(", ")):'')+'</div></div></button>'}).join(""):'<div class="empty">Aucun pays trouvé.</div>')+'</div></div>';
+  var keep=document.activeElement&&document.activeElement.id==="cq";
+  app.innerHTML=html;if(keep){var t=$("#cq");t.focus();t.setSelectionRange(t.value.length,t.value.length)}
 }
 function renderLock(){
   app.innerHTML='<div class="lock card stack"><div><small class="muted">Reçus de scolarité</small><h1>'+esc(db.school.name||"Mon établissement")+'</h1></div>'+
@@ -396,6 +440,7 @@ function side(){
     (db.classes.length?db.classes.map(function(c){var cur=ui.view==="class"?ui.classId:(ui.view==="student"&&stu(ui.studentId)?stu(ui.studentId).classId:null);return '<button class="sidebtn" data-act="open-class" data-id="'+c.id+'" aria-current="'+(cur===c.id)+'"><span>'+esc(c.name)+'</span><span class="muted small">'+classStats(c).n+'</span></button>'}).join(""):'<div class="muted small">Aucune classe</div>')+'</nav></aside>'}
 function render(){
   if(!ui.role){renderLock();return}
+  if(!db.school.country&&!ui.noCountry){renderCountry();return}
   var body;
   if(ui.view==="class")body=viewClass();
   else if(ui.view==="student")body=viewStudent();
@@ -412,7 +457,7 @@ function receiptText(p){
   var r=receiptData(p),sc=r.sc;
   return [(p.void?"*** ANNULÉ *** ":"")+(sc.name||"Établissement").toUpperCase()+(sc.city?" - "+sc.city:""),"REÇU DE PAIEMENT N° "+p.no,"Date : "+fmtDate(p.date),"Élève : "+r.s.name+(r.c?" ("+r.c.name+")":""),"Motif : "+(p.note||"Scolarité")+" "+sc.year,"Mode : "+p.mode,"Montant versé : "+money(p.amount),"Total payé : "+money(p.after)+" sur "+money(r.s.fee),"Reste à payer : "+money(p.rest),"Code de contrôle : "+p.code,"",amountWords(p.amount)].join("\n");
 }
-function qrText(p){var r=receiptData(p);return "REÇU N° "+p.no+"\n"+(r.sc.name||"Établissement")+"\n"+r.s.name+(r.c?" ("+r.c.name+")":"")+"\n"+fmtDate(p.date)+"\nVersé : "+p.amount+" F\nReste : "+p.rest+" F\nCode : "+p.code+(p.void?"\nANNULÉ":"")}
+function qrText(p){var r=receiptData(p);return "REÇU N° "+p.no+"\n"+(r.sc.name||"Établissement")+"\n"+r.s.name+(r.c?" ("+r.c.name+")":"")+"\n"+fmtDate(p.date)+"\nVersé : "+pm(p.amount)+"\nReste : "+pm(p.rest)+"\nCode : "+p.code+(p.void?"\nANNULÉ":"")}
 function pageStyle(){var f=db.school.format,css=f==="a4"?"@page{size:A4;margin:12mm}":f==="ticket"?"@page{size:58mm auto;margin:2mm}":"@page{size:A5;margin:8mm}";var st=$("#pgs");if(!st){st=document.createElement("style");st.id="pgs";document.head.appendChild(st)}st.textContent=css}
 function showReceipt(id){
   var p=db.payments.filter(function(x){return x.id===id})[0];if(!p)return;
@@ -423,7 +468,7 @@ function showReceipt(id){
   '<div class="head">'+(sc.logo?'<img class="logo" src="'+sc.logo+'" alt="Logo">':'')+'<div class="hd"><h2>'+esc(sc.name||"Établissement scolaire")+'</h2><div>'+esc([sc.city,sc.phone].filter(Boolean).join(" · "))+'</div></div></div>'+
   '<div class="title"><b>REÇU DE PAIEMENT</b><span>N° '+esc(p.no)+'</span></div>'+
   '<dl><dt>Date</dt><dd>'+fmtDate(p.date)+'</dd><dt>Élève</dt><dd>'+esc(r.s.name)+'</dd><dt>Classe</dt><dd>'+esc(r.c?r.c.name:"-")+'</dd><dt>Motif</dt><dd>'+esc((p.note||"Scolarité")+" "+sc.year)+'</dd><dt>Mode</dt><dd>'+esc(p.mode)+'</dd></dl>'+
-  '<div class="amount"><span>Montant versé</span><b>'+money(p.amount)+'</b></div><div class="words">Arrêté à la somme de : '+esc(amountWords(p.amount))+'.</div>'+
+  '<div class="amount"><span>Montant versé</span><b>'+money(p.amount)+'</b></div>'+(amountWords(p.amount)?'<div class="words">Arrêté à la somme de : '+esc(amountWords(p.amount))+'.</div>':'')+
   '<dl><dt>Total payé à ce jour</dt><dd class="num">'+money(p.after)+'</dd><dt>Scolarité</dt><dd class="num">'+money(r.s.fee)+'</dd><dt>Reste à payer</dt><dd class="num">'+money(p.rest)+'</dd></dl>'+
   '<div class="foot"><div class="qr">'+QR.svg(qrText(p),104)+'</div><div class="ctl"><span>Code de contrôle</span><b>'+esc(p.code)+'</b><span>Scanne le QR code pour lire les détails du reçu.</span></div></div>'+
   '<div class="sign"><div>Le parent</div><div>La caisse</div></div>'+(db.school.hideCredit?'':'<div class="credit">Reçus Scolaires · @obedklein</div>')+'</div>'+
@@ -476,9 +521,9 @@ async function makePDF(p){
   Tx("F2",fs+3,m,y,"REÇU DE PAIEMENT");y-=fs+5;Tx("F3",fs,m,y,"N° "+p.no);y-=fs+8;
   var rows=[["Date",fmtDate(p.date)],["Élève",r.s.name],["Classe",r.c?r.c.name:"-"],["Motif",(p.note||"Scolarité")+" "+sc.year],["Mode",p.mode]],cx=m+iw*0.32;
   rows.forEach(function(rw){Tx("F1",fs,m,y,rw[0]);wrapTxt(rw[1],fs,W-cx-m).forEach(function(l,i){Tx("F2",fs,cx,y,l);y-=fs+4});if(!wrapTxt(rw[1],fs,W-cx-m).length)y-=fs+4});
-  y-=4;var bh=fs+16;ops.push("1.2 w "+m+" "+(y-bh+6)+" "+iw+" "+bh+" re S");Tx("F1",fs,m+6,y-bh/2-fs/2+8,"Montant versé");Tx("F3",fs+3,m+iw*0.42,y-bh/2-fs/2+7,money(p.amount).replace(/ /g," "));y-=bh+8;
-  wrapTxt("Arrêté à la somme de : "+amountWords(p.amount)+".",fs-1,iw).forEach(function(l){Tx("F1",fs-1,m,y,l);y-=fs+2});y-=6;
-  [[f==="ticket"?"Total payé":"Total payé à ce jour",money(p.after)],["Scolarité",money(r.s.fee)],["Reste à payer",money(p.rest)]].forEach(function(rw){Tx("F1",fs,m,y,rw[0]);Tx("F3",fs,m+iw*0.58,y,rw[1].replace(/ /g," "));y-=fs+4});
+  y-=4;var bh=fs+16;ops.push("1.2 w "+m+" "+(y-bh+6)+" "+iw+" "+bh+" re S");Tx("F1",fs,m+6,y-bh/2-fs/2+8,"Montant versé");Tx("F3",fs+3,m+iw*0.42,y-bh/2-fs/2+7,pm(p.amount));y-=bh+8;
+  (amountWords(p.amount)?wrapTxt("Arrêté à la somme de : "+amountWords(p.amount)+".",fs-1,iw):[]).forEach(function(l){Tx("F1",fs-1,m,y,l);y-=fs+2});y-=6;
+  [[f==="ticket"?"Total payé":"Total payé à ce jour",pm(p.after)],["Scolarité",pm(r.s.fee)],["Reste à payer",pm(p.rest)]].forEach(function(rw){Tx("F1",fs,m,y,rw[0]);Tx("F3",fs,m+iw*0.58,y,rw[1]);y-=fs+4});
   y-=8;var q=QR.make(qrText(p)),cell=Math.min(3,(f==="ticket"?iw*0.7:84)/(q.size+8)),qs=(q.size+8)*cell,qx=m,qy=y-qs;
   ops.push("q 1 g "+qx+" "+qy.toFixed(1)+" "+qs.toFixed(1)+" "+qs.toFixed(1)+" re f 0 g");
   for(var ry=0;ry<q.size;ry++){var rx=0;while(rx<q.size){if(q.modules[ry][rx]){var st=rx;while(rx<q.size&&q.modules[ry][rx])rx++;ops.push((qx+(st+4)*cell).toFixed(2)+" "+(qy+qs-(ry+5)*cell).toFixed(2)+" "+((rx-st)*cell).toFixed(2)+" "+cell.toFixed(2)+" re f")}else rx++}}
@@ -559,6 +604,7 @@ document.addEventListener("click",function(e){
   if(act==="sync-now"){toast("Synchronisation…");syncNow().then(function(){toast(syncState==="ok"?"Synchronisé":syncErr)});return}
   if(act==="logout"){doSignOut();render();toast("Déconnecté");return}
   if(act==="auth-sw"){ui.authMode=ui.authMode==="up"?"in":"up";render();return}
+  if(act==="pick-country"){var cc=countryOf(id);db.school.country=id;if(cc.cal&&db.school.year==="2026-2027")db.school.year="2026";if(cc.lang!=="fr"&&cc.lang!=="en")toast("Les reçus restent en français ; le montant en lettres n'est pas disponible pour cette langue.");save();render();return}
   if(act==="close-bg"){if(e.target===el)closeLayer();return}
   if(act==="tab"){ui.tab=el.getAttribute("data-v");setView("home");render();return}
   if(act==="open-class"){ui.classId=id;ui.tab="home";setView("class");render();window.scrollTo(0,0);return}
@@ -573,7 +619,7 @@ document.addEventListener("click",function(e){
   if(act==="report"){showReport();return}
   if(act==="copy-receipt"){copy(receiptText(db.payments.filter(function(p){return p.id===id})[0]),"Reçu copié");return}
   if(act==="wa"){var p=db.payments.filter(function(x){return x.id===id})[0],s=stu(p.studentId),ph=s&&s.phone?s.phone.replace(/\D/g,""):"";
-    window.open("https://wa.me/"+(ph.length===8?"228"+ph:ph)+"?text="+encodeURIComponent(receiptText(p)),cap()?"_system":"_blank");return}
+    window.open("https://wa.me/"+waNum(s&&s.phone)+"?text="+encodeURIComponent(receiptText(p)),cap()?"_system":"_blank");return}
   if(act==="pdf"){var pp=db.payments.filter(function(x){return x.id===id})[0];toast("Création du PDF…");
     makePDF(pp).then(function(b){saveBlob("recu-"+pp.no+".pdf",b)}).catch(function(){toast("Impossible de créer le PDF")});return}
   if(act==="void-on"){ui.voidFor=id;showReceipt(id);return}
@@ -596,6 +642,7 @@ document.addEventListener("click",function(e){
   if(act==="clear-demo"){db=blank();db.epoch=Date.now();save();setView("home");ui.tab="settings";render();toast("Saisis le nom de ton établissement")}
 });
 document.addEventListener("input",function(e){
+  if(e.target.id==="cq"){ui.cq=e.target.value;renderCountry();return}
   var pf=e.target.closest&&e.target.closest("form[data-form=pay]");if(pf&&pf.getAttribute("data-ok")){pf.removeAttribute("data-ok");var wb=pf.querySelector(".warnbox");if(wb)wb.remove()}
   if(e.target.id==="q"){ui.q=e.target.value;ui.focusQ=true;var c=cls(ui.classId);$("#studlist").innerHTML=studList(c)}
 });
@@ -626,7 +673,7 @@ document.addEventListener("submit",function(e){
   else if(k==="edit-student"){var s=stu(ui.studentId);s.name=v("name").trim();var nfee=Math.max(0,+v("fee")||0);
     if(adm){var nc=v("classId");if(nc&&nc!==s.classId){var oc=cls(s.classId),ncl=cls(nc);if(ncl){if(oc&&s.fee===oc.fee&&nfee===s.fee)nfee=ncl.fee;s.classId=nc;ui.classId=nc}}s.fee=nfee}
     s.phone=v("phone").trim();if(adm){var pr=f.elements.prorata?+f.elements.prorata.value:0;if(pr>0&&pr<=100)s.fee=Math.round(cls(s.classId).fee*pr/100)}save();render();toast("Élève enregistré")}
-  else if(k==="school"){db.school.name=v("name").trim();db.school.year=v("year").trim();db.school.city=v("city").trim();db.school.phone=v("phone").trim();db.school.format=v("format");db.school.hideCredit=f.elements.hideCredit.checked;save();render();toast("Établissement enregistré")}
+  else if(k==="school"){db.school.name=v("name").trim();db.school.year=v("year").trim();db.school.city=v("city").trim();db.school.phone=v("phone").trim();db.school.format=v("format");if(v("country")&&v("country")!==db.school.country)db.school.country=v("country");db.school.hideCredit=f.elements.hideCredit.checked;save();render();toast("Établissement enregistré")}
   else if(k==="tranches"){var tr=[],tot=0;for(var i=0;i<4;i++){var lb=v("tl"+i).trim();if(!lb)continue;var pc=Math.max(0,+v("tp"+i)||0);tr.push({label:lb,date:v("td"+i),pct:pc});tot+=pc}
     if(!tr.length){toast("Ajoute au moins une tranche");return}
     db.school.tranches=tr;save();render();toast(tot===100?"Tranches enregistrées":"Enregistré, mais le total fait "+tot+" % au lieu de 100 %")}
