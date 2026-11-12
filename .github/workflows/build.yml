@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths-ignore: ['recus/**', '.github/workflows/build-recus.yml']
     paths-ignore:
       - 'recus/**'
       - '.github/workflows/build-recus.yml'
