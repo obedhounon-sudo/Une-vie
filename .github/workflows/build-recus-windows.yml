@@ -1,0 +1,42 @@
+name: Compiler Reçus Scolaires (Windows)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['recus/index.html', 'recus/desktop/**', '.github/workflows/build-recus-windows.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: recus/desktop
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+
+      - name: Copier l'application
+        run: cp ../index.html index.html
+
+      - name: Version
+        run: npm version "1.0.${{ github.run_number }}" --no-git-tag-version
+
+      - name: Installer
+        run: npm install --no-audit --no-fund
+
+      - name: Fabriquer les programmes Windows
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npx electron-builder --win --x64 --publish never
+
+      - name: Publier
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ls -la dist
+          gh release create "recus-win-${{ github.run_number }}" dist/*.exe --title "Reçus Scolaires Windows ${{ github.run_number }}" --notes "Installateur et version portable pour Windows 10 et 11." --target "${{ github.sha }}"

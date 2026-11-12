@@ -109,6 +109,21 @@ textarea{min-height:110px;resize:vertical}
 .receipt.void{position:relative;overflow:hidden}
 .receipt.void::after{content:"ANNULÉ";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 3.6rem var(--f-display);color:rgba(179,38,30,.26);transform:rotate(-18deg);pointer-events:none}
 .voidbar{background:#fbe3e1;color:#b3261e;font-weight:700;font-size:.85rem;padding:8px 10px;border-radius:4px;margin-bottom:12px}
+.back{display:block;text-align:left}
+.side{display:none}
+.sidebtn{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:0;background:none;padding:10px 12px;border-radius:8px;cursor:pointer;font-weight:600;color:var(--fg);min-height:42px}
+.sidebtn:hover{background:var(--soft)}
+.sidebtn[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.sidebtn[aria-current="true"] .muted{color:inherit}
+.side h3{margin:18px 12px 6px;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+@media (min-width:960px){
+  .app{max-width:1180px}
+  .split{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start}
+  .side{display:block;position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px;max-height:calc(100vh - 24px);overflow:auto}
+  .tabs{display:none}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+  .form{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+}
 .signature{margin-top:28px;text-align:center;color:var(--muted);font-size:.85rem}
 .signature a{color:var(--accent);font-weight:700;text-decoration:none}
 .receipt .credit{margin-top:12px;text-align:center;font-size:.72rem;color:#7a8794}
@@ -222,12 +237,20 @@ function load(){
   if(mem){db=JSON.parse(mem);return}
   db=sample();
 }
-function save(){var s=JSON.stringify(db);mem=s;try{localStorage.setItem(KEY,s)}catch(e){}}
+function saveLocal(){var s=JSON.stringify(db);mem=s;try{localStorage.setItem(KEY,s)}catch(e){}}
+var snap={cl:{},st:{},pa:{},set:""};
+function itemKey(o){var c={};for(var k in o)if(k!=="u")c[k]=o[k];return JSON.stringify(c)}
+function setKey(){return JSON.stringify([db.school,db.pins,db.license,db.salt])}
+function takeSnap(){snap={cl:{},st:{},pa:{},set:setKey()};db.classes.forEach(function(o){snap.cl[o.id]=itemKey(o)});db.students.forEach(function(o){snap.st[o.id]=itemKey(o)});db.payments.forEach(function(o){snap.pa[o.id]=itemKey(o)})}
+function stampChanges(){var n=Date.now();if(!db.tomb)db.tomb={};
+  [["classes","cl"],["students","st"],["payments","pa"]].forEach(function(x){var seen={};db[x[0]].forEach(function(o){seen[o.id]=1;if(snap[x[1]][o.id]!==itemKey(o))o.u=n});Object.keys(snap[x[1]]).forEach(function(id){if(!seen[id])db.tomb[id]=n})});
+  if(snap.set!==setKey())db.su=n;takeSnap()}
+function save(){stampChanges();saveLocal();schedulePush()}
 function migrate(){
   var b=blank();
   if(!db.salt)db.salt=b.salt;
   if(!db.pins)db.pins=b.pins;
-  if(db.license==null)db.license="";if(db.lastBackup==null)db.lastBackup="";
+  if(db.license==null)db.license="";if(!db.tomb)db.tomb={};if(!db.dev){var L="ABCDEFGHJKLMNPQRSTUVWXYZ";db.dev=L[Math.floor(Math.random()*L.length)]+L[Math.floor(Math.random()*L.length)]}if(db.lastBackup==null)db.lastBackup="";
   var sc=db.school;
   if(!sc.logo)sc.logo="";if(!sc.format)sc.format="a5";if(!sc.tranches||!sc.tranches.length)sc.tranches=defTr();
   db.payments.forEach(function(p){if(!p.code)p.code=ctl(p)});
@@ -283,7 +306,7 @@ function tabs(){
   return '<nav class="tabs" aria-label="Sections">'+items.map(function(i){return '<button data-act="tab" data-v="'+i[0]+'" aria-current="'+(ui.tab===i[0])+'">'+i[1]+'</button>'}).join("")+'</nav>';
 }
 function header(){
-  return '<header class="top"><div class="brand"><small>Reçus de scolarité · '+esc(db.school.year)+(locked()?' · '+(isAdmin()?'Direction':'Caisse'):'')+'</small><h1>'+esc(db.school.name||"Mon établissement")+'</h1></div>'+(locked()?'<button class="btn sm" data-act="lock">Verrouiller</button>':'')+'</header>';
+  return '<header class="top"><div class="brand"><small>Reçus de scolarité · '+esc(db.school.year)+(locked()?' · '+(isAdmin()?'Direction':'Caisse'):'')+(AUTH?' · '+(syncState==='err'?'hors ligne':'en ligne'):'')+'</small><h1>'+esc(db.school.name||"Mon établissement")+'</h1></div>'+(locked()?'<button class="btn sm" data-act="lock">Verrouiller</button>':'')+'</header>';
 }
 function backupBanner(){if(!isAdmin()||db.demo||!db.students.length)return"";var d=db.lastBackup?Math.floor((Date.now()-new Date(db.lastBackup).getTime())/864e5):null;if(d!==null&&d<7)return"";return '<div class="banner"><span>'+(d===null?"Aucune sauvegarde faite.":"Dernière sauvegarde il y a "+d+" jours.")+' Protège tes données.</span><button class="btn sm" data-act="backup-file">Sauvegarder maintenant</button></div>'}
 function banner(){return backupBanner()+(db.demo?'<div class="banner"><span>Données d\'exemple. Efface-les pour saisir ton établissement.</span>'+(isAdmin()?'<button class="btn sm" data-act="clear-demo">Commencer avec mes données</button>':'')+'</div>':"")}
@@ -351,6 +374,7 @@ function viewSettings(){
   var sc=db.school,trs=sc.tranches.slice();while(trs.length<4)trs.push({label:"",date:"",pct:""});
   var h='<div class="stack"><h2>Réglages</h2>';
   h+='<form class="card stack" data-form="school"><h3>Établissement (affiché sur les reçus)</h3><div class="form"><label>Nom<input id="sn" name="name" value="'+esc(sc.name)+'" placeholder="Nom de l\'établissement" maxlength="80"></label><label>Année scolaire<input id="sy" name="year" value="'+esc(sc.year)+'" maxlength="20"></label><label>Ville<input id="sv" name="city" value="'+esc(sc.city)+'" maxlength="40"></label><label>Téléphone<input id="st" name="phone" value="'+esc(sc.phone)+'" maxlength="30"></label></div><label>Format du reçu<select id="sf" name="format"><option value="a5"'+(sc.format==="a5"?" selected":"")+'>A5 (demi-page)</option><option value="a4"'+(sc.format==="a4"?" selected":"")+'>A4 (page entière)</option><option value="ticket"'+(sc.format==="ticket"?" selected":"")+'>Ticket 58 mm (imprimante thermique)</option></select></label><label style="flex-direction:row;align-items:center;gap:10px"><input id="shc" name="hideCredit" type="checkbox" style="width:auto;min-height:0"'+(sc.hideCredit?" checked":"")+'> Masquer la signature @obedklein sur les reçus et les PDF</label><button class="btn primary" type="submit">Enregistrer</button></form>';
+  h+=accountCard();
   h+='<form class="card stack" data-form="tranches"><h3>Tranches de paiement</h3><p class="muted small" style="margin:0">Partage de la scolarité en versements. Après la date limite, un élève qui n\'a pas payé le cumul est signalé en retard. Le total doit faire 100 %.</p>'+
     trs.map(function(t,i){return '<div class="form"><label>Nom<input id="tl'+i+'" name="tl'+i+'" value="'+esc(t.label)+'" maxlength="30"></label><label>Date limite<input id="td'+i+'" name="td'+i+'" type="date" value="'+esc(t.date)+'"></label><label>Part (%)<input id="tp'+i+'" name="tp'+i+'" type="number" min="0" max="100" inputmode="numeric" value="'+esc(t.pct)+'"></label></div>'}).join("")+'<button class="btn primary" type="submit">Enregistrer les tranches</button></form>';
   h+='<div class="card stack"><h3>Logo de l\'école</h3>'+(sc.logo?'<img class="logoprev" src="'+sc.logo+'" alt="Logo actuel">':'<p class="muted small" style="margin:0">Aucun logo. Il apparaîtra en haut de chaque reçu.</p>')+'<label>Choisir une image (PNG ou JPG)<input id="logo" type="file" accept="image/*"></label>'+(sc.logo?'<button class="btn danger sm" data-act="logo-del">Retirer le logo</button>':'')+'</div>';
@@ -366,6 +390,10 @@ function renderLock(){
   (ui.forgot?'<form data-form="recover" class="stack"><label>Code de secours<input id="rc" name="code" autocomplete="off" autocapitalize="characters" required></label><button class="btn primary" type="submit">Réinitialiser les codes</button><button class="btn" type="button" data-act="forgot-off">Retour</button></form>':
   '<form data-form="unlock" class="stack"><label>Code d\'accès<input id="pin" name="pin" type="password" inputmode="numeric" maxlength="6" autocomplete="off" required autofocus></label><button class="btn primary" type="submit">Ouvrir</button><button class="btn" type="button" data-act="forgot-on">Code oublié ?</button></form>')+'</div>';
 }
+function side(){
+  var items=[["home","Accueil"],["journal","Journal"]];if(isAdmin())items.push(["settings","Réglages"]);
+  return '<aside class="side"><nav aria-label="Menu">'+items.map(function(i){return '<button class="sidebtn" data-act="tab" data-v="'+i[0]+'" aria-current="'+(ui.view==="home"&&ui.tab===i[0])+'">'+i[1]+'</button>'}).join("")+'</nav><h3>Classes</h3><nav aria-label="Classes">'+
+    (db.classes.length?db.classes.map(function(c){var cur=ui.view==="class"?ui.classId:(ui.view==="student"&&stu(ui.studentId)?stu(ui.studentId).classId:null);return '<button class="sidebtn" data-act="open-class" data-id="'+c.id+'" aria-current="'+(cur===c.id)+'"><span>'+esc(c.name)+'</span><span class="muted small">'+classStats(c).n+'</span></button>'}).join(""):'<div class="muted small">Aucune classe</div>')+'</nav></aside>'}
 function render(){
   if(!ui.role){renderLock();return}
   var body;
@@ -374,7 +402,7 @@ function render(){
   else if(ui.tab==="journal")body=viewJournal();
   else if(ui.tab==="settings"&&isAdmin())body=viewSettings();
   else body=viewHome();
-  app.innerHTML=header()+banner()+tabs()+body+'<footer class="signature">Application créée par <a href="https://www.instagram.com/obedklein/" target="_blank" rel="noopener">@obedklein</a></footer>';
+  app.innerHTML=header()+banner()+'<div class="split">'+side()+'<div class="main">'+tabs()+body+'<footer class="signature">Application créée par <a href="https://www.instagram.com/obedklein/" target="_blank" rel="noopener">@obedklein</a></footer></div></div>';
   var t=$("#q");if(t&&ui.focusQ){t.focus();t.setSelectionRange(t.value.length,t.value.length)}
 }
 
@@ -503,7 +531,7 @@ function csv(){
 function setView(v){ui.view=v;ui.confirm=null;ui.q="";ui.focusQ=false}
 function pay(sid,amount,date,mode,note){
   var s=stu(sid),before=paidOf(sid);db.seq++;
-  var p={id:uid(),studentId:sid,amount:amount,date:date,mode:mode,note:note||"Scolarité",no:"R-"+date.slice(0,4)+"-"+String(db.seq).padStart(4,"0"),after:before+amount,rest:Math.max(0,s.fee-before-amount),by:ui.role};
+  var p={id:uid(),studentId:sid,amount:amount,date:date,mode:mode,note:note||"Scolarité",no:"R-"+date.slice(0,4)+"-"+(db.dev||"")+String(db.seq).padStart(4,"0"),after:before+amount,rest:Math.max(0,s.fee-before-amount),by:ui.role};
   p.code=ctl(p);db.payments.push(p);return p;
 }
 function importText(text){
@@ -527,6 +555,9 @@ document.addEventListener("click",function(e){
   var act=el.getAttribute("data-act"),id=el.getAttribute("data-id"),adm=isAdmin();
   var needAdm=["del-class","del-student","wipe","csv","void-on","clear-demo","pins-off","logo-del","restore"];
   if(needAdm.indexOf(act)>=0&&!adm){toast("Réservé à la direction");return}
+  if(act==="sync-now"){toast("Synchronisation…");syncNow().then(function(){toast(syncState==="ok"?"Synchronisé":syncErr)});return}
+  if(act==="logout"){doSignOut();render();toast("Déconnecté");return}
+  if(act==="auth-sw"){ui.authMode=ui.authMode==="up"?"in":"up";render();return}
   if(act==="close-bg"){if(e.target===el)closeLayer();return}
   if(act==="tab"){ui.tab=el.getAttribute("data-v");setView("home");render();return}
   if(act==="open-class"){ui.classId=id;ui.tab="home";setView("class");render();window.scrollTo(0,0);return}
@@ -550,9 +581,9 @@ document.addEventListener("click",function(e){
   if(act==="del-student"){if(ui.confirm==="del-student"){var cid=stu(ui.studentId).classId;db.payments=db.payments.filter(function(p){return p.studentId!==ui.studentId});db.students=db.students.filter(function(s){return s.id!==ui.studentId});save();ui.classId=cid;setView("class");render();toast("Élève supprimé")}else{ui.confirm="del-student";render()}return}
   if(act==="logo-del"){db.school.logo="";save();render();toast("Logo retiré");return}
   if(act==="pins-off"){db.pins={admin:"",caisse:"",rec:""};ui.rec=null;save();render();toast("Codes supprimés");return}
-  if(act==="verify"){var tx=$("#vtxt").value,mn=/R-\d{4}-\d{4}/.exec(tx),mc=/Code\s*:\s*([A-Z0-9]{6})/i.exec(tx),box=$("#vres");
+  if(act==="verify"){var tx=$("#vtxt").value,mn=/R-\d{4}-[A-Z]{0,2}\d{4}/.exec(tx),mc=/Code\s*:\s*([A-Z0-9]{6})/i.exec(tx),box=$("#vres");
     if(!mn||!mc){box.textContent="Texte non reconnu. Colle le texte complet du QR code.";box.style.color="var(--bad)";return}
-    var vp=db.payments.filter(function(x){return x.no===mn[0]})[0];
+    var vp=db.payments.filter(function(x){return x.no===mn[0]&&x.code===mc[1].toUpperCase()})[0];
     if(vp&&vp.code===mc[1].toUpperCase()){var ss=stu(vp.studentId);box.textContent=(vp.void?"Reçu émis mais ANNULÉ : ":"Reçu authentique : ")+(ss?ss.name:"")+", "+money(vp.amount)+", le "+fmtDate(vp.date)+".";box.style.color=vp.void?"var(--warn)":"var(--ok)"}
     else{box.textContent="Reçu introuvable ou code incorrect. Ce reçu n'a pas été émis par cette caisse.";box.style.color="var(--bad)"}return}
   if(act==="csv"){saveFile("journal-paiements.csv",csv(),"text/csv");return}
@@ -560,8 +591,8 @@ document.addEventListener("click",function(e){
   if(act==="backup-copy"){if(!adm){toast("Réservé à la direction");return}db.lastBackup=new Date().toISOString();save();copy(JSON.stringify(db),"Sauvegarde copiée");return}
   if(act==="backup-file"){if(!adm){toast("Réservé à la direction");return}db.lastBackup=new Date().toISOString();save();saveFile("sauvegarde-recus.json",JSON.stringify(db),"application/json");render();return}
   if(act==="restore"){try{var d=JSON.parse($("#restore").value);if(!d||!d.classes||!d.students||!d.payments)throw 0;db=d;migrate();save();render();toast("Sauvegarde restaurée")}catch(x){toast("Texte de sauvegarde invalide")}return}
-  if(act==="wipe"){if(ui.confirm==="wipe"){var lic=db.license;db=blank();db.license=lic;save();setView("home");ui.tab="settings";render();toast("Données effacées")}else{ui.confirm="wipe";render()}return}
-  if(act==="clear-demo"){db=blank();save();setView("home");ui.tab="settings";render();toast("Saisis le nom de ton établissement")}
+  if(act==="wipe"){if(ui.confirm==="wipe"){var lic=db.license;db=blank();db.license=lic;db.epoch=Date.now();save();setView("home");ui.tab="settings";render();toast("Données effacées")}else{ui.confirm="wipe";render()}return}
+  if(act==="clear-demo"){db=blank();db.epoch=Date.now();save();setView("home");ui.tab="settings";render();toast("Saisis le nom de ton établissement")}
 });
 document.addEventListener("input",function(e){
   var pf=e.target.closest&&e.target.closest("form[data-form=pay]");if(pf&&pf.getAttribute("data-ok")){pf.removeAttribute("data-ok");var wb=pf.querySelector(".warnbox");if(wb)wb.remove()}
@@ -572,7 +603,12 @@ document.addEventListener("submit",function(e){
   var k=f.getAttribute("data-form"),v=function(n){return f.elements[n].value},adm=isAdmin();
   var needAdm=["add-class","edit-class","school","tranches","pins","license","void"];
   if(needAdm.indexOf(k)>=0&&!adm){toast("Réservé à la direction");return}
-  if(k==="unlock"){var h=pinH(v("pin"));if(db.pins.admin&&h===db.pins.admin)ui.role="admin";else if(db.pins.caisse&&h===db.pins.caisse)ui.role="caisse";else{toast("Code incorrect");return}ui.tab="home";setView("home");render();return}
+  if(k==="auth"){var em=v("email").trim(),pw=v("password"),msg=$("#amsg");msg.textContent="Un instant…";
+    (ui.authMode==="up"?doSignUp(em,pw):doSignIn(em,pw).then(function(){return "ok"})).then(function(r){
+      if(r==="confirm"){msg.textContent="Compte créé. Confirme ton e-mail, puis connecte-toi.";ui.authMode="in";return}
+      return syncNow().then(function(){render();toast(syncState==="ok"?"Connecté et synchronisé":syncErr)})
+    }).catch(function(e){msg.textContent=authErr(e)});return}
+  if(k==="unlock"){var h=pinH(v("pin"));if(db.pins.admin&&h===db.pins.admin)ui.role="admin";else if(db.pins.caisse&&h===db.pins.caisse)ui.role="caisse";else{toast("Code incorrect");return}ui.viaPin=true;ui.tab="home";setView("home");render();return}
   if(k==="recover"){if(db.pins.rec&&pinH(v("code").trim().toUpperCase())===db.pins.rec){db.pins={admin:"",caisse:"",rec:""};save();ui.role="admin";ui.forgot=false;ui.tab="settings";setView("home");render();toast("Codes réinitialisés")}else toast("Code de secours incorrect");return}
   if(k==="add-class"){db.classes.push({id:uid(),name:v("name").trim(),fee:Math.max(0,+v("fee")||0)});save();render();toast("Classe ajoutée")}
   else if(k==="edit-class"){var c=cls(ui.classId),old=c.fee,nf=Math.max(0,+v("fee")||0);c.name=v("name").trim();c.fee=nf;db.students.forEach(function(s){if(s.classId===c.id&&s.fee===old)s.fee=nf});save();render();toast("Classe enregistrée")}
@@ -597,7 +633,7 @@ document.addEventListener("submit",function(e){
     if(a1&&!ok.test(a1)||c1&&!ok.test(c1)){toast("Le code doit avoir 4 à 6 chiffres");return}
     if(a1){db.pins.admin=pinH(a1);var rc=(uid()+uid()).slice(0,8).toUpperCase();db.pins.rec=pinH(rc);ui.rec=rc}
     if(c1){if(!db.pins.admin){toast("Définis d'abord le code Direction");return}db.pins.caisse=pinH(c1)}
-    if(!a1&&!c1){toast("Saisis au moins un code");return}save();render();toast("Codes enregistrés")}
+    if(!a1&&!c1){toast("Saisis au moins un code");return}ui.viaPin=true;save();render();toast("Codes enregistrés")}
   else if(k==="license"){var cd=v("code").trim().toUpperCase();if(licCheck(cd)){db.license=cd;save();render();toast("Licence activée, merci !")}else toast("Code de licence invalide")}
   else if(k==="void"){var vp=db.payments.filter(function(x){return x.id===f.getAttribute("data-id")})[0];vp.void={reason:v("reason").trim(),date:today(),by:ui.role};ui.voidFor=null;save();render();showReceipt(vp.id);toast("Reçu annulé")}
   else if(k==="report"){showReport(v("from"),v("to"))}
@@ -610,9 +646,83 @@ document.addEventListener("change",function(e){
     im.onerror=function(){toast("Image illisible")};im.src=fr.result};fr.readAsDataURL(t.files[0])}
   else if(t.id==="impfile"){var fr2=new FileReader();fr2.onload=function(){importText(String(fr2.result))};fr2.readAsText(t.files[0])}
 });
+document.addEventListener("dragover",function(e){if(e.target.id==="imp")e.preventDefault()});
+document.addEventListener("drop",function(e){if(e.target.id!=="imp")return;e.preventDefault();var f=e.dataTransfer.files&&e.dataTransfer.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){importText(String(fr.result))};fr.readAsText(f)});
 document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("#layer").innerHTML)closeLayer()});
 
-load();migrate();save();
+
+/* ---------- Compte en ligne et synchronisation ---------- */
+var CLOUD={url:"https://lspyggjdspnsuvljrrav.supabase.co",key:"sb_publishable_T-JWHP6lyjyUtYNxhrOO9A_qxUCRES-"};
+var AUTH=null,syncState="",syncErr="",lastSync=0,syncing=null,pushTimer=null;
+try{AUTH=JSON.parse(localStorage.getItem("recus_auth")||"null")}catch(e){AUTH=null}
+function cloudOn(){return !!(CLOUD.url&&CLOUD.key)}
+function authSave(){try{if(AUTH)localStorage.setItem("recus_auth",JSON.stringify(AUTH));else localStorage.removeItem("recus_auth")}catch(e){}}
+function apiCall(path,method,body,token,extra){
+  var h={"apikey":CLOUD.key,"Content-Type":"application/json"};
+  if(token)h["Authorization"]="Bearer "+token;
+  if(extra)for(var k in extra)h[k]=extra[k];
+  return fetch(CLOUD.url.replace(/\/$/,"")+path,{method:method,headers:h,body:body?JSON.stringify(body):undefined}).then(function(r){
+    return r.text().then(function(t){var j=null;try{j=t?JSON.parse(t):null}catch(e){}
+      if(!r.ok){var m=(j&&(j.msg||j.error_description||j.message||j.error))||("HTTP "+r.status),e=new Error(m);e.status=r.status;throw e}
+      return j})})}
+function authErr(e){var m=String(e&&e.message||"");
+  if(/invalid login/i.test(m))return "E-mail ou mot de passe incorrect.";
+  if(/already registered|already been registered/i.test(m))return "Un compte existe déjà avec cet e-mail.";
+  if(/at least 6|weak/i.test(m))return "Mot de passe trop court (6 caractères minimum).";
+  if(/rate limit|too many|seconds/i.test(m))return "Trop d'essais. Réessaie dans quelques minutes.";
+  if(/email not confirmed/i.test(m))return "Confirme d'abord ton e-mail (regarde tes messages).";
+  if(/invalid.*email|valid email/i.test(m))return "Adresse e-mail invalide.";
+  if(/Failed to fetch|NetworkError|Load failed/i.test(m))return "Connexion impossible. Vérifie internet.";
+  if(/ecole_saves|PGRST205|does not exist|schema cache/i.test(m))return "La table en ligne n'existe pas encore. Exécute le fichier SQL fourni dans Supabase.";
+  if(/row-level security|42501|permission denied/i.test(m))return "Droits refusés côté serveur (règles RLS). Exécute le fichier SQL fourni.";
+  return "Erreur : "+m.slice(0,140)}
+function authStore(j,email){AUTH={at:j.access_token,rt:j.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000-60000,email:(j.user&&j.user.email)||email,uid:j.user&&j.user.id};authSave()}
+function ensureToken(){
+  if(!AUTH)return Promise.reject(new Error("no auth"));
+  if(Date.now()<AUTH.exp)return Promise.resolve(AUTH.at);
+  return apiCall("/auth/v1/token?grant_type=refresh_token","POST",{refresh_token:AUTH.rt}).then(function(j){authStore(j,AUTH.email);return AUTH.at}).catch(function(e){if(e.status===400||e.status===401){AUTH=null;authSave()}throw e})}
+function doSignIn(em,pw){return apiCall("/auth/v1/token?grant_type=password","POST",{email:em,password:pw}).then(function(j){authStore(j,em)})}
+function doSignUp(em,pw){return apiCall("/auth/v1/signup","POST",{email:em,password:pw}).then(function(j){if(j&&j.access_token){authStore(j,em);return "ok"}return "confirm"})}
+function doSignOut(){var t=AUTH&&AUTH.at;AUTH=null;authSave();syncState="";if(t)apiCall("/auth/v1/logout","POST",null,t).catch(function(){})}
+function mergeDb(l,r){
+  if(l.demo)return r;
+  var le=l.epoch||0,re=r.epoch||0;if(re>le)return r;if(le>re)return l;
+  var tomb={};[l.tomb,r.tomb].forEach(function(t){for(var k in(t||{}))tomb[k]=Math.max(tomb[k]||0,t[k])});
+  function mg(a,b){var o={},ord=[];(a||[]).concat(b||[]).forEach(function(x){var y=o[x.id];if(!y){ord.push(x.id);o[x.id]=x}else if((x.u||0)>(y.u||0))o[x.id]=x});
+    return ord.map(function(k){return o[k]}).filter(function(x){return !(tomb[x.id]&&tomb[x.id]>=(x.u||0))})}
+  var side=(l.su||0)>=(r.su||0)?l:r;
+  return {school:side.school,pins:side.pins,salt:side.salt,su:side.su,license:licCheck(l.license||"")?l.license:(r.license||""),
+    classes:mg(l.classes,r.classes),students:mg(l.students,r.students),payments:mg(l.payments,r.payments),tomb:tomb,epoch:le,demo:false,seq:l.seq,dev:l.dev,lastBackup:l.lastBackup}
+}
+function syncLabel(){if(!AUTH)return"";if(syncState==="sync")return"Synchronisation…";if(syncState==="err")return"Hors ligne : "+syncErr;return lastSync?"Synchronisé à "+new Date(lastSync).toTimeString().slice(0,5):"Prêt à synchroniser"}
+function syncNow(){
+  if(!AUTH||!cloudOn())return Promise.resolve();
+  if(syncing)return syncing;
+  syncState="sync";var before=JSON.stringify(db);
+  syncing=ensureToken().then(function(tk){
+    return apiCall("/rest/v1/ecole_saves?select=data&user_id=eq."+AUTH.uid,"GET",null,tk).then(function(rows){
+      var remote=rows&&rows[0]?rows[0].data:null;
+      if(remote&&remote.classes&&remote.students){var wasDemo=db.demo,m=mergeDb(db,remote);m.dev=db.dev;m.seq=wasDemo?0:(db.seq||0);m.lastBackup=db.lastBackup;db=m;migrate();takeSnap();saveLocal()}
+      return apiCall("/rest/v1/ecole_saves?on_conflict=user_id","POST",{user_id:AUTH.uid,data:db,updated_at:new Date().toISOString()},tk,{"Prefer":"resolution=merge-duplicates,return=minimal"})})
+  }).then(function(){syncState="ok";syncErr="";lastSync=Date.now()}).catch(function(e){syncState="err";syncErr=authErr(e)}).then(function(){
+    syncing=null;
+    var changed=JSON.stringify(db)!==before;
+    if(locked()&&!ui.viaPin&&ui.role){ui.role=null;changed=true}
+    var ae=document.activeElement;
+    if(ui.role&&(changed||ui.tab==="settings")&&!(ae&&/INPUT|TEXTAREA|SELECT/.test(ae.tagName))&&!$("#layer").innerHTML)render();
+    else if(!ui.role)render()});
+  return syncing}
+function schedulePush(){if(!AUTH||!cloudOn())return;clearTimeout(pushTimer);pushTimer=setTimeout(function(){syncNow()},5000)}
+document.addEventListener("visibilitychange",function(){if(!document.hidden)syncNow()});
+setInterval(function(){if(!document.hidden)syncNow()},60000);
+function accountCard(){
+  if(!cloudOn())return"";
+  var h='<div class="card stack"><h3>Compte en ligne (plusieurs appareils)</h3>';
+  if(AUTH)return h+'<p style="margin:0">Connecté : <b>'+esc(AUTH.email||"")+'</b></p><p class="muted small" style="margin:0">'+esc(syncLabel())+'</p><p class="muted small" style="margin:0">Les téléphones et ordinateurs de l\'école connectés à ce compte partagent les mêmes élèves, paiements et réglages. Les codes Direction et Caisse restent actifs sur chaque appareil.</p><div class="row"><button class="btn primary" data-act="sync-now">Synchroniser maintenant</button><button class="btn" data-act="logout">Se déconnecter</button></div></div>';
+  var up=ui.authMode==="up";
+  return h+'<p class="muted small" style="margin:0">Un seul compte pour toute l\'école. Crée-le ici, puis connecte les autres appareils avec le même e-mail.</p><form class="stack" data-form="auth"><label>E-mail<input id="aem" name="email" type="email" autocomplete="email" required></label><label>Mot de passe<input id="apw" name="password" type="password" autocomplete="'+(up?"new-password":"current-password")+'" minlength="6" required></label><button class="btn primary" type="submit">'+(up?"Créer le compte":"Se connecter")+'</button><button class="btn" type="button" data-act="auth-sw">'+(up?"J'ai déjà un compte":"Pas de compte ? Créer un compte")+'</button><div id="amsg" class="small" role="status"></div></form></div>'}
+
+load();migrate();takeSnap();saveLocal();
 ui.role=locked()?null:"admin";
 render();
 })();
