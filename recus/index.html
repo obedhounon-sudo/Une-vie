@@ -109,6 +109,9 @@ textarea{min-height:110px;resize:vertical}
 .receipt.void{position:relative;overflow:hidden}
 .receipt.void::after{content:"ANNULÉ";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 3.6rem var(--f-display);color:rgba(179,38,30,.26);transform:rotate(-18deg);pointer-events:none}
 .voidbar{background:#fbe3e1;color:#b3261e;font-weight:700;font-size:.85rem;padding:8px 10px;border-radius:4px;margin-bottom:12px}
+.signature{margin-top:28px;text-align:center;color:var(--muted);font-size:.85rem}
+.signature a{color:var(--accent);font-weight:700;text-decoration:none}
+.receipt .credit{margin-top:12px;text-align:center;font-size:.72rem;color:#7a8794}
 .receipt.report h3{margin:14px 0 6px;font-size:1rem}
 .receipt.report table{width:100%;border-collapse:collapse;font-size:.88rem}
 .receipt.report td{padding:5px 4px;border-bottom:1px solid var(--paper-line);overflow-wrap:anywhere}
@@ -371,7 +374,7 @@ function render(){
   else if(ui.tab==="journal")body=viewJournal();
   else if(ui.tab==="settings"&&isAdmin())body=viewSettings();
   else body=viewHome();
-  app.innerHTML=header()+banner()+tabs()+body;
+  app.innerHTML=header()+banner()+tabs()+body+'<footer class="signature">Application créée par <a href="https://www.instagram.com/obedklein/" target="_blank" rel="noopener">@obedklein</a></footer>';
   var t=$("#q");if(t&&ui.focusQ){t.focus();t.setSelectionRange(t.value.length,t.value.length)}
 }
 
@@ -395,7 +398,7 @@ function showReceipt(id){
   '<div class="amount"><span>Montant versé</span><b>'+money(p.amount)+'</b></div><div class="words">Arrêté à la somme de : '+esc(amountWords(p.amount))+'.</div>'+
   '<dl><dt>Total payé à ce jour</dt><dd class="num">'+money(p.after)+'</dd><dt>Scolarité</dt><dd class="num">'+money(r.s.fee)+'</dd><dt>Reste à payer</dt><dd class="num">'+money(p.rest)+'</dd></dl>'+
   '<div class="foot"><div class="qr">'+QR.svg(qrText(p),104)+'</div><div class="ctl"><span>Code de contrôle</span><b>'+esc(p.code)+'</b><span>Scanne le QR code pour lire les détails du reçu.</span></div></div>'+
-  '<div class="sign"><div>Le parent</div><div>La caisse</div></div></div>'+
+  '<div class="sign"><div>Le parent</div><div>La caisse</div></div><div class="credit">Reçus Scolaires · @obedklein</div></div>'+
   '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="pdf" data-id="'+p.id+'">PDF</button><button class="btn grow" data-act="wa" data-id="'+p.id+'">WhatsApp</button><button class="btn grow" data-act="copy-receipt" data-id="'+p.id+'">Copier</button></div>'+
   (adm&&!p.void&&ui.voidFor===p.id?'<form class="card stack noprint" data-form="void" data-id="'+p.id+'"><label>Motif de l\'annulation<input id="vr" name="reason" required maxlength="80" placeholder="Ex : erreur de montant"></label><div class="row"><button class="btn danger" type="submit">Confirmer l\'annulation</button><button class="btn" type="button" data-act="void-off" data-id="'+p.id+'">Retour</button></div></form>':'')+
   '<div class="row noprint"><button class="btn grow" data-act="close">Fermer</button>'+(adm&&!p.void&&ui.voidFor!==p.id?'<button class="btn danger" data-act="void-on" data-id="'+p.id+'">Annuler ce reçu</button>':'')+'</div></div></div>';
@@ -418,7 +421,7 @@ function showReport(from,to){
   '<div class="amount"><span>Total encaissé</span><b>'+money(activeTotal(ok))+'</b></div>'+
   '<h3>Par classe</h3>'+tbl(byC)+'<h3>Par mode de paiement</h3>'+tbl(byM)+
   '<h3>Détail</h3>'+(ok.length?'<table>'+ok.sort(function(a,b){return a.no<b.no?-1:1}).map(function(p){var s=stu(p.studentId);return '<tr><td class="num">'+esc(p.no)+'</td><td>'+esc(s?s.name:"")+'</td><td class="num r">'+money(p.amount)+'</td></tr>'}).join("")+'</table>':'<div class="muted small">Aucun paiement.</div>')+
-  '<div class="sign"><div>Le caissier</div><div>La direction</div></div></div>'+
+  '<div class="sign"><div>Le caissier</div><div>La direction</div></div><div class="credit">Reçus Scolaires · @obedklein</div></div>'+
   '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="close">Fermer</button></div></div></div>';
 }
 
@@ -456,6 +459,7 @@ async function makePDF(p){
   Tx("F1",fs-1,kx,ky,"Code de contrôle");Tx("F3",fs+3,kx,ky-fs-6,p.code);
   y=Math.min(qy,ky-fs-8)-22;
   Ln(m,y,m+iw*0.42,y,.6);Ln(W-m-iw*0.42,y,W-m,y,.6);Tx("F1",fs-1.5,m+4,y-fs-2,"Le parent");Tx("F1",fs-1.5,W-m-iw*0.42+4,y-fs-2,"La caisse");
+  Tx("F1",fs-2,m,Math.max(14,m-6),"Reçus Scolaires - @obedklein");
   if(p.void){ops.push("q 0.7 0.7 -0.7 0.7 "+(W*0.2).toFixed(0)+" "+(H*0.35).toFixed(0)+" cm BT /F2 "+(W*0.16).toFixed(0)+" Tf 0.85 0.2 0.2 rg 0 0 Td (ANNULE) Tj ET Q")}
   var parts=[],off=0,xr=[];
   function add(u){parts.push(u);off+=u.length}
