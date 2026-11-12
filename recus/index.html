@@ -535,6 +535,7 @@ function pay(sid,amount,date,mode,note){
   p.code=ctl(p);db.payments.push(p);return p;
 }
 function importText(text){
+  text=String(text).replace(/^\ufeff/,"");
   var lines=text.split(/\r?\n/).filter(function(l){return l.trim()});
   if(!lines.length){toast("Rien à importer");return}
   var d=text.indexOf("\t")>=0?"\t":(text.indexOf(";")>=0?";":",");
