@@ -224,7 +224,7 @@ function ci(){return countryOf(db&&db.school&&db.school.country)||countryOf("TG"
 function cur(){var c=ci();return CUR[c.cur]||{s:c.cur,fr:c.cur,en:c.cur}}
 function money(n){var c=cur(),v=Math.round(n||0).toLocaleString(ci().lang==="en"?"en-GB":"fr-FR").replace(/[  ]/g," ");return c.b?c.s+" "+v:v+" "+c.s}
 function pm(n){var v=Math.round(n||0).toLocaleString("fr-FR").replace(/[  ]/g," ");return v+" "+(ci().cur==="XOF"||ci().cur==="XAF"?"FCFA":ci().cur)}
-function modes(){var m=ci().mm;return ["Espèces"].concat(m.length?m:["Mobile Money"]).concat(["Virement","Chèque"])}
+function modes(){var m=ci().mm;return ["Espèces"].concat(m.length?m:["Mobile Money"]).concat(["Carte bancaire","Virement","Chèque"])}
 function waNum(ph){var d=String(ph||"").replace(/\D/g,""),dial=ci().dial;if(/^\s*\+/.test(String(ph))||d.indexOf("00")===0)return d.replace(/^00/,"");if(d.indexOf(dial)===0&&d.length>dial.length+6)return d;return dial+d.replace(/^0+/,"")}
 
 function fnv(str){var h=2166136261;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0}return h>>>0}
