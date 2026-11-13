@@ -268,7 +268,7 @@ function amountWords(n){var l=ci().lang,c=cur();
 /* ---------- Données ---------- */
 var db=null,mem=null,ui={view:"home",tab:"home",classId:null,studentId:null,q:"",confirm:null,role:null,voidFor:null,forgot:false,rec:null,focusQ:false};
 function defTr(){return [{label:"1ère tranche",date:"2026-10-15",pct:40},{label:"2e tranche",date:"2027-01-15",pct:30},{label:"3e tranche",date:"2027-04-15",pct:30}]}
-function blank(){return {school:{name:"",year:"2026-2027",city:"",phone:"",logo:"",format:"a5",tranches:defTr()},classes:[],students:[],payments:[],seq:0,demo:false,salt:uid()+uid(),pins:{admin:"",caisse:"",rec:""},license:"",lastBackup:""}}
+function blank(){return {school:{name:"",year:"2026-2027",city:"",phone:"",logo:"",format:"a5",tranches:defTr()},classes:[],students:[],payments:[],seq:0,demo:false,salt:uid()+uid(),pins:{admin:"",caisse:"",rec:""},license:"",licDate:"",licUsed:[],lastBackup:""}}
 function load(){
   try{var raw=localStorage.getItem(KEY);if(raw){db=JSON.parse(raw);return}}catch(e){}
   if(mem){db=JSON.parse(mem);return}
@@ -277,7 +277,7 @@ function load(){
 function saveLocal(){var s=JSON.stringify(db);mem=s;try{localStorage.setItem(KEY,s)}catch(e){}}
 var snap={cl:{},st:{},pa:{},set:""};
 function itemKey(o){var c={};for(var k in o)if(k!=="u")c[k]=o[k];return JSON.stringify(c)}
-function setKey(){return JSON.stringify([db.school,db.pins,db.license,db.salt])}
+function setKey(){return JSON.stringify([db.school,db.pins,db.license,db.licDate,db.salt])}
 function takeSnap(){snap={cl:{},st:{},pa:{},set:setKey()};db.classes.forEach(function(o){snap.cl[o.id]=itemKey(o)});db.students.forEach(function(o){snap.st[o.id]=itemKey(o)});db.payments.forEach(function(o){snap.pa[o.id]=itemKey(o)})}
 function stampChanges(){var n=Date.now();if(!db.tomb)db.tomb={};
   [["classes","cl"],["students","st"],["payments","pa"]].forEach(function(x){var seen={};db[x[0]].forEach(function(o){seen[o.id]=1;if(snap[x[1]][o.id]!==itemKey(o))o.u=n});Object.keys(snap[x[1]]).forEach(function(id){if(!seen[id])db.tomb[id]=n})});
@@ -287,7 +287,7 @@ function migrate(){
   var b=blank();
   if(!db.salt)db.salt=b.salt;
   if(!db.pins)db.pins=b.pins;
-  if(db.license==null)db.license="";if(!db.tomb)db.tomb={};if(!db.dev){var L="ABCDEFGHJKLMNPQRSTUVWXYZ";db.dev=L[Math.floor(Math.random()*L.length)]+L[Math.floor(Math.random()*L.length)]}if(db.lastBackup==null)db.lastBackup="";
+  if(db.license==null)db.license="";if(!db.licUsed)db.licUsed=[];if(db.license&&!db.licDate)db.licDate=today();if(!db.tomb)db.tomb={};if(!db.dev){var L="ABCDEFGHJKLMNPQRSTUVWXYZ";db.dev=L[Math.floor(Math.random()*L.length)]+L[Math.floor(Math.random()*L.length)]}if(db.lastBackup==null)db.lastBackup="";
   var sc=db.school;
   if(!sc.logo)sc.logo="";if(!sc.format)sc.format="a5";if(!sc.tranches||!sc.tranches.length)sc.tranches=defTr();
   db.payments.forEach(function(p){if(!p.code)p.code=ctl(p)});
@@ -332,17 +332,21 @@ function locked(){return !!(db.pins.admin||db.pins.caisse)}
 /* ---------- Licence ---------- */
 function licCode(b){return fnv("ecole|"+b+"|"+LSALT).toString(36).toUpperCase().padStart(3,"0").slice(-3)}
 function licCheck(c){var m=/^EC-([A-Z0-9]{6})-([A-Z0-9]{3})$/.exec(String(c).trim().toUpperCase());return !!m&&licCode(m[1])===m[2]}
-function licOK(){return !!db.license&&licCheck(db.license)}
+function licEnd(){var d=new Date((db.licDate||today())+"T12:00:00");d.setFullYear(d.getFullYear()+1);return d}
+function licDays(){return Math.ceil((licEnd().getTime()-Date.now())/864e5)}
+function licOK(){return !!db.license&&licCheck(db.license)&&licDays()>0}
+function licExpired(){return !!db.license&&licCheck(db.license)&&licDays()<=0}
+function fdate(d){return d.toLocaleDateString(ci().lang==="en"?"en-GB":"fr-FR",{day:"numeric",month:"long",year:"numeric"})}
 var PAY={link:"",mm:[],bank:{},contact:"Instagram @obedklein"};
 function unlockPrice(){var c=ci().cur;return c==="XOF"||c==="XAF"?"50 000 FCFA":c==="EUR"?"100 €":"100 $"}
 function payRows(){var r=[],b=PAY.bank||{};PAY.mm.forEach(function(m){r.push([m[0],m[1]])});[["Banque",b.name],["Titulaire",b.holder],["IBAN / Compte",b.iban],["BIC / SWIFT",b.bic]].forEach(function(x){if(x[1])r.push(x)});return r}
 function showUnlock(){
   var rows=payRows();
   $("#layer").innerHTML='<div class="modal-bg" data-act="close-bg"><div class="modal" role="dialog" aria-label="Débloquer l\'application"><div class="card stack"><h3 style="margin:0">Débloquer les élèves illimités</h3>'+
-  '<p class="muted small" style="margin:0">La version gratuite est limitée à '+FREE+' élèves. Licence à vie, une seule fois :</p><div style="font-size:1.6em;font-weight:700">'+unlockPrice()+'</div>'+
+  '<p class="muted small" style="margin:0">La version gratuite est limitée à '+FREE+' élèves. Licence valable 1 an (élèves illimités) :</p><div style="font-size:1.6em;font-weight:700">'+unlockPrice()+'</div>'+
   '<button class="btn primary" data-act="pay-card">Payer par carte bancaire</button>'+
   (rows.length?'<div class="card stack"><b>Virement / Mobile Money</b>'+rows.map(function(r){return '<div class="small"><span class="muted">'+esc(r[0])+' :</span> <b>'+esc(r[1])+'</b></div>'}).join("")+'</div>':'')+
-  '<p class="muted small" style="margin:0">Après le paiement, envoie la preuve à <b>'+esc(PAY.contact)+'</b>. Tu reçois ton code de licence (EC-XXXXXX-XXX) à entrer dans Réglages › Licence.</p>'+
+  '<p class="muted small" style="margin:0">Après le paiement, envoie la preuve à <b>'+esc(PAY.contact)+'</b>. Tu reçois ton code de licence (EC-XXXXXX-XXX), valable 1 an à partir de son activation, à entrer dans Réglages › Licence.</p>'+
   '<button class="btn grow" data-act="close">Fermer</button></div></div></div>'}
 function canAdd(n){if(licOK()||db.students.length+n<=FREE)return true;showUnlock();return false}
 
@@ -428,7 +432,7 @@ function viewSettings(){
   h+='<div class="card stack"><h3>Logo de l\'école</h3>'+(sc.logo?'<img class="logoprev" src="'+sc.logo+'" alt="Logo actuel">':'<p class="muted small" style="margin:0">Aucun logo. Il apparaîtra en haut de chaque reçu.</p>')+'<label>Choisir une image (PNG ou JPG)<input id="logo" type="file" accept="image/*"></label>'+(sc.logo?'<button class="btn danger sm" data-act="logo-del">Retirer le logo</button>':'')+'</div>';
   h+='<form class="card stack" data-form="pins"><h3>Codes d\'accès</h3><p class="muted small" style="margin:0">Le code Direction ouvre tout. Le code Caisse permet d\'encaisser et de consulter, mais pas de supprimer, annuler ni modifier les tarifs. Laisse vide pour ne pas verrouiller l\'application. 4 à 6 chiffres.</p>'+(ui.rec?'<div class="banner" style="margin:0"><span>Code de secours : <b class="num">'+esc(ui.rec)+'</b>. Note-le sur papier, il ne sera plus affiché.</span></div>':'')+'<div class="form"><label>Code Direction<input id="pin1" name="admin" type="password" inputmode="numeric" maxlength="6" placeholder="'+(db.pins.admin?'(défini)':'aucun')+'" autocomplete="off"></label><label>Code Caisse<input id="pin2" name="caisse" type="password" inputmode="numeric" maxlength="6" placeholder="'+(db.pins.caisse?'(défini)':'aucun')+'" autocomplete="off"></label></div><div class="row"><button class="btn primary" type="submit">Enregistrer les codes</button>'+(locked()?'<button class="btn danger" type="button" data-act="pins-off">Supprimer les codes</button>':'')+'</div></form>';
   h+='<div class="card stack"><h3>Importer des élèves (Excel ou CSV)</h3><p class="muted small" style="margin:0">Dans Excel, mets les colonnes <b>Nom · Classe · Téléphone · Scolarité</b> (les deux dernières sont facultatives), copie-les et colle-les ici. Tu peux aussi choisir un fichier CSV. Les classes manquantes sont créées.</p><textarea id="imp" placeholder="Afi Mensah&#9;6ème&#9;90112233&#9;85000"></textarea><button class="btn" data-act="import">Importer le texte collé</button><label>Ou un fichier CSV<input id="impfile" type="file" accept=".csv,.txt,.tsv,text/csv,text/plain"></label></div>';
-  h+='<form class="card stack" data-form="license"><h3>Licence</h3><p class="muted small" style="margin:0">'+(licOK()?'Licence active : élèves illimités.':'Version d\'essai : '+FREE+' élèves au maximum. Entre un code de licence pour en ajouter davantage.')+'</p>'+(licOK()?'':'<button class="btn" type="button" data-act="unlock">Débloquer ('+unlockPrice()+')</button><label>Code de licence<input id="lic" name="code" placeholder="EC-XXXXXX-XXX" autocomplete="off" autocapitalize="characters"></label><button class="btn primary" type="submit">Activer</button>')+'</form>';
+  h+='<form class="card stack" data-form="license"><h3>Licence</h3><p class="muted small" style="margin:0">'+(licOK()?'Licence active : élèves illimités jusqu\'au '+fdate(licEnd())+(licDays()<=30?' ('+licDays()+' jour'+(licDays()>1?'s':'')+' restant'+(licDays()>1?'s':'')+'). Pense à la renouveler.':'.'):'Version d\'essai : '+FREE+' élèves au maximum. Entre un code de licence pour en ajouter davantage.')+'</p>'+(licOK()?'':(licExpired()?'<p class="muted small" style="margin:0;color:var(--late,#b42318)"><b>Ta licence a expiré le '+fdate(licEnd())+'.</b> Tes données sont conservées, mais tu ne peux plus ajouter d\'élèves au-delà de '+FREE+'. Renouvelle-la.</p>':'')+'<button class="btn" type="button" data-act="unlock">'+(licExpired()?'Renouveler':'Débloquer')+' ('+unlockPrice()+' / an)</button><label>Code de licence<input id="lic" name="code" placeholder="EC-XXXXXX-XXX" autocomplete="off" autocapitalize="characters"></label><button class="btn primary" type="submit">Activer</button>')+'</form>';
   h+='<div class="card stack"><h3>Sauvegarde</h3><p class="muted small" style="margin:0">Les données restent sur cet appareil. Fais une sauvegarde régulièrement et garde-la ailleurs (WhatsApp, e-mail).</p><div class="row"><button class="btn" data-act="backup-copy">Copier la sauvegarde</button><button class="btn" data-act="backup-file">Télécharger</button></div><label>Restaurer une sauvegarde<textarea id="restore" placeholder="Colle ici le texte de la sauvegarde"></textarea></label><button class="btn" data-act="restore">Restaurer</button></div>';
   h+='<div class="card stack"><h3>Tout effacer</h3><button class="btn danger" data-act="wipe">'+(ui.confirm==="wipe"?'Confirmer : effacer toutes les données':'Effacer toutes les données')+'</button></div></div>';
   return h;
@@ -651,7 +655,7 @@ document.addEventListener("click",function(e){
   if(act==="backup-copy"){if(!adm){toast("Réservé à la direction");return}db.lastBackup=new Date().toISOString();save();copy(JSON.stringify(db),"Sauvegarde copiée");return}
   if(act==="backup-file"){if(!adm){toast("Réservé à la direction");return}db.lastBackup=new Date().toISOString();save();saveFile("sauvegarde-recus.json",JSON.stringify(db),"application/json");render();return}
   if(act==="restore"){try{var d=JSON.parse($("#restore").value);if(!d||!d.classes||!d.students||!d.payments)throw 0;db=d;migrate();save();render();toast("Sauvegarde restaurée")}catch(x){toast("Texte de sauvegarde invalide")}return}
-  if(act==="wipe"){if(ui.confirm==="wipe"){var lic=db.license;db=blank();db.license=lic;db.epoch=Date.now();save();setView("home");ui.tab="settings";render();toast("Données effacées")}else{ui.confirm="wipe";render()}return}
+  if(act==="wipe"){if(ui.confirm==="wipe"){var lic=db.license,ld=db.licDate,lu=db.licUsed;db=blank();db.license=lic;db.licDate=ld;db.licUsed=lu;db.epoch=Date.now();save();setView("home");ui.tab="settings";render();toast("Données effacées")}else{ui.confirm="wipe";render()}return}
   if(act==="clear-demo"){db=blank();db.epoch=Date.now();save();setView("home");ui.tab="settings";render();toast("Saisis le nom de ton établissement")}
 });
 document.addEventListener("input",function(e){
@@ -695,7 +699,7 @@ document.addEventListener("submit",function(e){
     if(a1){db.pins.admin=pinH(a1);var rc=(uid()+uid()).slice(0,8).toUpperCase();db.pins.rec=pinH(rc);ui.rec=rc}
     if(c1){if(!db.pins.admin){toast("Définis d'abord le code Direction");return}db.pins.caisse=pinH(c1)}
     if(!a1&&!c1){toast("Saisis au moins un code");return}ui.viaPin=true;save();render();toast("Codes enregistrés")}
-  else if(k==="license"){var cd=v("code").trim().toUpperCase();if(licCheck(cd)){db.license=cd;save();render();toast("Licence activée, merci !")}else toast("Code de licence invalide")}
+  else if(k==="license"){var cd=v("code").trim().toUpperCase();if(licCheck(cd)){if((db.licUsed||[]).indexOf(cd)>=0||(cd===db.license&&licExpired())){toast("Ce code a déjà servi et a expiré. Demande un nouveau code.");return}if(db.license&&licCheck(db.license)&&db.licUsed.indexOf(db.license)<0)db.licUsed.push(db.license);db.license=cd;db.licDate=today();save();render();toast("Licence activée pour 1 an, merci !")}else toast("Code de licence invalide")}
   else if(k==="void"){var vp=db.payments.filter(function(x){return x.id===f.getAttribute("data-id")})[0];vp.void={reason:v("reason").trim(),date:today(),by:ui.role};ui.voidFor=null;save();render();showReceipt(vp.id);toast("Reçu annulé")}
   else if(k==="report"){showReport(v("from"),v("to"))}
 });
@@ -751,8 +755,9 @@ function mergeDb(l,r){
   var tomb={};[l.tomb,r.tomb].forEach(function(t){for(var k in(t||{}))tomb[k]=Math.max(tomb[k]||0,t[k])});
   function mg(a,b){var o={},ord=[];(a||[]).concat(b||[]).forEach(function(x){var y=o[x.id];if(!y){ord.push(x.id);o[x.id]=x}else if((x.u||0)>(y.u||0))o[x.id]=x});
     return ord.map(function(k){return o[k]}).filter(function(x){return !(tomb[x.id]&&tomb[x.id]>=(x.u||0))})}
+  var lic=(function(){var a=licCheck(l.license||"")?l:null,b=licCheck(r.license||"")?r:null;if(a&&b)return (a.licDate||"")>=(b.licDate||"")?{c:a.license,d:a.licDate}:{c:b.license,d:b.licDate};var x=a||b;return x?{c:x.license,d:x.licDate||today()}:{c:"",d:""}})();
   var side=(l.su||0)>=(r.su||0)?l:r;
-  return {school:side.school,pins:side.pins,salt:side.salt,su:side.su,license:licCheck(l.license||"")?l.license:(r.license||""),
+  return {school:side.school,pins:side.pins,salt:side.salt,su:side.su,license:lic.c,licDate:lic.d,licUsed:(l.licUsed||[]).concat((r.licUsed||[]).filter(function(x){return (l.licUsed||[]).indexOf(x)<0})),
     classes:mg(l.classes,r.classes),students:mg(l.students,r.students),payments:mg(l.payments,r.payments),tomb:tomb,epoch:le,demo:false,seq:l.seq,dev:l.dev,lastBackup:l.lastBackup}
 }
 function syncLabel(){if(!AUTH)return"";if(syncState==="sync")return"Synchronisation…";if(syncState==="err")return"Hors ligne : "+syncErr;return lastSync?"Synchronisé à "+new Date(lastSync).toTimeString().slice(0,5):"Prêt à synchroniser"}
