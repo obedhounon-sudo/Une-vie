@@ -370,7 +370,7 @@ function viewHome(){
   var h='<div class="stack">';
   h+='<div class="stats"><div class="stat"><span>Attendu</span><b>'+money(tot.exp)+'</b></div><div class="stat"><span>Encaissé</span><b>'+money(tot.got)+'</b></div><div class="stat"><span>Reste à payer</span><b>'+money(tot.exp-tot.got)+'</b></div><div class="stat"><span>En retard</span><b style="color:var(--bad)">'+money(tot.late)+'</b></div><div class="stat"><span>Élèves soldés</span><b>'+tot.sol+' / '+tot.n+'</b></div></div>';
   if(!licOK())h+='<div class="muted small">Version d\'essai : '+db.students.length+' / '+FREE+' élèves</div>';
-  if(ll.length){h+='<div class="row between"><h2>À relancer</h2><span class="muted small">'+ll.length+' en retard</span></div><div class="list">'+ll.slice(0,8).map(function(x){var c=cls(x.s.classId);return '<button class="item" data-act="open-student" data-id="'+x.s.id+'"><div class="grow"><div class="name">'+esc(x.s.name)+'</div><div class="muted small">'+esc(c?c.name:"")+'</div></div><span class="pill late">'+money(x.l)+'</span></button>'}).join("")+'</div>'+(ll.length>8?'<div class="muted small">+ '+(ll.length-8)+' autres élèves en retard</div>':'')}
+  if(ll.length){h+='<div class="row between"><h2>À relancer</h2><button class="btn sm" data-act="owed">Imprimer la liste</button><span class="muted small">'+ll.length+' en retard</span></div><div class="list">'+ll.slice(0,8).map(function(x){var c=cls(x.s.classId);return '<button class="item" data-act="open-student" data-id="'+x.s.id+'"><div class="grow"><div class="name">'+esc(x.s.name)+'</div><div class="muted small">'+esc(c?c.name:"")+'</div></div><span class="pill late">'+money(x.l)+'</span></button>'}).join("")+'</div>'+(ll.length>8?'<div class="muted small">+ '+(ll.length-8)+' autres élèves en retard</div>':'')}
   h+='<div class="row between"><h2>Classes</h2></div>';
   if(!db.classes.length)h+='<div class="card empty">Aucune classe. '+(adm?'Ajoute la première avec le formulaire ci-dessous.':'')+'</div>';
   else h+='<div class="list">'+db.classes.map(function(c){var s=classStats(c),pc=s.exp?Math.round(s.got/s.exp*100):0;
@@ -416,7 +416,7 @@ function viewStudent(){
 function activeTotal(list){return list.reduce(function(a,p){return a+(p.void?0:p.amount)},0)}
 function viewJournal(){
   var pays=histSorted(),total=activeTotal(pays);
-  var h='<div class="stack"><div class="row between"><div><h2>Journal des paiements</h2><div class="muted small">'+pays.filter(function(p){return !p.void}).length+' reçus valides · total '+money(total)+'</div></div></div><div class="row"><button class="btn primary sm" data-act="report">Rapport de caisse</button>'+(isAdmin()?'<button class="btn sm" data-act="csv">Exporter (CSV)</button>':'')+'</div>';
+  var h='<div class="stack"><div class="row between"><div><h2>Journal des paiements</h2><div class="muted small">'+pays.filter(function(p){return !p.void}).length+' reçus valides · total '+money(total)+'</div></div></div><div class="row"><button class="btn primary sm" data-act="report">Rapport de caisse</button><button class="btn sm" data-act="owed">Liste des impayés</button>'+(isAdmin()?'<button class="btn sm" data-act="csv">Exporter (CSV)</button>':'')+'</div>';
   h+=pays.length?'<div class="list">'+pays.map(function(p){var s=stu(p.studentId),c=s?cls(s.classId):null;
     return '<button class="item" data-act="receipt" data-id="'+p.id+'"><div class="grow"><div class="name">'+esc(s?s.name:"Élève supprimé")+'</div><div class="muted small">'+esc(c?c.name:"")+' · '+fmtDate(p.date)+' · '+esc(p.no)+(p.void?' · annulé':'')+'</div></div><div class="num"'+(p.void?' style="text-decoration:line-through;color:var(--muted)"':'')+'>'+money(p.amount)+'</div></button>'}).join("")+'</div>':'<div class="card empty">Aucun paiement pour le moment.</div>';
   h+='<div class="card stack"><h3>Vérifier un reçu</h3><p class="muted small" style="margin:0">Scanne le QR code d\'un reçu avec n\'importe quel lecteur, copie le texte obtenu et colle-le ici.</p><textarea id="vtxt" placeholder="REÇU N° R-2026-0001 ..."></textarea><button class="btn" data-act="verify">Vérifier</button><div id="vres" class="small" role="status"></div></div>';
@@ -494,6 +494,29 @@ function showReceipt(id){
 function closeLayer(){document.body.classList.remove("rc");$("#layer").innerHTML="";ui.voidFor=null}
 
 /* ---------- Rapport de caisse ---------- */
+function showOwed(cid,mode){
+  cid=cid||"all";mode=mode||"late";
+  var list=db.students.filter(function(x){return cid==="all"||x.classId===cid}).filter(function(x){
+    if(x.fee<=0||restOf(x)<=0)return false;
+    if(mode==="none")return paidOf(x.id)===0;
+    if(mode==="late")return late(x)>0;
+    return true}).map(function(x){var c=cls(x.classId);return {s:x,c:c?c.name:"",paid:paidOf(x.id),rest:restOf(x),late:late(x)}});
+  list.sort(function(a,b){return a.c<b.c?-1:a.c>b.c?1:a.s.name.localeCompare(b.s.name)});
+  var tot=list.reduce(function(a,x){return a+x.rest},0),title="Liste des élèves à renvoyer",sub=mode==="none"?"Aucun paiement effectué":mode==="late"?"En retard de paiement":"Reste à payer";
+  var ccl=cid==="all"?"Toutes les classes":(cls(cid)||{name:""}).name;
+  ui.lastName="liste-impayes.txt";
+  ui.lastReport=(db.school.name||"Établissement")+"\n"+title+" ("+sub+") - "+ccl+"\nÉtabli le "+fmtDate(today())+"\n\n"+list.map(function(x,i){return (i+1)+". "+x.s.name+" | "+x.c+" | "+(x.s.phone||"")+" | payé "+money(x.paid)+" | reste "+money(x.rest)}).join("\n")+"\n\nTotal restant dû : "+money(tot)+" ("+list.length+" élèves)";
+  document.body.classList.add("rc");
+  $("#layer").innerHTML='<div class="modal-bg" data-act="close-bg"><div class="modal" role="dialog" aria-label="Liste des impayés">'+
+  '<form class="card form noprint" data-form="owed"><label>Classe<select id="oc" name="cid"><option value="all">Toutes les classes</option>'+db.classes.map(function(c){return '<option value="'+c.id+'"'+(c.id===cid?' selected':'')+'>'+esc(c.name)+'</option>'}).join("")+'</select></label>'+
+  '<label>Élèves concernés<select id="om" name="mode"><option value="late"'+(mode==="late"?" selected":"")+'>En retard (selon les échéances)</option><option value="rest"'+(mode==="rest"?" selected":"")+'>Tous ceux qui ont un reste à payer</option><option value="none"'+(mode==="none"?" selected":"")+'>Aucun paiement effectué</option></select></label><button class="btn" type="submit">Afficher</button></form>'+
+  '<div class="receipt report"><div class="head"><div class="hd"><h2>'+esc(db.school.name||"Établissement")+'</h2><div>'+title+'</div></div></div>'+
+  '<dl><dt>Classe</dt><dd>'+esc(ccl)+'</dd><dt>Critère</dt><dd>'+sub+'</dd><dt>Date</dt><dd>'+fmtDate(today())+'</dd><dt>Élèves</dt><dd>'+list.length+'</dd></dl>'+
+  '<div class="amount"><span>Total restant dû</span><b>'+money(tot)+'</b></div>'+
+  (list.length?'<table><tr><td><b>Nom</b></td><td><b>Classe</b></td><td class="num r"><b>Reste</b></td></tr>'+list.map(function(x){return '<tr><td>'+esc(x.s.name)+(x.s.phone?'<br><span class="small">'+esc(x.s.phone)+'</span>':'')+'</td><td>'+esc(x.c)+'</td><td class="num r">'+money(x.rest)+'</td></tr>'}).join("")+'</table>':'<div class="muted small">Aucun élève dans cette liste.</div>')+
+  '<div class="sign"><div>Le comptable</div><div>La direction</div></div>'+(db.school.hideCredit?'':'<div class="credit">Reçus Scolaires · @obedklein</div>')+'</div>'+
+  '<div class="row noprint"><button class="btn primary grow" data-act="print">Imprimer</button><button class="btn grow" data-act="close">Fermer</button></div></div></div>';
+}
 function showReport(from,to){
   var d=today();from=from||d.slice(0,8)+"01";to=to||d;pageStyle();
   var all=db.payments.filter(function(p){return p.date>=from&&p.date<=to}),ok=all.filter(function(p){return !p.void}),vo=all.length-ok.length;
@@ -630,10 +653,11 @@ document.addEventListener("click",function(e){
   if(act==="forgot-on"){ui.forgot=true;render();return}
   if(act==="forgot-off"){ui.forgot=false;render();return}
   if(act==="close"){closeLayer();return}
-  if(act==="print"){if(cap()){var pb=$("[data-act=pdf]");if(pb){pb.click()}else if(ui.lastReport){saveBlob("rapport-caisse.txt",new Blob([ui.lastReport],{type:"text/plain"}))}return}
+  if(act==="print"){if(cap()){var pb=$("[data-act=pdf]");if(pb){pb.click()}else if(ui.lastReport){saveBlob(ui.lastName||"rapport-caisse.txt",new Blob([ui.lastReport],{type:"text/plain"}))}return}
     try{window.print()}catch(x){toast("Impression non disponible ici")}return}
   if(act==="receipt"){showReceipt(id);return}
-  if(act==="report"){showReport();return}
+  if(act==="report"){ui.lastName="rapport-caisse.txt";showReport();return}
+  if(act==="owed"){showOwed();return}
   if(act==="copy-receipt"){copy(receiptText(db.payments.filter(function(p){return p.id===id})[0]),"Reçu copié");return}
   if(act==="wa"){var p=db.payments.filter(function(x){return x.id===id})[0],s=stu(p.studentId),ph=s&&s.phone?s.phone.replace(/\D/g,""):"";
     window.open("https://wa.me/"+waNum(s&&s.phone)+"?text="+encodeURIComponent(receiptText(p)),cap()?"_system":"_blank");return}
@@ -701,7 +725,8 @@ document.addEventListener("submit",function(e){
     if(!a1&&!c1){toast("Saisis au moins un code");return}ui.viaPin=true;save();render();toast("Codes enregistrés")}
   else if(k==="license"){var cd=v("code").trim().toUpperCase();if(licCheck(cd)){if((db.licUsed||[]).indexOf(cd)>=0||(cd===db.license&&licExpired())){toast("Ce code a déjà servi et a expiré. Demande un nouveau code.");return}if(db.license&&licCheck(db.license)&&db.licUsed.indexOf(db.license)<0)db.licUsed.push(db.license);db.license=cd;db.licDate=today();save();render();toast("Licence activée pour 1 an, merci !")}else toast("Code de licence invalide")}
   else if(k==="void"){var vp=db.payments.filter(function(x){return x.id===f.getAttribute("data-id")})[0];vp.void={reason:v("reason").trim(),date:today(),by:ui.role};ui.voidFor=null;save();render();showReceipt(vp.id);toast("Reçu annulé")}
-  else if(k==="report"){showReport(v("from"),v("to"))}
+  else if(k==="report"){ui.lastName="rapport-caisse.txt";showReport(v("from"),v("to"))}
+  else if(k==="owed"){showOwed(v("cid"),v("mode"))}
 });
 document.addEventListener("change",function(e){
   var t=e.target;if(!t.files||!t.files[0])return;
