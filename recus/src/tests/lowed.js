@@ -1,0 +1,12 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:400,height:900}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.route(/fonts\./,r=>r.abort());
+await p.goto('file:///home/claude/recus/index.html');await p.click('[data-act=pick-country][data-id=TG]');
+await p.click('.tabs [data-act=tab][data-v=journal]').catch(()=>{});
+await p.click('.main [data-act=owed] >> nth=0');
+console.log((await p.textContent('.receipt')).slice(0,500));
+await p.selectOption('#om','rest');await p.click('form[data-form=owed] button');
+console.log((await p.$$('.receipt tr')).length);
+await p.selectOption('#om','none');await p.click('form[data-form=owed] button');
+console.log((await p.textContent('.receipt dl')));
+await p.screenshot({path:'owed.png'});console.log(errs);await b.close()})();

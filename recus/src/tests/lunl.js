@@ -1,0 +1,11 @@
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:400,height:900}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.route(/fonts\./,r=>r.abort());
+await p.goto('file://'+process.cwd()+'/t.html');await p.click('[data-act=pick-country][data-id=TG]');
+await p.evaluate(()=>{const d=__t.db;d.students=[];for(let i=0;i<300;i++)d.students.push({id:"s"+i,name:"E"+i,cid:"x"});});
+console.log(await p.evaluate(()=>__t.canAdd(1)));
+console.log((await p.textContent('.modal')).slice(0,330));
+await p.screenshot({path:'unl.png'});
+await p.click('[data-act=pay-card]');await p.click('[data-act=close]');
+console.log(await p.evaluate(()=>{__t.db.school.country="US";return __t.unlockPrice()}),await p.evaluate(()=>{__t.db.school.country="FR";return __t.unlockPrice()}));
+console.log(errs);await b.close()})();

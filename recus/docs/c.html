@@ -1,0 +1,26 @@
+<!doctype html><meta charset=utf8><style>
+*{box-sizing:border-box;margin:0}
+body{width:var(--w);height:var(--h);overflow:hidden;font-family:'Inter','Helvetica Neue',Arial,sans-serif;background:linear-gradient(135deg,#0b3f55 0%,#0f5c7a 55%,#1b7da3 100%);color:#fff;position:relative}
+.dots{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.08) 1.5px,transparent 1.5px);background-size:26px 26px}
+.txt{position:absolute;left:5.5%;top:47%;transform:translateY(-50%);width:50%}
+.logo{display:flex;align-items:center;gap:14px;margin-bottom:22px}
+.logo img{width:calc(var(--h)*.13);height:calc(var(--h)*.13);border-radius:22%}
+.logo span{font-size:calc(var(--h)*.045*var(--s));letter-spacing:.12em;text-transform:uppercase;opacity:.85;font-weight:600}
+h1{font-size:calc(var(--h)*.112*var(--s));line-height:1.04;font-weight:800;letter-spacing:-.02em}
+h1 em{font-style:normal;color:#8fdcff}
+p{font-size:calc(var(--h)*.054*var(--s));margin-top:calc(var(--h)*.025);opacity:.92;line-height:1.35}
+.tags{display:flex;gap:10px;margin-top:calc(var(--h)*.04);flex-wrap:wrap}
+.tags b{font-size:calc(var(--h)*.04*var(--s));background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);padding:6px 14px;border-radius:99px;font-weight:600}
+.ph{position:absolute;border-radius:calc(var(--h)*.07);background:#10212b;padding:calc(var(--h)*.012);box-shadow:0 30px 60px rgba(0,0,0,.45)}
+.ph img{display:block;width:100%;border-radius:calc(var(--h)*.06)}
+.p1{right:5%;top:calc(var(--h)*.1);width:calc(var(--h)*.43);transform:rotate(4deg)}
+.p2{right:calc(5% + var(--h)*.36);top:calc(var(--h)*.2);width:calc(var(--h)*.43);transform:rotate(-5deg)}
+.by{position:absolute;left:5.5%;bottom:4%;font-size:calc(var(--h)*.036*var(--s));opacity:.7}
+</style>
+<body><div class=dots></div>
+<div class=txt><div class=logo><img src=icon.png><span>Reçus Scolaires</span></div>
+<h1>Les frais de scolarité,<br><em>sans papier.</em></h1>
+<p>Reçu avec QR code en un clic, reste à payer automatique, liste des impayés.</p>
+<div class=tags><b>Sans internet</b><b>Mobile Money</b><b>Gratuit ≤ 300 élèves</b></div></div>
+<div class="ph p2"><img src=accueil.png></div><div class="ph p1"><img src=recu.png></div>
+<div class=by>@obedklein</div></body>
