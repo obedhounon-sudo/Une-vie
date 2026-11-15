@@ -374,7 +374,7 @@ function payRows(){var r=[],b=PAY.bank||{};PAY.mm.forEach(function(m){r.push([m[
 function showUnlock(){
   var rows=payRows();
   $("#layer").innerHTML='<div class="modal-bg" data-act="close-bg"><div class="modal" role="dialog" aria-label="Débloquer l\'application"><div class="card stack"><h3 style="margin:0">Débloquer les élèves illimités</h3>'+
-  '<p class="muted small" style="margin:0">La version gratuite est limitée à '+FREE+' élèves. Licence valable 1 an (élèves illimités) :</p><div style="font-size:1.6em;font-weight:700">'+unlockPrice()+'</div>'+
+  '<p class="muted small" style="margin:0">La version gratuite est limitée à '+FREE+' élèves. Licence valable 1 an (élèves illimités) :</p><div style="font-size:1.6em;font-weight:700">'+unlockPrice()+'</div>'+(["XOF","XAF"].indexOf(ci().cur)<0?'<p class="muted small" style="margin:0">Le paiement par carte est encaissé en FCFA, à la valeur équivalente.</p>':'')+
   '<button class="btn primary" data-act="pay-card">Payer par carte bancaire</button>'+
   (AUTH?'<button class="btn" data-act="check-pay">J\'ai payé : vérifier mon paiement</button>':'<p class="muted small" style="margin:0">Pour un déblocage automatique, connecte-toi d\'abord à ton compte en ligne (Réglages).</p>')+
   (rows.length?'<div class="card stack"><b>Virement / Mobile Money</b>'+rows.map(function(r){return '<div class="small"><span class="muted">'+esc(r[0])+' :</span> <b>'+esc(r[1])+'</b></div>'}).join("")+'</div>':'')+
