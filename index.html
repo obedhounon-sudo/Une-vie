@@ -1799,7 +1799,9 @@ var EN = {}, ES = {}, PT = {};
   //  PUBLICITÉS (Unity Ads, application Android uniquement)
   //  - une pub toutes les 5 années de vie ; - 6 pubs regardées = mode Dieu débloqué
   // =====================================================================
-  var ADS = { gameId: "800433452", rewarded: "Rewarded_Android", inter: "Interstitial_Android", test: false, every: 5, need: 6 };
+  var ADS = { gameId: "800433452", rewarded: "Rewarded_Android", inter: "Interstitial_Android", test: false, every: 5, need: 6,
+    // AdMob : renseigner les identifiants de blocs (ca-app-pub-XXXX/YYYY) pour l'activer ; vide = Unity Ads seul
+    admob: { rewarded: "", inter: "" } };
   var adsPlug = null, adsReady = false, adsBusy = false;
   var adsWhy = "";
   function adsPlugin() {
@@ -1814,15 +1816,33 @@ var EN = {}, ES = {}, PT = {};
     } catch (e) { adsPlug = null; adsWhy = "erreur : " + String(e && e.message || e).slice(0, 60); }
     return adsPlug || null;
   }
-  function adsOn() { return !!adsPlugin(); }
+  var amPlug = null;
+  function amPlugin() {
+    if (amPlug) return amPlug;
+    try {
+      var C = window.Capacitor;
+      if (!C || !(C.isNativePlatform ? C.isNativePlatform() : false)) return null;
+      amPlug = (C.Plugins && C.Plugins.AdmobBridge) || (C.registerPlugin ? C.registerPlugin("AdmobBridge") : null);
+    } catch (e) { amPlug = null; }
+    return amPlug;
+  }
+  function amShow(placement) {
+    var unit = placement === ADS.rewarded ? ADS.admob.rewarded : ADS.admob.inter, pl = amPlugin();
+    if (!unit || !pl) return Promise.reject(new Error("admob off"));
+    return pl.init({}).then(function () { return pl.showAd({ unit: unit, type: placement === ADS.rewarded ? "rewarded" : "inter" }); });
+  }
+  function adsOn() { return !!adsPlugin() || !!(amPlugin() && (ADS.admob.rewarded || ADS.admob.inter)); }
   function adsInit() {
     var pl = adsPlugin(); if (!pl || adsReady) return Promise.resolve(adsReady);
     return pl.init({ gameId: ADS.gameId, test: ADS.test }).then(function () { adsReady = true; return true; }).catch(function () { return false; });
   }
   function adsShow(placement) {
-    var pl = adsPlugin(); if (!pl || adsBusy) return Promise.resolve({ completed: false, error: "indisponible" });
+    var pl = adsPlugin(), useAm = !!(amPlugin() && (placement === ADS.rewarded ? ADS.admob.rewarded : ADS.admob.inter));
+    if ((!pl && !useAm) || adsBusy) return Promise.resolve({ completed: false, error: "indisponible" });
     adsBusy = true;
-    return adsInit().then(function (ok) { if (!ok) throw new Error("init"); return pl.showAd({ placement: placement }); })
+    var first = useAm ? amShow(placement).catch(function () { if (!pl) throw new Error("admob"); return adsInit().then(function (ok) { if (!ok) throw new Error("init"); return pl.showAd({ placement: placement }); }); })
+      : adsInit().then(function (ok) { if (!ok) throw new Error("init"); return pl.showAd({ placement: placement }); });
+    return first
       .then(function (r) { adsBusy = false; return r || { completed: false }; })
       .catch(function (e) { adsBusy = false; return { completed: false, error: String(e && e.message || e) }; });
   }
