@@ -1,0 +1,302 @@
+{
+  "Rééquilibrer le portefeuille": {
+    "en": "Rebalance the portfolio",
+    "es": "Reequilibrar la cartera",
+    "pt": "Reequilibrar a carteira"
+  },
+  "S'abonner par curiosité": {
+    "en": "Subscribe out of curiosity",
+    "es": "Suscribirse por curiosidad",
+    "pt": "Assinar por curiosidade"
+  },
+  "S'abonner à l'année": {
+    "en": "Subscribe for the year",
+    "es": "Suscribirse por un año",
+    "pt": "Assinar por um ano"
+  },
+  "S'abstenir et mener une campagne de courrier": {
+    "en": "Abstain and run a mail campaign",
+    "es": "Abstenerse y hacer una campaña por correo",
+    "pt": "Abster-se e fazer uma campanha por correspondência"
+  },
+  "S'accorder une pause": {
+    "en": "Take a break",
+    "es": "Tomarse un respiro",
+    "pt": "Dar-se uma pausa"
+  },
+  "S'accrocher et progresser": {
+    "en": "Hang in there and make progress",
+    "es": "Aguantar y progresar",
+    "pt": "Persistir e progredir"
+  },
+  "S'adapter à chaque maison": {
+    "en": "Adapt to each house",
+    "es": "Adaptarse a cada casa",
+    "pt": "Adaptar-se a cada casa"
+  },
+  "S'adresser à une épicerie solidaire": {
+    "en": "Turn to a community food pantry",
+    "es": "Acudir a una despensa solidaria",
+    "pt": "Recorrer a um mercado solidário"
+  },
+  "S'allier à un confrère": {
+    "en": "Team up with a colleague",
+    "es": "Aliarse con un colega",
+    "pt": "Aliar-se a um colega"
+  },
+  "S'appeler tous les soirs": {
+    "en": "Call each other every evening",
+    "es": "Llamarse cada noche",
+    "pt": "Telefonar um para o outro todas as noites"
+  },
+  "S'associer avec un pacte écrit": {
+    "en": "Partner with a written agreement",
+    "es": "Asociarse con un pacto por escrito",
+    "pt": "Associar-se com um pacto por escrito"
+  },
+  "S'associer avec {ami}": {
+    "en": "Partner with {ami}",
+    "es": "Asociarse con {ami}",
+    "pt": "Associar-se com {ami}"
+  },
+  "S'associer sur une poignée de main": {
+    "en": "Partner on a handshake",
+    "es": "Asociarse con un apretón de manos",
+    "pt": "Associar-se com um aperto de mão"
+  },
+  "S'en occuper vous-même": {
+    "en": "Take care of it yourself",
+    "es": "Encargarse usted mismo",
+    "pt": "Cuidar disso você mesmo"
+  },
+  "S'en passer et assumer": {
+    "en": "Do without and accept it",
+    "es": "Prescindir de ello y asumirlo",
+    "pt": "Passar sem e assumir"
+  },
+  "S'en remettre au choix des parents": {
+    "en": "Leave it to the parents' choice",
+    "es": "Dejar la decisión en manos de los padres",
+    "pt": "Deixar a escolha para os pais"
+  },
+  "S'en servir avec méfiance": {
+    "en": "Use it with caution",
+    "es": "Usarlo con cautela",
+    "pt": "Usá-lo com cautela"
+  },
+  "S'en servir pour négocier sur place": {
+    "en": "Use it to negotiate on the spot",
+    "es": "Usarlo para negociar en el momento",
+    "pt": "Usá-lo para negociar no local"
+  },
+  "S'en servir pour un plan, puis écrire": {
+    "en": "Use it to draft a plan, then write",
+    "es": "Usarlo para un plan y luego escribir",
+    "pt": "Usá-lo para um plano e depois escrever"
+  },
+  "S'en tenir aux soins classiques": {
+    "en": "Stick to standard care",
+    "es": "Limitarse a los cuidados habituales",
+    "pt": "Ater-se aos cuidados habituais"
+  },
+  "S'en tenir à des appels hebdomadaires": {
+    "en": "Stick to weekly calls",
+    "es": "Limitarse a llamadas semanales",
+    "pt": "Limitar-se a ligações semanais"
+  },
+  "S'engager dans le doctorat": {
+    "en": "Commit to the doctorate",
+    "es": "Emprender el doctorado",
+    "pt": "Iniciar o doutorado"
+  },
+  "S'ennuyer et jouer avec la boue": {
+    "en": "Get bored and play in the mud",
+    "es": "Aburrirse y jugar con el barro",
+    "pt": "Entediar-se e brincar na lama"
+  },
+  "S'entraîner dur toute la semaine": {
+    "en": "Train hard all week",
+    "es": "Entrenar duro toda la semana",
+    "pt": "Treinar duro a semana toda"
+  },
+  "S'entraîner sérieusement": {
+    "en": "Train seriously",
+    "es": "Entrenar en serio",
+    "pt": "Treinar a sério"
+  },
+  "S'entraîner sérieusement (80 €)": {
+    "en": "Train seriously (80 €)",
+    "es": "Entrenar en serio (80 €)",
+    "pt": "Treinar a sério (80 €)"
+  },
+  "S'exercer en cachette dans l'allée": {
+    "en": "Practice in secret on the path",
+    "es": "Practicar a escondidas en el sendero",
+    "pt": "Praticar às escondidas na alameda"
+  },
+  "S'inscrire au club": {
+    "en": "Join the club",
+    "es": "Inscribirse en el club",
+    "pt": "Inscrever-se no clube"
+  },
+  "S'inscrire au volley": {
+    "en": "Sign up for volleyball",
+    "es": "Apuntarse al voleibol",
+    "pt": "Inscrever-se no vôlei"
+  },
+  "S'inscrire avec un voisin": {
+    "en": "Sign up with a neighbor",
+    "es": "Inscribirse con un vecino",
+    "pt": "Inscrever-se com um vizinho"
+  },
+  "S'inscrire et partir": {
+    "en": "Sign up and leave",
+    "es": "Inscribirse y marcharse",
+    "pt": "Inscrever-se e partir"
+  },
+  "S'inscrire et suivre les sorties": {
+    "en": "Sign up and join the outings",
+    "es": "Inscribirse y seguir las salidas",
+    "pt": "Inscrever-se e acompanhar as saídas"
+  },
+  "S'inscrire sur le registre de refus": {
+    "en": "Register on the opt-out list",
+    "es": "Inscribirse en el registro de exclusión",
+    "pt": "Inscrever-se na lista de recusa"
+  },
+  "S'inscrire à l'année": {
+    "en": "Sign up for the year",
+    "es": "Inscribirse por un año",
+    "pt": "Inscrever-se por um ano"
+  },
+  "S'inscrire à tous les cours": {
+    "en": "Sign up for all the classes",
+    "es": "Apuntarse a todas las clases",
+    "pt": "Inscrever-se em todas as aulas"
+  },
+  "S'inscrire à un atelier numérique": {
+    "en": "Sign up for a digital workshop",
+    "es": "Apuntarse a un taller digital",
+    "pt": "Inscrever-se em uma oficina digital"
+  },
+  "S'inscrire à un club de marche": {
+    "en": "Join a walking club",
+    "es": "Apuntarse a un club de senderismo",
+    "pt": "Inscrever-se num clube de caminhada"
+  },
+  "S'inscrire à une activité collective": {
+    "en": "Sign up for a group activity",
+    "es": "Apuntarse a una actividad colectiva",
+    "pt": "Inscrever-se em uma atividade coletiva"
+  },
+  "S'inscrire à une prépa (900 €)": {
+    "en": "Enroll in a prep course (900 €)",
+    "es": "Matricularse en una preparatoria (900 €)",
+    "pt": "Matricular-se em um cursinho preparatório (900 €)"
+  },
+  "S'installer au premier rang": {
+    "en": "Take a seat in the front row",
+    "es": "Sentarse en primera fila",
+    "pt": "Sentar-se na primeira fila"
+  },
+  "S'installer pour de bon": {
+    "en": "Settle in for good",
+    "es": "Instalarse para siempre",
+    "pt": "Instalar-se de vez"
+  },
+  "S'interdire de jeu": {
+    "en": "Ban yourself from gambling",
+    "es": "Prohibirse el juego",
+    "pt": "Proibir-se de jogar"
+  },
+  "S'isoler et éviter les situations": {
+    "en": "Isolate yourself and avoid situations",
+    "es": "Aislarse y evitar las situaciones",
+    "pt": "Isolar-se e evitar situações"
+  },
+  "S'isoler pour pleurer en paix": {
+    "en": "Withdraw to cry in peace",
+    "es": "Aislarse para llorar en paz",
+    "pt": "Isolar-se para chorar em paz"
+  },
+  "S'occuper des décors": {
+    "en": "Take care of the sets",
+    "es": "Encargarse de la escenografía",
+    "pt": "Cuidar dos cenários"
+  },
+  "S'offrir un beau week-end": {
+    "en": "Treat yourself to a lovely weekend",
+    "es": "Darse un buen fin de semana",
+    "pt": "Dar-se um bom fim de semana"
+  },
+  "S'opposer au vote": {
+    "en": "Oppose the vote",
+    "es": "Oponerse a la votación",
+    "pt": "Opor-se à votação"
+  },
+  "S'organiser avec des radiateurs électriques": {
+    "en": "Make do with electric heaters",
+    "es": "Organizarse con radiadores eléctricos",
+    "pt": "Organizar-se com aquecedores elétricos"
+  },
+  "S'y mettre sérieusement": {
+    "en": "Get serious about it",
+    "es": "Ponerse en serio",
+    "pt": "Começar a sério"
+  },
+  "S'y rendre sans préparation": {
+    "en": "Go there unprepared",
+    "es": "Ir sin preparación",
+    "pt": "Ir para lá sem preparação"
+  },
+  "S'y résigner": {
+    "en": "Resign yourself to it",
+    "es": "Resignarse",
+    "pt": "Resignar-se"
+  },
+  "S'éloigner vite": {
+    "en": "Move away quickly",
+    "es": "Alejarse rápido",
+    "pt": "Afastar-se depressa"
+  },
+  "Sa présence apaise tout. Le médecin parle clairement, vous comprenez mieux.": {
+    "en": "Their presence calms everything. The doctor speaks clearly, and you understand better.",
+    "es": "La presencia de esa persona lo calma todo. El médico habla con claridad y usted entiende mejor.",
+    "pt": "A presença da pessoa acalma tudo. O médico fala com clareza, e você compreende melhor."
+  },
+  "Sagesse financière. Le village de vos rêves restera un rêve.": {
+    "en": "Financial wisdom. The village of your dreams will remain a dream.",
+    "es": "Sensatez financiera. El pueblo de sus sueños seguirá siendo un sueño.",
+    "pt": "Sabedoria financeira. A aldeia dos seus sonhos continuará sendo um sonho."
+  },
+  "Saisir le conseil de prud'hommes": {
+    "en": "Take the matter to the labor tribunal",
+    "es": "Acudir al tribunal laboral",
+    "pt": "Recorrer ao tribunal trabalhista"
+  },
+  "Saisonnier au bord de la mer": {
+    "en": "Seasonal work by the sea",
+    "es": "Trabajo de temporada junto al mar",
+    "pt": "Trabalho sazonal à beira-mar"
+  },
+  "Sans les enfants et les agendas, vous vous redécouvrez avec plaisir.": {
+    "en": "Without the children and the schedules, you rediscover yourselves with pleasure.",
+    "es": "Sin hijos ni agendas, usted se redescubre con placer.",
+    "pt": "Sem os filhos e as agendas, você se redescobre com prazer."
+  },
+  "Sauge, sport doux, respiration : les symptômes s'allègent.": {
+    "en": "Sage, gentle exercise, breathing: the symptoms ease.",
+    "es": "Salvia, deporte suave, respiración: los síntomas se alivian.",
+    "pt": "Sálvia, exercício leve, respiração: os sintomas diminuem."
+  },
+  "Sauter des repas et attendre le prochain virement": {
+    "en": "Skip meals and wait for the next transfer",
+    "es": "Saltarse comidas y esperar la próxima transferencia",
+    "pt": "Pular refeições e esperar a próxima transferência"
+  },
+  "Sauter les yeux fermés": {
+    "en": "Jump in blindly",
+    "es": "Saltar a ciegas",
+    "pt": "Pular de olhos fechados"
+  }
+}

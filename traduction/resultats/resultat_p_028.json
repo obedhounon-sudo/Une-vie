@@ -1,0 +1,302 @@
+{
+  "Rejet. La majoration double la somme.": {
+    "en": "Rejected. The surcharge doubles the amount.",
+    "es": "Rechazo. El recargo duplica la cantidad.",
+    "pt": "Recusado. O acréscimo dobra o valor."
+  },
+  "Rejeté. La majoration s'ajoute.": {
+    "en": "Rejected. The surcharge is added.",
+    "es": "Rechazado. El recargo se suma.",
+    "pt": "Recusado. O acréscimo é somado."
+  },
+  "Rejoindre la bande": {
+    "en": "Join the crew",
+    "es": "Unirse a la pandilla",
+    "pt": "Juntar-se à turma"
+  },
+  "Rejoindre la fête": {
+    "en": "Join the party",
+    "es": "Unirse a la fiesta",
+    "pt": "Entrar na festa"
+  },
+  "Rejoindre le blocus": {
+    "en": "Join the blockade",
+    "es": "Unirse al bloqueo",
+    "pt": "Juntar-se ao bloqueio"
+  },
+  "Rejoindre le chantier pour lui filer un coup de main": {
+    "en": "Join the worksite to lend him a hand",
+    "es": "Unirse a la obra para echarle una mano",
+    "pt": "Ir para a obra dar uma mão"
+  },
+  "Rejoindre le club et lire le prochain roman": {
+    "en": "Join the club and read the next novel",
+    "es": "Unirse al club y leer la próxima novela",
+    "pt": "Entrar no clube e ler o próximo romance"
+  },
+  "Rejoindre le collectif": {
+    "en": "Join the collective",
+    "es": "Unirse al colectivo",
+    "pt": "Juntar-se ao coletivo"
+  },
+  "Rejoindre un groupe de parole": {
+    "en": "Join a support group",
+    "es": "Unirse a un grupo de apoyo",
+    "pt": "Entrar em um grupo de apoio"
+  },
+  "Rejoindre un repas de quartier": {
+    "en": "Join a neighborhood meal",
+    "es": "Sumarse a una comida de barrio",
+    "pt": "Participar de um almoço do bairro"
+  },
+  "Rejoindre une chorale seulement": {
+    "en": "Join only a choir",
+    "es": "Unirse solo a un coro",
+    "pt": "Entrar apenas em um coral"
+  },
+  "Relancer et insister": {
+    "en": "Follow up and insist",
+    "es": "Insistir y volver a contactar",
+    "pt": "Insistir e cobrar de novo"
+  },
+  "Relancer sans relâche": {
+    "en": "Follow up relentlessly",
+    "es": "Insistir sin descanso",
+    "pt": "Insistir sem trégua"
+  },
+  "Relouer en l'état": {
+    "en": "Re-let as is",
+    "es": "Volver a alquilar tal cual",
+    "pt": "Alugar de novo no estado atual"
+  },
+  "Rembourser une partie de ses dettes": {
+    "en": "Repay part of your debts",
+    "es": "Pagar una parte de sus deudas",
+    "pt": "Pagar parte das dívidas"
+  },
+  "Remercier et décliner": {
+    "en": "Thank them and decline",
+    "es": "Agradecer y declinar",
+    "pt": "Agradecer e recusar"
+  },
+  "Remettre cela à plus tard": {
+    "en": "Put it off for later",
+    "es": "Dejarlo para más tarde",
+    "pt": "Deixar para depois"
+  },
+  "Remettre discrètement dans un rayon": {
+    "en": "Discreetly put it back on a shelf",
+    "es": "Devolver discretamente a una estantería",
+    "pt": "Devolver discretamente à prateleira"
+  },
+  "Remettre l'argent pour l'aider": {
+    "en": "Put the money back in to help him",
+    "es": "Volver a poner el dinero para ayudarle",
+    "pt": "Colocar o dinheiro de volta para ajudá-lo"
+  },
+  "Remettre à une période plus calme": {
+    "en": "Postpone until a calmer period",
+    "es": "Aplazarlo a un período más tranquilo",
+    "pt": "Adiar para um período mais calmo"
+  },
+  "Remiser la tablette": {
+    "en": "Put the tablet away",
+    "es": "Guardar la tableta",
+    "pt": "Guardar o tablet"
+  },
+  "Remonter dans sa chambre": {
+    "en": "Go back up to your room",
+    "es": "Subir a su habitación",
+    "pt": "Subir para o quarto"
+  },
+  "Remplacer par de la marche et de l'aquagym": {
+    "en": "Replace with walking and water aerobics",
+    "es": "Reemplazar por caminar y aquagym",
+    "pt": "Trocar por caminhada e hidroginástica"
+  },
+  "Remplacer par la piscine et la marche": {
+    "en": "Replace with swimming and walking",
+    "es": "Reemplazar por la piscina y caminar",
+    "pt": "Trocar pela piscina e a caminhada"
+  },
+  "Remplir seul et lire attentivement": {
+    "en": "Fill it in alone and read carefully",
+    "es": "Rellenar solo y leer con atención",
+    "pt": "Preencher sozinho e ler com atenção"
+  },
+  "Remède de grand-mère": {
+    "en": "Grandmother's remedy",
+    "es": "Remedio de la abuela",
+    "pt": "Remédio da vovó"
+  },
+  "Rendre coup pour coup": {
+    "en": "Strike back in kind",
+    "es": "Devolver golpe por golpe",
+    "pt": "Revidar golpe por golpe"
+  },
+  "Rendre en retard et tout oublier": {
+    "en": "Return it late and forget everything",
+    "es": "Devolverlo tarde y olvidarlo todo",
+    "pt": "Devolver com atraso e esquecer tudo"
+  },
+  "Renoncer au ballon": {
+    "en": "Give up the ball",
+    "es": "Renunciar al balón",
+    "pt": "Abrir mão da bola"
+  },
+  "Renoncer au bout de la semaine": {
+    "en": "Give up by the end of the week",
+    "es": "Rendirse al final de la semana",
+    "pt": "Desistir ao fim da semana"
+  },
+  "Renoncer pour garder du temps pour les études": {
+    "en": "Give up to keep time for studies",
+    "es": "Renunciar para tener tiempo para los estudios",
+    "pt": "Desistir para ter tempo para os estudos"
+  },
+  "Renoncer pour garder le plaisir du jeu": {
+    "en": "Give up to keep the joy of the game",
+    "es": "Renunciar para conservar el placer del juego",
+    "pt": "Desistir para manter o prazer do jogo"
+  },
+  "Renoncer pour l'instant": {
+    "en": "Give up for now",
+    "es": "Renunciar por ahora",
+    "pt": "Desistir por enquanto"
+  },
+  "Renoncer à la paperasse": {
+    "en": "Give up on the paperwork",
+    "es": "Renunciar al papeleo",
+    "pt": "Desistir da burocracia"
+  },
+  "Renoncer à la succession": {
+    "en": "Renounce the inheritance",
+    "es": "Renunciar a la herencia",
+    "pt": "Renunciar à herança"
+  },
+  "Renoncer à votre part pour apaiser": {
+    "en": "Give up your share to smooth things over",
+    "es": "Renunciar a su parte para apaciguar",
+    "pt": "Abrir mão da sua parte para apaziguar"
+  },
+  "Rentrer au pays": {
+    "en": "Return to your home country",
+    "es": "Volver a su país",
+    "pt": "Voltar para o seu país"
+  },
+  "Rentrer chez soi, vous reviendrez demain": {
+    "en": "Go home, you will come back tomorrow",
+    "es": "Volver a casa, regresará mañana",
+    "pt": "Voltar para casa, você retorna amanhã"
+  },
+  "Rentrer et rester au chaud": {
+    "en": "Go home and stay warm",
+    "es": "Volver a casa y quedarse al calor",
+    "pt": "Voltar para casa e ficar aquecido"
+  },
+  "Rentrer le temps d'un week-end": {
+    "en": "Go home for a weekend",
+    "es": "Volver por un fin de semana",
+    "pt": "Voltar por um fim de semana"
+  },
+  "Rentrer ou rester ?": {
+    "en": "Go home or stay?",
+    "es": "¿Volver o quedarse?",
+    "pt": "Voltar ou ficar?"
+  },
+  "Rentrer plus tôt (400 €)": {
+    "en": "Go home earlier (400 €)",
+    "es": "Volver antes (400 €)",
+    "pt": "Voltar antes (400 €)"
+  },
+  "Rentrer se changer": {
+    "en": "Go home to change",
+    "es": "Volver a cambiarse",
+    "pt": "Voltar para se trocar"
+  },
+  "Rentrer tout de suite": {
+    "en": "Go home right away",
+    "es": "Volver enseguida",
+    "pt": "Voltar logo"
+  },
+  "Rentrer à l'heure": {
+    "en": "Get home on time",
+    "es": "Volver a la hora",
+    "pt": "Voltar no horário"
+  },
+  "Renégocier le prêt": {
+    "en": "Renegotiate the loan",
+    "es": "Renegociar el préstamo",
+    "pt": "Renegociar o empréstimo"
+  },
+  "Repartir les mains vides": {
+    "en": "Leave empty-handed",
+    "es": "Marcharse con las manos vacías",
+    "pt": "Ir embora de mãos vazias"
+  },
+  "Reporter au dernier jour": {
+    "en": "Postpone to the last day",
+    "es": "Dejarlo para el último día",
+    "pt": "Deixar para o último dia"
+  },
+  "Reporter le projet": {
+    "en": "Postpone the project",
+    "es": "Aplazar el proyecto",
+    "pt": "Adiar o projeto"
+  },
+  "Reporter à l'an prochain": {
+    "en": "Postpone to next year",
+    "es": "Aplazarlo al próximo año",
+    "pt": "Adiar para o ano que vem"
+  },
+  "Reporter à l'été prochain": {
+    "en": "Postpone to next summer",
+    "es": "Aplazarlo al próximo verano",
+    "pt": "Adiar para o próximo verão"
+  },
+  "Reporter à plus tard": {
+    "en": "Postpone until later",
+    "es": "Aplazar para más adelante",
+    "pt": "Adiar para mais tarde"
+  },
+  "Repousser et vivre avec la douleur": {
+    "en": "Put it off and live with the pain",
+    "es": "Aplazarlo y vivir con el dolor",
+    "pt": "Adiar e conviver com a dor"
+  },
+  "Repousser les travaux": {
+    "en": "Delay the renovation work",
+    "es": "Aplazar las obras",
+    "pt": "Adiar as obras"
+  },
+  "Repousser à la rentrée prochaine": {
+    "en": "Postpone until the next school year",
+    "es": "Aplazarlo al próximo inicio de curso",
+    "pt": "Adiar para o próximo início das aulas"
+  },
+  "Reprendre après l'épuisement": {
+    "en": "Resume after exhaustion",
+    "es": "Retomar después del agotamiento",
+    "pt": "Retomar após o esgotamento"
+  },
+  "Reprendre le bar-tabac du village": {
+    "en": "Take over the village bar-tabac",
+    "es": "Hacerse cargo del bar-estanco del pueblo",
+    "pt": "Assumir o bar com tabacaria da vila"
+  },
+  "Reprendre le sport à cinquante ans": {
+    "en": "Take up sport again at fifty",
+    "es": "Retomar el deporte a los cincuenta años",
+    "pt": "Retomar o esporte aos cinquenta anos"
+  },
+  "Reprendre le travail": {
+    "en": "Return to work",
+    "es": "Volver al trabajo",
+    "pt": "Voltar ao trabalho"
+  },
+  "Reprendre plus tôt par loyauté": {
+    "en": "Return earlier out of loyalty",
+    "es": "Volver antes por lealtad",
+    "pt": "Retornar mais cedo por lealdade"
+  }
+}
