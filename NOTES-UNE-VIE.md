@@ -21,8 +21,8 @@ Habitude : après une mise à jour → push GitHub (obedhounon-sudo/Une-vie), re
 ## Reprise de la traduction (dossier traduction/)
 - lots/p_001…p_062.json : petits lots de 60 textes {français: ""}.
 - resultats/resultat_p_001…036.json : déjà traduits (en/es/pt) et validés (2 160 textes) ; resultat_partiel_5_7.json (239 textes valides récupérés).
-- Lots 01-04 (≈990 textes) : faits mais l'ancien format ; ils sont dans la conversation d'origine uniquement → à refaire si absents (ne pas fusionnés dans index.html au moment de cette note).
-- À traduire : p_037…p_062 (non faits).
+- resultats/resultat_lot_01…04.json : 4 anciens lots (≈990 textes) déjà traduits, même format.
+- À traduire : p_037…p_062 (non faits). Rien n'est encore fusionné dans index.html : lancer merge.py sur tout le dossier resultats/ (total prêt ≈3 400 textes sur ≈4 900).
 - Format de résultat : {"texte français": {"en":"…","es":"…","pt":"…"}} ; règles dans traduction/LISEZ-MOI.md.
 - Fusion : `python3 traduction/merge.py index.html traduction/resultats` (valide les marqueurs {…}, ajoute des blocs Object.assign EN/ES/PT). Puis tester (Playwright, locale es-ES/pt-BR), pousser, envoyer l'APK.
 - Une autre IA peut traiter les lots (limite : fichiers de résultat < 20 000 caractères à renvoyer en pièce jointe).

@@ -1,0 +1,1237 @@
+{
+ " de cryptos évaporés.": {
+  "en": " in crypto gone up in smoke.",
+  "es": " de criptomonedas evaporadas.",
+  "pt": " em criptomoedas evaporados."
+ },
+ " de moins.": {
+  "en": " less.",
+  "es": " menos.",
+  "pt": " a menos."
+ },
+ " encaissés.": {
+  "en": " collected.",
+  "es": " cobrados.",
+  "pt": " recebidos."
+ },
+ " envolés.": {
+  "en": " gone.",
+  "es": " esfumados.",
+  "pt": " perdidos."
+ },
+ " récupérés environ.": {
+  "en": " recovered, roughly.",
+  "es": " recuperados, aproximadamente.",
+  "pt": " recuperados, aproximadamente."
+ },
+ " récupérés.": {
+  "en": " recovered.",
+  "es": " recuperados.",
+  "pt": " recuperados."
+ },
+ ". Le silence de la maison est immense.": {
+  "en": ". The silence of the house is immense.",
+  "es": ". El silencio de la casa es inmenso.",
+  "pt": ". O silêncio da casa é imenso."
+ },
+ "Accepter avec bienveillance": {
+  "en": "Accept graciously",
+  "es": "Aceptar con benevolencia",
+  "pt": "Aceitar com benevolência"
+ },
+ "Accepter avec enthousiasme": {
+  "en": "Accept with enthusiasm",
+  "es": "Aceptar con entusiasmo",
+  "pt": "Aceitar com entusiasmo"
+ },
+ "Accepter avec gratitude": {
+  "en": "Accept with gratitude",
+  "es": "Aceptar con gratitud",
+  "pt": "Aceitar com gratidão"
+ },
+ "Accepter avec plaisir": {
+  "en": "Accept with pleasure",
+  "es": "Aceptar con gusto",
+  "pt": "Aceitar com prazer"
+ },
+ "Accepter d'être aidé(e)": {
+  "en": "Accept being helped",
+  "es": "Aceptar ser ayudado(a)",
+  "pt": "Aceitar ser ajudado(a)"
+ },
+ "Accepter et assurer la mission": {
+  "en": "Accept and see the mission through",
+  "es": "Aceptar y cumplir la misión",
+  "pt": "Aceitar e cumprir a missão"
+ },
+ "Accepter et espérer une récompense": {
+  "en": "Accept and hope for a reward",
+  "es": "Aceptar y esperar una recompensa",
+  "pt": "Aceitar e esperar uma recompensa"
+ },
+ "Accepter et jouer avec les enfants": {
+  "en": "Accept and play with the kids",
+  "es": "Aceptar y jugar con los niños",
+  "pt": "Aceitar e brincar com as crianças"
+ },
+ "Accepter et négocier l'indemnité": {
+  "en": "Accept and negotiate the severance",
+  "es": "Aceptar y negociar la indemnización",
+  "pt": "Aceitar e negociar a indenização"
+ },
+ "Accepter et rebondir": {
+  "en": "Accept and bounce back",
+  "es": "Aceptar y reponerse",
+  "pt": "Aceitar e dar a volta por cima"
+ },
+ "Accepter et rester sérieux(se)": {
+  "en": "Accept and stay serious",
+  "es": "Aceptar y mantenerse serio(a)",
+  "pt": "Aceitar e manter a seriedade"
+ },
+ "Accepter et se serrer la ceinture": {
+  "en": "Accept and tighten your belt",
+  "es": "Aceptar y ajustarse el cinturón",
+  "pt": "Aceitar e apertar o cinto"
+ },
+ "Accepter l'arrêt de travail": {
+  "en": "Accept the sick leave",
+  "es": "Aceptar la baja médica",
+  "pt": "Aceitar o afastamento"
+ },
+ "Accepter l'offre d'un démarcheur": {
+  "en": "Accept a cold caller's offer",
+  "es": "Aceptar la oferta de un vendedor a domicilio",
+  "pt": "Aceitar a oferta de um vendedor porta a porta"
+ },
+ "Accepter l'offre du démarcheur « à 1 euro »": {
+  "en": "Accept the cold caller's \"1 euro\" offer",
+  "es": "Aceptar la oferta del vendedor «a 1 euro»",
+  "pt": "Aceitar a oferta do vendedor «a 1 euro»"
+ },
+ "Accepter l'opération": {
+  "en": "Accept the operation",
+  "es": "Aceptar la operación",
+  "pt": "Aceitar a operação"
+ },
+ "Accepter l'échange": {
+  "en": "Accept the swap",
+  "es": "Aceptar el intercambio",
+  "pt": "Aceitar a troca"
+ },
+ "Accepter l'équivalent": {
+  "en": "Accept the equivalent",
+  "es": "Aceptar el equivalente",
+  "pt": "Aceitar o equivalente"
+ },
+ "Accepter la mutation": {
+  "en": "Accept the transfer",
+  "es": "Aceptar el traslado",
+  "pt": "Aceitar a transferência"
+ },
+ "Accepter la place": {
+  "en": "Accept the spot",
+  "es": "Aceptar el lugar",
+  "pt": "Aceitar a vaga"
+ },
+ "Accepter la succession": {
+  "en": "Accept the inheritance",
+  "es": "Aceptar la herencia",
+  "pt": "Aceitar a herança"
+ },
+ "Accepter la séparation": {
+  "en": "Accept the separation",
+  "es": "Aceptar la separación",
+  "pt": "Aceitar a separação"
+ },
+ "Accepter le bureau": {
+  "en": "Accept the office",
+  "es": "Aceptar la oficina",
+  "pt": "Aceitar a sala"
+ },
+ "Accepter le mandat": {
+  "en": "Accept the mandate",
+  "es": "Aceptar el mandato",
+  "pt": "Aceitar o mandato"
+ },
+ "Accepter le poste à l'accueil": {
+  "en": "Accept the front-desk job",
+  "es": "Aceptar el puesto en recepción",
+  "pt": "Aceitar o posto na recepção"
+ },
+ "Accepter le sifflet": {
+  "en": "Accept the whistle",
+  "es": "Aceptar el silbato",
+  "pt": "Aceitar o apito"
+ },
+ "Accepter le traitement complet": {
+  "en": "Accept the full treatment",
+  "es": "Aceptar el tratamiento completo",
+  "pt": "Aceitar o tratamento completo"
+ },
+ "Accepter le traitement et ne rien changer": {
+  "en": "Accept the treatment and change nothing",
+  "es": "Aceptar el tratamiento y no cambiar nada",
+  "pt": "Aceitar o tratamento e não mudar nada"
+ },
+ "Accepter le virement à l'avance": {
+  "en": "Accept the advance transfer",
+  "es": "Aceptar la transferencia por adelantado",
+  "pt": "Aceitar a transferência adiantada"
+ },
+ "Accepter les conditions": {
+  "en": "Accept the terms",
+  "es": "Aceptar las condiciones",
+  "pt": "Aceitar as condições"
+ },
+ "Accepter les quatre jours": {
+  "en": "Accept the four days",
+  "es": "Aceptar los cuatro días",
+  "pt": "Aceitar os quatro dias"
+ },
+ "Accepter les sorties du dimanche": {
+  "en": "Accept the Sunday outings",
+  "es": "Aceptar las salidas de los domingos",
+  "pt": "Aceitar os passeios de domingo"
+ },
+ "Accepter sans réserve": {
+  "en": "Accept without reservation",
+  "es": "Aceptar sin reservas",
+  "pt": "Aceitar sem reservas"
+ },
+ "Accepter sous forme de prêt écrit": {
+  "en": "Accept as a written loan",
+  "es": "Aceptar como préstamo por escrito",
+  "pt": "Aceitar como empréstimo por escrito"
+ },
+ "Accepter un accueil de jour": {
+  "en": "Accept day care",
+  "es": "Aceptar un centro de día",
+  "pt": "Aceitar um centro-dia"
+ },
+ "Accepter à concurrence de l'actif net": {
+  "en": "Accept up to the net assets",
+  "es": "Aceptar hasta el límite del activo neto",
+  "pt": "Aceitar até o limite do ativo líquido"
+ },
+ "Accepter, de la main à la main": {
+  "en": "Accept, cash in hand",
+  "es": "Aceptar, en mano",
+  "pt": "Aceitar, em dinheiro vivo"
+ },
+ "Accepter, en contrat déclaré": {
+  "en": "Accept, on a declared contract",
+  "es": "Aceptar, con contrato declarado",
+  "pt": "Aceitar, com contrato registrado"
+ },
+ "Accepter, en fixant l'heure de retour": {
+  "en": "Accept, setting a return time",
+  "es": "Aceptar, fijando la hora de regreso",
+  "pt": "Aceitar, combinando o horário de volta"
+ },
+ "Accepté : moins de trajets, un vendredi libre, et des journées pleines.": {
+  "en": "Accepted: fewer commutes, a free Friday, and full days.",
+  "es": "Aceptado: menos traslados, un viernes libre y jornadas completas.",
+  "pt": "Aceito: menos deslocamentos, uma sexta livre e dias cheios."
+ },
+ "Accompagner un ami qui donne": {
+  "en": "Go along with a friend who is donating",
+  "es": "Acompañar a un amigo que dona",
+  "pt": "Acompanhar um amigo que doa"
+ },
+ "Accueillir la nouvelle avec chaleur": {
+  "en": "Welcome the news warmly",
+  "es": "Recibir la noticia con calidez",
+  "pt": "Receber a notícia com carinho"
+ },
+ "Accueillir la nouvelle avec joie": {
+  "en": "Welcome the news with joy",
+  "es": "Recibir la noticia con alegría",
+  "pt": "Receber a notícia com alegria"
+ },
+ "Accuser un camarade": {
+  "en": "Accuse a classmate",
+  "es": "Acusar a un compañero",
+  "pt": "Acusar um colega"
+ },
+ "Acheter avec un apport de 20 %": {
+  "en": "Buy with a 20% down payment",
+  "es": "Comprar con un pie del 20 %",
+  "pt": "Comprar com 20 % de entrada"
+ },
+ "Acheter d'occasion avec vos fonds": {
+  "en": "Buy second-hand with your own funds",
+  "es": "Comprar de segunda mano con sus fondos",
+  "pt": "Comprar usado com seus recursos"
+ },
+ "Acheter des boules Quies et un matelas neuf (400 €)": {
+  "en": "Buy earplugs and a new mattress (400 €)",
+  "es": "Comprar tapones para los oídos y un colchón nuevo (400 €)",
+  "pt": "Comprar protetores de ouvido e um colchão novo (400 €)"
+ },
+ "Acheter des lunettes toutes faites en pharmacie": {
+  "en": "Buy ready-made glasses at the pharmacy",
+  "es": "Comprar lentes ya hechos en la farmacia",
+  "pt": "Comprar óculos prontos na farmácia"
+ },
+ "Acheter la place": {
+  "en": "Buy the spot",
+  "es": "Comprar el lugar",
+  "pt": "Comprar a vaga"
+ },
+ "Acheter le jouet tout de suite": {
+  "en": "Buy the toy right away",
+  "es": "Comprar el juguete de inmediato",
+  "pt": "Comprar o brinquedo imediatamente"
+ },
+ "Acheter plusieurs tickets à gratter": {
+  "en": "Buy several scratch cards",
+  "es": "Comprar varios boletos de rasca y gana",
+  "pt": "Comprar várias raspadinhas"
+ },
+ "Acheter un nouveau modèle (500 €)": {
+  "en": "Buy a new model (500 €)",
+  "es": "Comprar un modelo nuevo (500 €)",
+  "pt": "Comprar um modelo novo (500 €)"
+ },
+ "Acheter un ticket de tirage": {
+  "en": "Buy a draw ticket",
+  "es": "Comprar un boleto de sorteo",
+  "pt": "Comprar um bilhete de sorteio"
+ },
+ "Acheter un ventilateur puissant et bien s'hydrater": {
+  "en": "Buy a powerful fan and stay well hydrated",
+  "es": "Comprar un ventilador potente e hidratarse bien",
+  "pt": "Comprar um ventilador potente e se hidratar bem"
+ },
+ "Acheter une reproduction": {
+  "en": "Buy a reproduction",
+  "es": "Comprar una reproducción",
+  "pt": "Comprar uma reprodução"
+ },
+ "Adapter les repas à tous": {
+  "en": "Adapt the meals for everyone",
+  "es": "Adaptar las comidas para todos",
+  "pt": "Adaptar as refeições para todos"
+ },
+ "Adieu les petites roues": {
+  "en": "Goodbye, training wheels",
+  "es": "Adiós a las rueditas",
+  "pt": "Adeus, rodinhas"
+ },
+ "Affirmer vos contributions": {
+  "en": "Assert your contributions",
+  "es": "Hacer valer sus aportes",
+  "pt": "Afirmar suas contribuições"
+ },
+ "Affronter celui qui l'a diffusée": {
+  "en": "Confront whoever spread it",
+  "es": "Enfrentar a quien la difundió",
+  "pt": "Confrontar quem a divulgou"
+ },
+ "Affronter le voleur seul": {
+  "en": "Face the thief alone",
+  "es": "Enfrentar al ladrón a solas",
+  "pt": "Enfrentar o ladrão sozinho(a)"
+ },
+ "Aider aux tâches de la maison": {
+  "en": "Help with the household chores",
+  "es": "Ayudar con las tareas de la casa",
+  "pt": "Ajudar nas tarefas da casa"
+ },
+ "Aider l'ami à gérer la fête": {
+  "en": "Help the friend manage the party",
+  "es": "Ayudar al amigo a organizar la fiesta",
+  "pt": "Ajudar o amigo a cuidar da festa"
+ },
+ "Aider à colmater la tente": {
+  "en": "Help patch the tent",
+  "es": "Ayudar a remendar la carpa",
+  "pt": "Ajudar a remendar a barraca"
+ },
+ "Aider à déménager": {
+  "en": "Help with the move",
+  "es": "Ayudar con la mudanza",
+  "pt": "Ajudar na mudança"
+ },
+ "Aides, repas portés : vous conservez votre quotidien.": {
+  "en": "Home help, delivered meals: you keep your daily life.",
+  "es": "Ayudas, comidas a domicilio: usted conserva su vida cotidiana.",
+  "pt": "Auxílios, refeições entregues: você mantém o seu dia a dia."
+ },
+ "Aimer à trois cents kilomètres": {
+  "en": "Loving at three hundred kilometers",
+  "es": "Amar a trescientos kilómetros",
+  "pt": "Amar a trezentos quilômetros"
+ },
+ "Alerter la famille ou le gardien": {
+  "en": "Alert the family or the caretaker",
+  "es": "Avisar a la familia o al encargado",
+  "pt": "Avisar a família ou o zelador"
+ },
+ "Alerter les pompiers et évacuer": {
+  "en": "Alert the firefighters and evacuate",
+  "es": "Avisar a los bomberos y evacuar",
+  "pt": "Alertar os bombeiros e evacuar"
+ },
+ "Aller chez des amis ou de la famille": {
+  "en": "Go to friends or family",
+  "es": "Ir con amigos o familiares",
+  "pt": "Ir para a casa de amigos ou parentes"
+ },
+ "Aller dormir chez des proches": {
+  "en": "Go sleep at a relative's",
+  "es": "Ir a dormir a casa de familiares",
+  "pt": "Ir dormir na casa de parentes"
+ },
+ "Aller le ou la voir tout de suite": {
+  "en": "Go see him or her right away",
+  "es": "Ir a verlo(a) de inmediato",
+  "pt": "Ir vê-lo(a) agora mesmo"
+ },
+ "Aller parler à la personne": {
+  "en": "Go talk to the person",
+  "es": "Ir a hablar con la persona",
+  "pt": "Ir falar com a pessoa"
+ },
+ "Aller passer une radio": {
+  "en": "Go get an X-ray",
+  "es": "Ir a hacerse una radiografía",
+  "pt": "Ir fazer uma radiografia"
+ },
+ "Aller se réfugier chez un proche à la campagne": {
+  "en": "Take refuge at a relative's in the countryside",
+  "es": "Refugiarse en casa de un familiar en el campo",
+  "pt": "Refugiar-se na casa de um parente no campo"
+ },
+ "Aller voir au lycée avec les amis": {
+  "en": "Go check at the school with friends",
+  "es": "Ir a ver al colegio con los amigos",
+  "pt": "Ir ver na escola com os amigos"
+ },
+ "Aller à la cérémonie": {
+  "en": "Go to the ceremony",
+  "es": "Ir a la ceremonia",
+  "pt": "Ir à cerimônia"
+ },
+ "Aller à la mairie, aux permanences": {
+  "en": "Go to the town hall, to the drop-in sessions",
+  "es": "Ir al ayuntamiento, a las consultas ciudadanas",
+  "pt": "Ir à prefeitura, aos plantões"
+ },
+ "Alléger et sécuriser": {
+  "en": "Lighten and secure",
+  "es": "Aligerar y asegurar",
+  "pt": "Aliviar e proteger"
+ },
+ "Alléger le programme": {
+  "en": "Lighten the schedule",
+  "es": "Aligerar el programa",
+  "pt": "Aliviar a programação"
+ },
+ "Alterner avec la famille": {
+  "en": "Alternate with the family",
+  "es": "Turnarse con la familia",
+  "pt": "Revezar com a família"
+ },
+ "Alterner d'une année sur l'autre": {
+  "en": "Alternate from one year to the next",
+  "es": "Alternar de un año a otro",
+  "pt": "Alternar de um ano para o outro"
+ },
+ "Ambiance festive, pourboires, rencontres : bar un jour, danse la nuit.": {
+  "en": "Festive mood, tips, people to meet: bar one day, dancing at night.",
+  "es": "Ambiente festivo, propinas, encuentros: bar un día, baile por la noche.",
+  "pt": "Clima festivo, gorjetas, encontros: bar num dia, dança à noite."
+ },
+ "Amélioration lente et un peu douloureuse.": {
+  "en": "Slow, somewhat painful improvement.",
+  "es": "Mejoría lenta y algo dolorosa.",
+  "pt": "Melhora lenta e um pouco dolorosa."
+ },
+ "Aménager la maison contre les chutes": {
+  "en": "Fall-proof the house",
+  "es": "Adaptar la casa contra las caídas",
+  "pt": "Adaptar a casa contra quedas"
+ },
+ "Annonce de suppressions de postes": {
+  "en": "Announcement of job cuts",
+  "es": "Anuncio de recortes de puestos",
+  "pt": "Anúncio de cortes de vagas"
+ },
+ "Annuler et rester": {
+  "en": "Cancel and stay",
+  "es": "Cancelar y quedarse",
+  "pt": "Cancelar e ficar"
+ },
+ "Appeler au secours": {
+  "en": "Call for help",
+  "es": "Pedir auxilio",
+  "pt": "Pedir socorro"
+ },
+ "Appeler encore et encore": {
+  "en": "Call again and again",
+  "es": "Llamar una y otra vez",
+  "pt": "Ligar de novo e de novo"
+ },
+ "Appeler la famille chaque soir": {
+  "en": "Call the family every evening",
+  "es": "Llamar a la familia cada noche",
+  "pt": "Ligar para a família toda noite"
+ },
+ "Appeler le chien avec un biscuit": {
+  "en": "Call the dog with a biscuit",
+  "es": "Llamar al perro con una galleta",
+  "pt": "Chamar o cachorro com um biscoito"
+ },
+ "Appeler son médecin": {
+  "en": "Call your doctor",
+  "es": "Llamar a su médico",
+  "pt": "Ligar para o seu médico"
+ },
+ "Appeler tous les jours": {
+  "en": "Call every day",
+  "es": "Llamar todos los días",
+  "pt": "Ligar todos os dias"
+ },
+ "Appeler un ami et sortir": {
+  "en": "Call a friend and go out",
+  "es": "Llamar a un amigo y salir",
+  "pt": "Ligar para um amigo e sair"
+ },
+ "Appeler un ami ou un proche de {enfant}": {
+  "en": "Call a friend or relative of {enfant}",
+  "es": "Llamar a un amigo o allegado de {enfant}",
+  "pt": "Ligar para um amigo ou parente de {enfant}"
+ },
+ "Appeler un ami pour réviser ensemble": {
+  "en": "Call a friend to study together",
+  "es": "Llamar a un amigo para estudiar juntos",
+  "pt": "Ligar para um amigo para estudarem juntos"
+ },
+ "Appeler un ancien collègue": {
+  "en": "Call a former colleague",
+  "es": "Llamar a un excolega",
+  "pt": "Ligar para um ex-colega"
+ },
+ "Appeler un proche pour vous accompagner": {
+  "en": "Call a relative to go with you",
+  "es": "Llamar a un allegado para que lo acompañe",
+  "pt": "Chamar um parente para acompanhar você"
+ },
+ "Appeler un proche pour vous récupérer": {
+  "en": "Call a relative to pick you up",
+  "es": "Llamar a un allegado para que pase por usted",
+  "pt": "Chamar um parente para buscar você"
+ },
+ "Appeler un voisin bricoleur": {
+  "en": "Call a handy neighbor",
+  "es": "Llamar a un vecino manitas",
+  "pt": "Chamar um vizinho habilidoso"
+ },
+ "Appeler vos enfants et amis": {
+  "en": "Call your children and friends",
+  "es": "Llamar a sus hijos y amigos",
+  "pt": "Ligar para seus filhos e amigos"
+ },
+ "Appeler à l'aide": {
+  "en": "Call for help",
+  "es": "Pedir ayuda",
+  "pt": "Pedir ajuda"
+ },
+ "Apporter un plat maison": {
+  "en": "Bring a homemade dish",
+  "es": "Llevar un plato casero",
+  "pt": "Levar um prato caseiro"
+ },
+ "Apporter une peluche pour illustrer": {
+  "en": "Bring a stuffed toy to illustrate",
+  "es": "Llevar un peluche para ilustrar",
+  "pt": "Levar uma pelúcia para ilustrar"
+ },
+ "Apprendre le texte par cœur": {
+  "en": "Learn the text by heart",
+  "es": "Aprender el texto de memoria",
+  "pt": "Decorar o texto"
+ },
+ "Apprendre par cœur": {
+  "en": "Learn by heart",
+  "es": "Aprender de memoria",
+  "pt": "Decorar"
+ },
+ "Apprendre à le faire vous-même": {
+  "en": "Learn to do it yourself",
+  "es": "Aprender a hacerlo usted mismo(a)",
+  "pt": "Aprender a fazer você mesmo(a)"
+ },
+ "Apprendre à vivre autrement": {
+  "en": "Learn to live differently",
+  "es": "Aprender a vivir de otra manera",
+  "pt": "Aprender a viver de outro jeito"
+ },
+ "Apprentissage en alternance": {
+  "en": "Work-study apprenticeship",
+  "es": "Aprendizaje en alternancia",
+  "pt": "Aprendizagem em alternância"
+ },
+ "Après de longues discussions, vous partez avec une indemnité correcte.": {
+  "en": "After long discussions, you leave with a fair severance.",
+  "es": "Tras largas conversaciones, usted se va con una indemnización correcta.",
+  "pt": "Após longas conversas, você sai com uma indenização razoável."
+ },
+ "Après des années devant un écran ou en réunion, l'idée de devenir menuisier, boulanger ou paysagiste vous obsède. Une formation de dix mois existe.": {
+  "en": "After years in front of a screen or in meetings, the idea of becoming a carpenter, baker or landscaper obsesses you. A ten-month training course exists.",
+  "es": "Tras años frente a una pantalla o en reuniones, la idea de volverse carpintero, panadero o paisajista le obsesiona. Existe una formación de diez meses.",
+  "pt": "Depois de anos diante de uma tela ou em reuniões, a ideia de virar marceneiro, padeiro ou paisagista obceca você. Existe uma formação de dez meses."
+ },
+ "Après des discussions serrées, vous obtenez une indemnité confortable.": {
+  "en": "After tough discussions, you get a comfortable severance.",
+  "es": "Tras duras negociaciones, usted obtiene una indemnización cómoda.",
+  "pt": "Após discussões acirradas, você consegue uma indenização confortável."
+ },
+ "Après des jours de chutes secrètes, vous surprenez toute la famille.": {
+  "en": "After days of secret falls, you surprise the whole family.",
+  "es": "Tras días de caídas secretas, usted sorprende a toda la familia.",
+  "pt": "Depois de dias de quedas secretas, você surpreende a família inteira."
+ },
+ "Après des mois d'arrêt, le retour au bureau approche. Votre responsable propose un mi-temps thérapeutique. Vous redoutez le regard des collègues.": {
+  "en": "After months off, the return to the office approaches. Your manager suggests a therapeutic half-time. You dread your colleagues' stares.",
+  "es": "Tras meses de baja, se acerca el regreso a la oficina. Su responsable propone una media jornada terapéutica. Usted teme las miradas de los colegas.",
+  "pt": "Após meses afastado(a), a volta ao escritório se aproxima. Seu gestor propõe um meio período terapêutico. Você teme o olhar dos colegas."
+ },
+ "Après des mois de bataille, le jugement vous est plutôt favorable. Victoire amère.": {
+  "en": "After months of fighting, the ruling is rather favorable to you. A bitter victory.",
+  "es": "Tras meses de batalla, el fallo le es bastante favorable. Victoria amarga.",
+  "pt": "Depois de meses de batalha, a sentença lhe é bastante favorável. Vitória amarga."
+ },
+ "Après des semaines de courriers, les trimestres sont reportés. Votre future pension sera plus juste.": {
+  "en": "After weeks of letters, the quarters are carried over. Your future pension will be fairer.",
+  "es": "Tras semanas de cartas, se reconocen los trimestres. Su futura pensión será más justa.",
+  "pt": "Após semanas de cartas, os trimestres são reconhecidos. Sua futura aposentadoria será mais justa."
+ },
+ "Après des semaines de démarches, le dossier est classé en votre faveur.": {
+  "en": "After weeks of paperwork, the file is closed in your favor.",
+  "es": "Tras semanas de trámites, el expediente se resuelve a su favor.",
+  "pt": "Após semanas de burocracia, o processo é arquivado a seu favor."
+ },
+ "Après des semaines de recherches infructueuses, vous abandonnez, découragé(e).": {
+  "en": "After weeks of fruitless searching, you give up, discouraged.",
+  "es": "Tras semanas de búsquedas infructuosas, usted se rinde, desanimado(a).",
+  "pt": "Depois de semanas de buscas infrutíferas, você desiste, desanimado(a)."
+ },
+ "Après des semaines de tentatives secrètes, vous surprenez tout le monde en filant sans aide.": {
+  "en": "After weeks of secret attempts, you surprise everyone by gliding off without help.",
+  "es": "Tras semanas de intentos secretos, usted sorprende a todos avanzando sin ayuda.",
+  "pt": "Depois de semanas de tentativas secretas, você surpreende todo mundo seguindo sem ajuda."
+ },
+ "Après des soirées de pratique, vous devenez même la référence de votre équipe.": {
+  "en": "After evenings of practice, you even become your team's go-to.",
+  "es": "Tras noches de práctica, usted incluso se convierte en la referencia de su equipo.",
+  "pt": "Depois de noites de prática, você até vira a referência da sua equipe."
+ },
+ "Après deux heures de patience, tout est validé. Une petite fierté d'adulte vous envahit.": {
+  "en": "After two hours of patience, everything is approved. A small adult pride fills you.",
+  "es": "Tras dos horas de paciencia, todo queda validado. Un pequeño orgullo adulto lo invade.",
+  "pt": "Depois de duas horas de paciência, tudo é validado. Um pequeno orgulho de adulto toma conta de você."
+ },
+ "Après deux mois de travail dans un fast-food local, vous recevez enfin un bulletin de paie. Il y a des lignes obscures, des cotisations, des abréviations incompréhensibles.": {
+  "en": "After two months working at a local fast-food place, you finally get a payslip. It has obscure lines, contributions, incomprehensible abbreviations.",
+  "es": "Tras dos meses de trabajo en un local de comida rápida, por fin recibe una nómina. Hay líneas oscuras, cotizaciones, abreviaturas incomprensibles.",
+  "pt": "Após dois meses trabalhando em uma lanchonete local, você finalmente recebe um holerite. Há linhas obscuras, contribuições, abreviações incompreensíveis."
+ },
+ "Après deux mois, l'élan se perd, malgré le bel atelier.": {
+  "en": "After two months, the momentum fades, despite the lovely workshop.",
+  "es": "Tras dos meses, el impulso se pierde, pese al hermoso taller.",
+  "pt": "Após dois meses, o ânimo se perde, apesar do belo ateliê."
+ },
+ "Après déduction des frais, il reste un petit capital.": {
+  "en": "After deducting costs, a small nest egg remains.",
+  "es": "Tras descontar los gastos, queda un pequeño capital.",
+  "pt": "Após o desconto das despesas, sobra um pequeno capital."
+ },
+ "Après l'extinction des feux": {
+  "en": "After lights out",
+  "es": "Después de apagar las luces",
+  "pt": "Depois de apagar as luzes"
+ },
+ "Après la surprise, vous vous projetez déjà. Il y a tant à préparer !": {
+  "en": "After the surprise, you are already looking ahead. There is so much to prepare!",
+  "es": "Tras la sorpresa, usted ya se proyecta. ¡Hay tanto que preparar!",
+  "pt": "Depois da surpresa, você já se projeta no futuro. Há tanto para preparar!"
+ },
+ "Après la tempête": {
+  "en": "After the storm",
+  "es": "Después de la tormenta",
+  "pt": "Depois da tempestade"
+ },
+ "Après le match, ça s'échauffe": {
+  "en": "After the match, things heat up",
+  "es": "Tras el partido, los ánimos se caldean",
+  "pt": "Depois da partida, os ânimos esquentam"
+ },
+ "Après négociation, un compromis : couleur temporaire d'abord. La confiance monte d'un cran.": {
+  "en": "After negotiation, a compromise: temporary color first. Trust goes up a notch.",
+  "es": "Tras negociar, un compromiso: primero un color temporal. La confianza sube un peldaño.",
+  "pt": "Após negociação, um meio-termo: primeiro uma cor temporária. A confiança sobe um degrau."
+ },
+ "Après quatre visites de plus, un studio plus petit, plus cher, mais mieux situé, vous accepte.": {
+  "en": "After four more visits, a smaller, pricier, but better-located studio accepts you.",
+  "es": "Tras cuatro visitas más, un estudio más pequeño, más caro, pero mejor ubicado, lo acepta.",
+  "pt": "Após mais quatro visitas, um estúdio menor, mais caro, porém mais bem localizado, aceita você."
+ },
+ "Après quelques années loin de chez vous, la famille vous manque. Mais là-bas, vous avez bâti des habitudes, des amis, une vie.": {
+  "en": "After a few years away from home, you miss your family. But over there, you have built habits, friends, a life.",
+  "es": "Tras algunos años lejos de casa, usted extraña a su familia. Pero allá ha construido costumbres, amistades, una vida.",
+  "pt": "Após alguns anos longe de casa, você sente saudade da família. Mas lá, você construiu hábitos, amigos, uma vida."
+ },
+ "Après quelques courriers fermes, une partie est annulée. Vous avez gagné du temps et de l'argent.": {
+  "en": "After a few firm letters, part of it is cancelled. You have gained time and money.",
+  "es": "Tras algunas cartas firmes, una parte se anula. Usted ha ganado tiempo y dinero.",
+  "pt": "Após algumas cartas firmes, uma parte é cancelada. Você ganhou tempo e dinheiro."
+ },
+ "Après quelques jours, tout rentre dans l'ordre.": {
+  "en": "After a few days, everything returns to normal.",
+  "es": "Tras unos días, todo vuelve a la normalidad.",
+  "pt": "Após alguns dias, tudo volta ao normal."
+ },
+ "Après quelques mois, la période s'éloigne d'elle-même.": {
+  "en": "After a few months, the period fades on its own.",
+  "es": "Tras unos meses, la etapa se aleja por sí sola.",
+  "pt": "Após alguns meses, o período se afasta por si só."
+ },
+ "Après quelques mois, une offre parfaite arrive. Le pari est gagnant.": {
+  "en": "After a few months, a perfect offer arrives. The gamble pays off.",
+  "es": "Tras unos meses, llega una oferta perfecta. La apuesta resulta ganadora.",
+  "pt": "Após alguns meses, chega uma oferta perfeita. A aposta deu certo."
+ },
+ "Après quelques semaines de lectures, vous comprenez les risques et les technologies.": {
+  "en": "After a few weeks of reading, you understand the risks and the technologies.",
+  "es": "Tras unas semanas de lectura, usted comprende los riesgos y las tecnologías.",
+  "pt": "Após algumas semanas de leitura, você entende os riscos e as tecnologias."
+ },
+ "Après quelques soirées de lecture de tableaux, vous trouvez mieux pour moins cher.": {
+  "en": "After a few evenings reading tables, you find better for less.",
+  "es": "Tras unas noches leyendo tablas, usted encuentra algo mejor por menos.",
+  "pt": "Após algumas noites lendo tabelas, você encontra algo melhor por menos."
+ },
+ "Après six heures d'attente, un interne vous examine : rien de grave, mais mieux vaut s'en être assuré.": {
+  "en": "After six hours of waiting, an intern examines you: nothing serious, but better to have made sure.",
+  "es": "Tras seis horas de espera, un interno lo examina: nada grave, pero más vale haberse asegurado.",
+  "pt": "Após seis horas de espera, um residente examina você: nada grave, mas melhor ter se certificado."
+ },
+ "Après trois chutes et un genou écorché, vous tenez enfin en équilibre. La rue est à vous.": {
+  "en": "After three falls and a scraped knee, you finally keep your balance. The street is yours.",
+  "es": "Tras tres caídas y una rodilla raspada, por fin se mantiene en equilibrio. La calle es suya.",
+  "pt": "Depois de três quedas e um joelho ralado, você enfim se equilibra. A rua é sua."
+ },
+ "Après trois heures, l'armoire tient debout. Cela mérite un petit apéritif.": {
+  "en": "After three hours, the wardrobe stands upright. This deserves a little aperitif.",
+  "es": "Tras tres horas, el armario se sostiene en pie. Esto merece un pequeño aperitivo.",
+  "pt": "Após três horas, o armário fica de pé. Isso merece um aperitivo."
+ },
+ "Après trois jours d'adaptation, vous retrouvez le plaisir de lire sans effort. Moins de maux de tête aussi.": {
+  "en": "After three days of adjustment, you rediscover the pleasure of reading effortlessly. Fewer headaches too.",
+  "es": "Tras tres días de adaptación, usted recupera el placer de leer sin esfuerzo. Menos dolores de cabeza también.",
+  "pt": "Após três dias de adaptação, você reencontra o prazer de ler sem esforço. Menos dores de cabeça também."
+ },
+ "Après trois mois de répétition, vous jouez à la fête de fin d'année. Le public hurle, le son est brouillon, la joie immense.": {
+  "en": "After three months of rehearsal, you play at the end-of-year party. The crowd roars, the sound is messy, the joy immense.",
+  "es": "Tras tres meses de ensayo, usted toca en la fiesta de fin de año. El público grita, el sonido es desordenado, la alegría inmensa.",
+  "pt": "Após três meses de ensaio, você toca na festa de fim de ano. O público grita, o som está confuso, a alegria é imensa."
+ },
+ "Après trois mois, aucun changement perceptible. Vous résiliez, un peu penaud(e).": {
+  "en": "After three months, no noticeable change. You cancel, a bit sheepish.",
+  "es": "Tras tres meses, ningún cambio perceptible. Usted cancela, algo avergonzado(a).",
+  "pt": "Após três meses, nenhuma mudança perceptível. Você cancela, meio sem graça."
+ },
+ "Après trois semaines de paperasse, le tampon arrive.": {
+  "en": "After three weeks of paperwork, the stamp arrives.",
+  "es": "Tras tres semanas de papeleo, llega el sello.",
+  "pt": "Após três semanas de papelada, o carimbo chega."
+ },
+ "Après trois soirs de peigne fin, plus un seul. Vous avez les cheveux qui sentent la pharmacie.": {
+  "en": "After three evenings with a fine-toothed comb, not a single one left. Your hair smells of the pharmacy.",
+  "es": "Tras tres noches de peine fino, ni uno solo. Su cabello huele a farmacia.",
+  "pt": "Após três noites de pente fino, nem um só. Seu cabelo cheira a farmácia."
+ },
+ "Après un an de procédure, vous obtenez gain de cause.": {
+  "en": "After a year of proceedings, you win your case.",
+  "es": "Tras un año de procedimiento, usted gana la causa.",
+  "pt": "Após um ano de processo, você ganha a causa."
+ },
+ "Après un mois, la flemme gagne. Le cardio, lui, a bien progressé.": {
+  "en": "After a month, laziness wins. The cardio, though, has improved.",
+  "es": "Tras un mes, la pereza gana. El cardio, en cambio, ha mejorado bastante.",
+  "pt": "Após um mês, a preguiça vence. Já o cardio melhorou bastante."
+ },
+ "Après un semestre, vous comprenez que cette formation n'est pas pour vous. Les cours vous ennuient, les stages vous glacent. Une autre voie vous attire, plus risquée.": {
+  "en": "After a semester, you realize this program isn't for you. The classes bore you, the internships chill you. Another path, riskier, attracts you.",
+  "es": "Tras un semestre, usted comprende que esta formación no es para usted. Las clases le aburren, las prácticas le paralizan. Otro camino, más arriesgado, le atrae.",
+  "pt": "Após um semestre, você entende que essa formação não é para você. As aulas entediam você, os estágios gelam você. Outro caminho, mais arriscado, atrai você."
+ },
+ "Après un séjour hospitalier, une facture au nom de votre famille arrive : dépassement d'honoraires, chambre individuelle, frais divers. Le total donne un haut-le-coeur.": {
+  "en": "After a hospital stay, a bill in your family's name arrives: extra fees, private room, miscellaneous charges. The total turns your stomach.",
+  "es": "Tras una hospitalización, llega una factura a nombre de su familia: sobrecosto de honorarios, habitación individual, gastos varios. El total le revuelve el estómago.",
+  "pt": "Após uma internação, chega uma conta em nome da sua família: honorários excedentes, quarto individual, despesas diversas. O total embrulha o estômago."
+ },
+ "Après une heure d'errance, vous trouvez enfin.": {
+  "en": "After an hour of wandering, you finally find it.",
+  "es": "Tras una hora de deambular, por fin lo encuentra.",
+  "pt": "Após uma hora de busca, você finalmente encontra."
+ },
+ "Après une semaine à avaler des sandwichs, vous entendez parler du « batch cooking » : tout cuisiner le dimanche pour la semaine. Quatre heures en cuisine, sans que la routine s'ennuie ?": {
+  "en": "After a week of swallowing sandwiches, you hear about \"batch cooking\": cooking everything on Sunday for the week. Four hours in the kitchen, without the routine getting boring?",
+  "es": "Tras una semana comiendo sándwiches, usted oye hablar del «batch cooking»: cocinar todo el domingo para la semana. ¿Cuatro horas en la cocina, sin que la rutina aburra?",
+  "pt": "Após uma semana engolindo sanduíches, você ouve falar do «batch cooking»: cozinhar tudo no domingo para a semana. Quatro horas na cozinha, sem que a rotina enjoe?"
+ },
+ "Après une série d'examens de routine, le médecin vous demande de repasser « pour en discuter ». Vous passez la nuit à imaginer le pire.": {
+  "en": "After a series of routine tests, the doctor asks you to come back \"to discuss\". You spend the night imagining the worst.",
+  "es": "Tras una serie de exámenes de rutina, el médico le pide que regrese «para conversar». Usted pasa la noche imaginando lo peor.",
+  "pt": "Após uma série de exames de rotina, o médico pede que você volte «para conversar». Você passa a noite imaginando o pior."
+ },
+ "Après vingt minutes de sueur froide, vous convainquez le jury. Le diplôme est à vous.": {
+  "en": "After twenty minutes of cold sweat, you convince the jury. The diploma is yours.",
+  "es": "Tras veinte minutos de sudor frío, usted convence al jurado. El diploma es suyo.",
+  "pt": "Após vinte minutos de suor frio, você convence a banca. O diploma é seu."
+ },
+ "Après votre blessure, le kiné prescrit vingt séances. Il faut des heures de trajet, de patience et d'exercices à domicile que personne ne surveille.": {
+  "en": "After your injury, the physio prescribes twenty sessions. It takes hours of travel, patience and home exercises that nobody supervises.",
+  "es": "Tras su lesión, el kinesiólogo prescribe veinte sesiones. Exige horas de traslado, paciencia y ejercicios en casa que nadie supervisa.",
+  "pt": "Após a sua lesão, o fisioterapeuta prescreve vinte sessões. Exige horas de deslocamento, paciência e exercícios em casa que ninguém supervisiona."
+ },
+ "Arbitre du dimanche": {
+  "en": "Sunday referee",
+  "es": "Árbitro de domingo",
+  "pt": "Árbitro de domingo"
+ },
+ "Argumenter avec des chiffres": {
+  "en": "Argue with figures",
+  "es": "Argumentar con cifras",
+  "pt": "Argumentar com números"
+ },
+ "Armoire en cent quatre-vingt pièces, notice en pictogrammes, une clé Allen et du courage. Il manque trois vis, et le ton monte entre vous et la planche numéro douze.": {
+  "en": "A hundred-and-eighty-piece wardrobe, pictogram instructions, one Allen key and courage. Three screws are missing, and tempers rise between you and board number twelve.",
+  "es": "Un armario de ciento ochenta piezas, instrucciones en pictogramas, una llave Allen y valor. Faltan tres tornillos, y el tono sube entre usted y el tablón número doce.",
+  "pt": "Armário de cento e oitenta peças, manual em pictogramas, uma chave Allen e coragem. Faltam três parafusos, e o tom sobe entre você e a tábua número doze."
+ },
+ "Arranger légèrement les faits": {
+  "en": "Bend the facts slightly",
+  "es": "Arreglar ligeramente los hechos",
+  "pt": "Ajeitar um pouco os fatos"
+ },
+ "Arrêter de boire pendant un mois": {
+  "en": "Stop drinking for a month",
+  "es": "Dejar de beber durante un mes",
+  "pt": "Parar de beber por um mês"
+ },
+ "Arrêter de fumer ou d'être exposé à la fumée": {
+  "en": "Stop smoking or being exposed to smoke",
+  "es": "Dejar de fumar o de exponerse al humo",
+  "pt": "Parar de fumar ou de se expor à fumaça"
+ },
+ "Arrêter de vous-même quand vous vous sentez bien": {
+  "en": "Stop on your own once you feel fine",
+  "es": "Dejar el tratamiento por su cuenta cuando se sienta bien",
+  "pt": "Parar por conta própria quando você se sentir bem"
+ },
+ "Arrêter les études": {
+  "en": "Quit school",
+  "es": "Dejar los estudios",
+  "pt": "Parar de estudar"
+ },
+ "Assumer fièrement": {
+  "en": "Own it proudly",
+  "es": "Asumirlo con orgullo",
+  "pt": "Assumir com orgulho"
+ },
+ "Assumer la coupe": {
+  "en": "Own the haircut",
+  "es": "Asumir el corte",
+  "pt": "Assumir o corte"
+ },
+ "Assumer, et aller à la fête": {
+  "en": "Own it, and go to the party",
+  "es": "Asumirlo e ir a la fiesta",
+  "pt": "Assumir e ir à festa"
+ },
+ "Assurer les autres": {
+  "en": "Insure the others",
+  "es": "Asegurar a los demás",
+  "pt": "Segurar os outros"
+ },
+ "Attendre d'être prêt(e)": {
+  "en": "Wait until you're ready",
+  "es": "Esperar a estar listo(a)",
+  "pt": "Esperar até estar pronto(a)"
+ },
+ "Attendre de voir": {
+  "en": "Wait and see",
+  "es": "Esperar a ver",
+  "pt": "Esperar para ver"
+ },
+ "Attendre des jours plus faciles": {
+  "en": "Wait for easier days",
+  "es": "Esperar días más fáciles",
+  "pt": "Esperar dias mais fáceis"
+ },
+ "Attendre en se raisonnant": {
+  "en": "Wait, reasoning with yourself",
+  "es": "Esperar, razonando consigo mismo(a)",
+  "pt": "Esperar, ponderando"
+ },
+ "Attendre encore un an ou deux": {
+  "en": "Wait another year or two",
+  "es": "Esperar uno o dos años más",
+  "pt": "Esperar mais um ou dois anos"
+ },
+ "Attendre encore un peu": {
+  "en": "Wait a little longer",
+  "es": "Esperar un poco más",
+  "pt": "Esperar mais um pouco"
+ },
+ "Attendre et observer": {
+  "en": "Wait and observe",
+  "es": "Esperar y observar",
+  "pt": "Esperar e observar"
+ },
+ "Attendre le bilan annuel": {
+  "en": "Wait for the annual review",
+  "es": "Esperar la evaluación anual",
+  "pt": "Esperar a avaliação anual"
+ },
+ "Attendre le bon dossier": {
+  "en": "Wait for the right file",
+  "es": "Esperar el expediente adecuado",
+  "pt": "Esperar o dossiê certo"
+ },
+ "Attendre le bon moment": {
+  "en": "Wait for the right moment",
+  "es": "Esperar el momento oportuno",
+  "pt": "Esperar o momento certo"
+ },
+ "Attendre le matin dans un café": {
+  "en": "Wait for morning in a café",
+  "es": "Esperar la mañana en un café",
+  "pt": "Esperar a manhã em um café"
+ },
+ "Attendre le moment venu": {
+  "en": "Wait for the moment to come",
+  "es": "Esperar el momento indicado",
+  "pt": "Esperar a hora chegar"
+ },
+ "Attendre le poste idéal": {
+  "en": "Wait for the ideal job",
+  "es": "Esperar el puesto ideal",
+  "pt": "Esperar o emprego ideal"
+ },
+ "Attendre le prochain train": {
+  "en": "Wait for the next train",
+  "es": "Esperar el próximo tren",
+  "pt": "Esperar o próximo trem"
+ },
+ "Attendre le retour du voisin": {
+  "en": "Wait for the neighbor to return",
+  "es": "Esperar el regreso del vecino",
+  "pt": "Esperar a volta do vizinho"
+ },
+ "Attendre le soir pour regarder": {
+  "en": "Wait until evening to look",
+  "es": "Esperar hasta la noche para mirar",
+  "pt": "Esperar até a noite para olhar"
+ },
+ "Attendre le week-end": {
+  "en": "Wait for the weekend",
+  "es": "Esperar el fin de semana",
+  "pt": "Esperar o fim de semana"
+ },
+ "Attendre qu'elle tombe d'elle-même": {
+  "en": "Wait for it to fall off on its own",
+  "es": "Esperar a que se caiga sola",
+  "pt": "Esperar que caia sozinha"
+ },
+ "Attendre un compagnon de route": {
+  "en": "Wait for a travel companion",
+  "es": "Esperar a un compañero de ruta",
+  "pt": "Esperar um companheiro de viagem"
+ },
+ "Attendre un peu": {
+  "en": "Wait a bit",
+  "es": "Esperar un poco",
+  "pt": "Esperar um pouco"
+ },
+ "Au CP, les syllabes se mettent enfin à s'assembler. Vous déchiffrez les panneaux dans la rue et les étiquettes à la cuisine.": {
+  "en": "In first grade, syllables finally start to come together. You decipher street signs and kitchen labels.",
+  "es": "En primer grado, las sílabas por fin empiezan a unirse. Usted descifra los carteles de la calle y las etiquetas de la cocina.",
+  "pt": "No primeiro ano, as sílabas finalmente começam a se juntar. Você decifra as placas na rua e os rótulos na cozinha."
+ },
+ "Au bout d'une heure, un frétillement : votre première prise, et la fierté qui l'accompagne.": {
+  "en": "After an hour, a wiggle: your first catch, and the pride that comes with it.",
+  "es": "Al cabo de una hora, un estremecimiento: su primera pieza, y el orgullo que la acompaña.",
+  "pt": "Após uma hora, um tremor na linha: sua primeira fisgada, e o orgulho que a acompanha."
+ },
+ "Au bout d'une semaine, un élève vient s'asseoir près de vous à la cantine.": {
+  "en": "After a week, a student comes to sit next to you in the cafeteria.",
+  "es": "Al cabo de una semana, un alumno viene a sentarse a su lado en el comedor.",
+  "pt": "Após uma semana, um aluno vem se sentar perto de você no refeitório."
+ },
+ "Au bout de deux mois, l'embrayage lâche. Les réparations coûtent cher.": {
+  "en": "After two months, the clutch gives out. Repairs are expensive.",
+  "es": "Al cabo de dos meses, el embrague se rinde. Las reparaciones cuestan caro.",
+  "pt": "Após dois meses, a embreagem pifa. Os reparos custam caro."
+ },
+ "Au bout de trois heures, on vous reloge sur un vol le lendemain.": {
+  "en": "After three hours, you are rebooked on a flight the next day.",
+  "es": "Al cabo de tres horas, lo reubican en un vuelo al día siguiente.",
+  "pt": "Após três horas, você é realocado(a) em um voo no dia seguinte."
+ },
+ "Au club de randonnée, quelqu'un de votre âge vous propose de prendre un café après la marche. Vous aviez cru que cette page-là était tournée.": {
+  "en": "At the hiking club, someone your age suggests having a coffee after the walk. You thought that page had been turned.",
+  "es": "En el club de senderismo, alguien de su edad le propone tomar un café después de la caminata. Usted creía que esa página ya estaba pasada.",
+  "pt": "No clube de caminhada, alguém da sua idade convida você para um café depois da trilha. Você achava que essa página já estava virada."
+ },
+ "Au club des aînés, un atelier d'aquarelle cherche des participants. Vous n'avez jamais peint de votre vie, mais l'idée vous fait sourire.": {
+  "en": "At the seniors' club, a watercolor workshop is looking for participants. You've never painted in your life, but the idea makes you smile.",
+  "es": "En el club de adultos mayores, un taller de acuarela busca participantes. Usted nunca ha pintado en su vida, pero la idea le saca una sonrisa.",
+  "pt": "No clube da terceira idade, um ateliê de aquarela procura participantes. Você nunca pintou na vida, mas a ideia faz você sorrir."
+ },
+ "Au dessert, un petit-fils critique votre génération : retraites, climat, logement. Vous sentez la moutarde vous monter au nez, tout le monde s'est tu.": {
+  "en": "At dessert, a grandson criticizes your generation: pensions, climate, housing. You feel your temper rising, and everyone has gone quiet.",
+  "es": "En el postre, un nieto critica a su generación: jubilaciones, clima, vivienda. Usted siente que la sangre le hierve, y todos han callado.",
+  "pt": "Na sobremesa, um neto critica a sua geração: aposentadorias, clima, moradia. Você sente a irritação subir, e todo mundo se calou."
+ },
+ "Au jour J, vous êtes retenu(e). Les entraînements s'intensifient, la fierté aussi.": {
+  "en": "On the day, you are selected. Training intensifies, and so does the pride.",
+  "es": "El día D, queda seleccionado(a). Los entrenamientos se intensifican, el orgullo también.",
+  "pt": "No dia, você é selecionado(a). Os treinos se intensificam, e o orgulho também."
+ },
+ "Au programme de l'école : la piscine, et un test pour passer le grand bassin. L'eau vous paraît très profonde et très froide.": {
+  "en": "On the school program: the pool, and a test to move up to the big pool. The water looks very deep and very cold.",
+  "es": "En el programa de la escuela: la piscina, y una prueba para pasar a la parte honda. El agua le parece muy profunda y muy fría.",
+  "pt": "No programa da escola: a piscina, e um teste para passar para a parte funda. A água parece muito funda e muito fria."
+ },
+ "Au retour d'un repas bien arrosé, des gendarmes vous font signe de vous arrêter. Vous n'avez pas compté vos verres.": {
+  "en": "On the way back from a well-lubricated meal, gendarmes signal you to stop. You haven't counted your glasses.",
+  "es": "Al regresar de una comida bien regada, unos gendarmes le hacen señas de detenerse. Usted no contó sus copas.",
+  "pt": "Na volta de uma refeição bem regada, policiais fazem sinal para você parar. Você não contou as taças."
+ },
+ "Au salon, la coiffeuse parle sans arrêt et vous laisse faire. Au miroir, vous découvrez une frange de travers et deux mèches inégales. Vous n'osez pas aller à l'école demain.": {
+  "en": "At the salon, the hairdresser talks nonstop and you let her. In the mirror, you discover crooked bangs and two uneven locks. You don't dare go to school tomorrow.",
+  "es": "En la peluquería, la peluquera habla sin parar y usted la deja hacer. En el espejo, descubre un flequillo torcido y dos mechones desiguales. No se atreve a ir a la escuela mañana.",
+  "pt": "No salão, a cabeleireira fala sem parar e você deixa. No espelho, você descobre uma franja torta e duas mechas desiguais. Você não ousa ir à escola amanhã."
+ },
+ "Au sommet de la voie, vous êtes grisé(e). Vous reviendrez.": {
+  "en": "At the top of the route, you are elated. You will be back.",
+  "es": "En la cima de la vía, usted está eufórico(a). Volverá.",
+  "pt": "No topo da via, você está eufórico(a). Você vai voltar."
+ },
+ "Au supermarché, un paquet de bonbons a glissé dans votre poche, sans que vous sachiez vraiment comment. La caisse est là, juste devant.": {
+  "en": "At the supermarket, a bag of candy has slipped into your pocket, without you really knowing how. The checkout is right there, just ahead.",
+  "es": "En el supermercado, una bolsa de caramelos se ha deslizado en su bolsillo, sin que usted sepa realmente cómo. La caja está ahí, justo delante.",
+  "pt": "No supermercado, um pacote de balas escorregou para o seu bolso, sem que você saiba bem como. O caixa está ali, logo à frente."
+ },
+ "Au supermarché, votre budget courses pour la semaine est de 40 euros. Les promos vous tentent, les plats préparés aussi, et votre colocataire a laissé un message : « Prends du bon fromage ».": {
+  "en": "At the supermarket, your grocery budget for the week is 40 euros. Deals tempt you, so do ready meals, and your roommate left a message: \"Get good cheese\".",
+  "es": "En el supermercado, su presupuesto de compras para la semana es de 40 euros. Las ofertas le tientan, los platos preparados también, y su compañero de piso dejó un mensaje: «Trae buen queso».",
+  "pt": "No supermercado, seu orçamento de compras para a semana é de 40 euros. As promoções tentam você, os pratos prontos também, e seu colega de apartamento deixou um recado: «Leve queijo bom»."
+ },
+ "Au séminaire de l'entreprise, un collègue très attentionné vous propose de prolonger la soirée au bar de l'hôtel. L'ambiance est joueuse.": {
+  "en": "At the company seminar, a very attentive colleague suggests extending the evening at the hotel bar. The mood is playful.",
+  "es": "En el seminario de la empresa, un colega muy atento le propone prolongar la noche en el bar del hotel. El ambiente es juguetón.",
+  "pt": "No seminário da empresa, um colega muito atencioso convida você a esticar a noite no bar do hotel. O clima é provocante."
+ },
+ "Au troisième jour, la lasagne a perdu tout attrait. On y renonce.": {
+  "en": "By the third day, the lasagna has lost all appeal. You give up on it.",
+  "es": "Al tercer día, la lasaña ha perdido todo atractivo. Usted renuncia a ella.",
+  "pt": "No terceiro dia, a lasanha perdeu todo o atrativo. Você desiste dela."
+ },
+ "Au téléphone, une voix paniquée dit être votre petit-fils : accident, besoin immédiat de 3 000 €, un « ami » viendra les chercher. Il demande de ne rien dire à personne.": {
+  "en": "On the phone, a panicked voice says it is your grandson: accident, needs 3 000 € immediately, a \"friend\" will come pick it up. He asks you to tell no one.",
+  "es": "Por teléfono, una voz angustiada dice ser su nieto: accidente, necesita 3 000 € de inmediato, un «amigo» vendrá a buscarlos. Pide que no le diga nada a nadie.",
+  "pt": "Ao telefone, uma voz em pânico diz ser o seu neto: acidente, precisa de 3 000 € imediatamente, um «amigo» virá buscar. Ele pede que você não conte a ninguém."
+ },
+ "Au-delà de la piste, une pente de poudreuse intacte. Le panneau d'avalanche affiche un risque marqué. Vos amis hésitent.": {
+  "en": "Beyond the run, a slope of untouched powder. The avalanche sign shows a considerable risk. Your friends hesitate.",
+  "es": "Más allá de la pista, una pendiente de nieve polvo intacta. El cartel de avalanchas indica un riesgo marcado. Sus amigos dudan.",
+  "pt": "Além da pista, uma encosta de neve fofa intacta. A placa de avalanche indica um risco considerável. Seus amigos hesitam."
+ },
+ "Au-dessus de la limite : retrait de permis et amende.": {
+  "en": "Over the limit: license withdrawal and fine.",
+  "es": "Por encima del límite: retiro de licencia y multa.",
+  "pt": "Acima do limite: suspensão da carteira e multa."
+ },
+ "Auberges, gares, rencontres imprévues : vous revenez changé(e), plus libre, plus bavard(e).": {
+  "en": "Hostels, train stations, unexpected encounters: you come back changed, freer, chattier.",
+  "es": "Albergues, estaciones, encuentros imprevistos: usted regresa cambiado(a), más libre, más conversador(a).",
+  "pt": "Albergues, estações, encontros inesperados: você volta transformado(a), mais livre, mais falante."
+ },
+ "Aucun colis en attente. Vous supprimez le message avec un petit sourire.": {
+  "en": "No parcel waiting. You delete the message with a small smile.",
+  "es": "Ningún paquete en espera. Usted borra el mensaje con una pequeña sonrisa.",
+  "pt": "Nenhuma encomenda à espera. Você apaga a mensagem com um sorrisinho."
+ },
+ "Aucun motif clair, mais l'exercice vous apaise un peu.": {
+  "en": "No clear reason, but the exercise calms you a little.",
+  "es": "Ningún motivo claro, pero el ejercicio le calma un poco.",
+  "pt": "Nenhum motivo claro, mas o exercício acalma você um pouco."
+ },
+ "Aucun risque, aucun frisson, quelques ventes régulières.": {
+  "en": "No risk, no thrill, a few regular sales.",
+  "es": "Ningún riesgo, ninguna emoción, algunas ventas regulares.",
+  "pt": "Nenhum risco, nenhuma emoção, algumas vendas regulares."
+ },
+ "Aucune brèche : la règle est la règle.": {
+  "en": "No loophole: rules are rules.",
+  "es": "Ninguna brecha: la regla es la regla.",
+  "pt": "Nenhuma brecha: regra é regra."
+ },
+ "Aucune offre ne correspond, et vous finissez par accepter la plonge.": {
+  "en": "No offer fits, and you end up accepting dishwashing.",
+  "es": "Ninguna oferta encaja, y termina aceptando lavar platos.",
+  "pt": "Nenhuma oferta serve, e você acaba aceitando lavar pratos."
+ },
+ "Aucune offre ne se concrétise, et le stress monte.": {
+  "en": "No offer materializes, and stress rises.",
+  "es": "Ninguna oferta se concreta, y el estrés aumenta.",
+  "pt": "Nenhuma oferta se concretiza, e o estresse aumenta."
+ },
+ "Aucune place n'est disponible avant des mois.": {
+  "en": "No place is available for months.",
+  "es": "No hay ningún lugar disponible por meses.",
+  "pt": "Nenhuma vaga está disponível por meses."
+ },
+ "Aucune reconnaissance, et la fatigue se fait sentir.": {
+  "en": "No recognition, and fatigue sets in.",
+  "es": "Ningún reconocimiento, y el cansancio se hace sentir.",
+  "pt": "Nenhum reconhecimento, e o cansaço começa a pesar."
+ },
+ "Aucune réponse. Vous aviez flairé l'arnaque. Vous respirez de soulagement.": {
+  "en": "No reply. You had sniffed out the scam. You breathe a sigh of relief.",
+  "es": "Sin respuesta. Usted había olfateado la estafa. Respira aliviado(a).",
+  "pt": "Nenhuma resposta. Você havia farejado o golpe. Você respira aliviado(a)."
+ },
+ "Aucune réponse. Vous vous dites que l'audace a au moins le mérite d'exister.": {
+  "en": "No reply. You tell yourself boldness at least deserves credit for existing.",
+  "es": "Sin respuesta. Usted se dice que la audacia al menos tiene el mérito de existir.",
+  "pt": "Nenhuma resposta. Você pensa que a ousadia pelo menos tem o mérito de existir."
+ },
+ "Aucune suite pour l'instant, mais la boule au ventre reste.": {
+  "en": "No follow-up for now, but the knot in your stomach remains.",
+  "es": "Sin novedades por ahora, pero el nudo en el estómago persiste.",
+  "pt": "Nenhuma novidade por ora, mas o nó no estômago continua."
+ },
+ "Autofinancer une petite série": {
+  "en": "Self-fund a small run",
+  "es": "Autofinanciar una pequeña serie",
+  "pt": "Autofinanciar uma pequena tiragem"
+ },
+ "Avant une grande compétition, un coéquipier vous glisse l'adresse d'un « petit complément » qui fait des miracles. Interdit, évidemment.": {
+  "en": "Before a big competition, a teammate slips you the address of a \"little supplement\" that works miracles. Forbidden, of course.",
+  "es": "Antes de una gran competencia, un compañero de equipo le pasa la dirección de un «pequeño complemento» que hace milagros. Prohibido, por supuesto.",
+  "pt": "Antes de uma grande competição, um colega de equipe passa a você o endereço de um «suplementozinho» que faz milagres. Proibido, é claro."
+ },
+ "Avec des planches trouvées derrière le garage, vous voulez construire une cabane au fond du jardin. L'équipe est motivée, le plan, beaucoup moins.": {
+  "en": "With planks found behind the garage, you want to build a hut at the end of the garden. The team is motivated, the plan much less so.",
+  "es": "Con tablas encontradas detrás del garaje, usted quiere construir una cabaña al fondo del jardín. El equipo está motivado; el plan, mucho menos.",
+  "pt": "Com tábuas achadas atrás da garagem, você quer construir uma cabana no fundo do quintal. A equipe está motivada; o plano, bem menos."
+ },
+ "Avec la personne que vous fréquentez depuis quelques mois, la question se pose. Vos amis en parlent comme d'un exploit, mais vous sentez que ce n'est pas si simple.": {
+  "en": "With the person you've been seeing for a few months, the question arises. Your friends talk about it like a feat, but you sense it's not that simple.",
+  "es": "Con la persona con quien sale desde hace unos meses, surge la pregunta. Sus amigos hablan de ello como de una hazaña, pero usted siente que no es tan simple.",
+  "pt": "Com a pessoa com quem você sai há alguns meses, a questão surge. Seus amigos falam disso como uma façanha, mas você sente que não é tão simples."
+ },
+ "Avec le printemps, les choses s'améliorent d'elles-mêmes.": {
+  "en": "With spring, things improve on their own.",
+  "es": "Con la primavera, las cosas mejoran por sí solas.",
+  "pt": "Com a primavera, as coisas melhoram por conta própria."
+ },
+ "Avec patchs et soutien, vous arrêtez. Au bout de trois mois, respirer est un plaisir neuf.": {
+  "en": "With patches and support, you quit. After three months, breathing is a new pleasure.",
+  "es": "Con parches y apoyo, usted lo deja. Al cabo de tres meses, respirar es un placer nuevo.",
+  "pt": "Com adesivos e apoio, você para de fumar. Após três meses, respirar é um prazer novo."
+ },
+ "Avec trois copains, vous décidez de construire une cabane avec des palettes, des draps et un vieux parasol. Le chantier avance... et déborde sur les plates-bandes.": {
+  "en": "With three friends, you decide to build a hut out of pallets, sheets and an old parasol. The project moves along... and spills onto the flower beds.",
+  "es": "Con tres amigos, usted decide construir una cabaña con palés, sábanas y una vieja sombrilla. La obra avanza... y se desborda sobre los canteros.",
+  "pt": "Com três amigos, você decide construir uma cabana com paletes, lençóis e um velho guarda-sol. A obra avança... e invade os canteiros."
+ },
+ "Avec un professionnel, vous profitez de la poudreuse sans risque.": {
+  "en": "With a professional, you enjoy the powder safely.",
+  "es": "Con un profesional, usted disfruta de la nieve polvo sin riesgo.",
+  "pt": "Com um profissional, você aproveita a neve fofa sem risco."
+ },
+ "Avoir besoin de temps": {
+  "en": "Need time",
+  "es": "Necesitar tiempo",
+  "pt": "Precisar de tempo"
+ },
+ "Avouer la vérité": {
+  "en": "Confess the truth",
+  "es": "Confesar la verdad",
+  "pt": "Confessar a verdade"
+ },
+ "Baisser le loyer": {
+  "en": "Lower the rent",
+  "es": "Bajar el alquiler",
+  "pt": "Baixar o aluguel"
+ },
+ "Baisser vos prix": {
+  "en": "Lower your prices",
+  "es": "Bajar sus precios",
+  "pt": "Baixar seus preços"
+ },
+ "Bander et continuer à marcher": {
+  "en": "Bandage up and keep walking",
+  "es": "Vendarse y seguir caminando",
+  "pt": "Enfaixar e continuar andando"
+ },
+ "Barbecue, parties de cartes, longues soirées : la simplicité qui fait du bien.": {
+  "en": "Barbecue, card games, long evenings: the simplicity that does you good.",
+  "es": "Asado, partidas de cartas, largas veladas: la sencillez que hace bien.",
+  "pt": "Churrasco, jogos de cartas, longas noites: a simplicidade que faz bem."
+ },
+ "Beaucoup d'efforts pour un petit progrès. Vous vous dites que c'est un début.": {
+  "en": "A lot of effort for little progress. You tell yourself it's a start.",
+  "es": "Mucho esfuerzo para un pequeño avance. Usted se dice que es un comienzo.",
+  "pt": "Muito esforço para um pequeno progresso. Você pensa que é um começo."
+ },
+ "Beaucoup de passage mais peu de commandes.": {
+  "en": "Lots of foot traffic but few orders.",
+  "es": "Mucho movimiento pero pocos pedidos.",
+  "pt": "Muito movimento, mas poucos pedidos."
+ },
+ "Beaucoup de refus, des silences, de la lassitude.": {
+  "en": "Lots of refusals, silences, weariness.",
+  "es": "Muchos rechazos, silencios, cansancio.",
+  "pt": "Muitas recusas, silêncios, cansaço."
+ },
+ "Beaucoup de sang pour peu de résultat. Il faudra finir chez le dentiste.": {
+  "en": "A lot of blood for little result. You'll have to end up at the dentist.",
+  "es": "Mucha sangre para poco resultado. Habrá que terminar en el dentista.",
+  "pt": "Muito sangue para pouco resultado. Vai ser preciso acabar no dentista."
+ },
+ "Bibliothèque, cafés, copains : la chambre ne sert que pour dormir. Vous gagnez des amis, mais pas de repos.": {
+  "en": "Library, cafés, friends: the room is only for sleeping. You gain friends, but not rest.",
+  "es": "Biblioteca, cafés, amigos: la habitación solo sirve para dormir. Usted gana amigos, pero no descanso.",
+  "pt": "Biblioteca, cafés, amigos: o quarto só serve para dormir. Você ganha amigos, mas não descanso."
+ },
+ "Bien formé(e), vous gérez les matchs avec aisance.": {
+  "en": "Well trained, you handle the matches with ease.",
+  "es": "Bien formado(a), usted maneja los partidos con soltura.",
+  "pt": "Bem treinado(a), você conduz as partidas com facilidade."
+ },
+ "Bloquer des plages sans réunion": {
+  "en": "Block off slots without meetings",
+  "es": "Bloquear franjas sin reuniones",
+  "pt": "Bloquear horários sem reuniões"
+ },
+ "Bloquer le compte": {
+  "en": "Block the account",
+  "es": "Bloquear la cuenta",
+  "pt": "Bloquear a conta"
+ },
+ "Bouder devant les bougies": {
+  "en": "Sulk in front of the candles",
+  "es": "Enfurruñarse frente a las velas",
+  "pt": "Emburrar diante das velinhas"
+ }
+}
