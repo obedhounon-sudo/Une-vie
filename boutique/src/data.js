@@ -145,3 +145,6 @@ var DIFF = {
   normal: { fr: "Normal", en: "Normal", cash: 25000, rent: 1, ev: 0.4 },
   hard: { fr: "Difficile", en: "Hard", cash: 15000, rent: 1.25, ev: 0.5 }
 };
+
+/* AdMob : bloc récompensé de Ma Boutique */
+var ADMOB = { rewarded: "ca-app-pub-8084516023976901/1521543107" };

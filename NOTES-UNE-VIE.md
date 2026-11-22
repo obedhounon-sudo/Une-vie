@@ -36,3 +36,8 @@ Habitude : après une mise à jour → push GitHub (obedhounon-sudo/Une-vie), re
 - Contenu v2 : 13 produits, 3 fournisseurs (fidélité, marchandage), météo + saisons + jours spéciaux togolais, 20 événements, concurrent, équipe à traits, 10 améliorations, Mobile Money, micro-crédit, succursales, missions du jour, 16 succès, scores locaux, scène SVG animée, sons, partage WhatsApp, 3 difficultés, seconde chance (famille), sauvegarde localStorage « maboutique_v2 ».
 - Équilibrage testé par bot : objectif 4 000 000 F atteint vers le jour 150 (joueur parfait).
 - Idées restantes : ES/PT, pubs (AdMob/Unity) dans l'APK, page itch.io, classement en ligne.
+
+## AdMob de Ma Boutique
+- ID application AdMob (Ma Boutique) : ca-app-pub-8084516023976901~2249843406 ; bloc récompensé : ca-app-pub-8084516023976901/1521543107 (dans boutique/src/data.js, ADMOB). Pas de bloc interstitiel.
+- Utilisation : bouton « Regarder une pub » (+20 % de clients ce jour ; bonus de fin de journée). Visible uniquement dans l'APK (plugin boutique/android-plugin/AdmobPlugin.java, pont « AdmobBridge »).
+- Attention : Une Vie utilise une AUTRE application AdMob (~7245883743) ; ses blocs sont encore à créer.

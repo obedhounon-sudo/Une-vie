@@ -23,6 +23,27 @@ function snd(k) {
     });
   } catch (e) {}
 }
+var amPlug = null;
+function amPlugin() {
+  if (amPlug) return amPlug;
+  try {
+    var C = window.Capacitor;
+    if (!C || !(C.isNativePlatform ? C.isNativePlatform() : false)) return null;
+    amPlug = (C.Plugins && C.Plugins.AdmobBridge) || (C.registerPlugin ? C.registerPlugin("AdmobBridge") : null);
+  } catch (e) { amPlug = null; }
+  return amPlug;
+}
+function adAvailable() { return !!(ADMOB.rewarded && (amPlugin() || window.__fakeAd)); }
+var adBusy = false;
+function watchAd(cb) {
+  if (adBusy) return; adBusy = true;
+  if (window.__fakeAd) { adBusy = false; cb(true); return; }
+  var pl = amPlugin();
+  pl.init({}).then(function () { return pl.showAd({ unit: ADMOB.rewarded, type: "rewarded" }); })
+    .then(function (r) { adBusy = false; cb(!!(r && r.completed)); })
+    .catch(function () { adBusy = false; toast(t("Aucune pub disponible pour le moment. Réessayez plus tard.", "No ad available right now. Try again later.")); });
+}
+function adBonus(r) { return clamp(Math.round(Math.max(r.profit, 0) * 0.25 / 100) * 100, 2000, 15000); }
 function vib(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
 
 /* ----- scène dessinée ----- */
@@ -108,6 +129,7 @@ function vDay() {
     '<div class="mut" style="margin-top:8px">' + t("Demain : ", "Tomorrow: ") + fc.ico + " " + (LANG === "en" ? fc.en : fc.fr) + t(" (prévision)", " (forecast)") + "</div></div>";
   h += '<div class="card"><div class="mut">📻 ' + esc(LANG === "en" ? S.news[1] : S.news[0]) + "</div></div>";
   if (S.mission) h += '<div class="card"><h3>🎯 ' + t("Mission du jour", "Today's mission") + "</h3><div>" + esc(missionText(S.mission)) + '</div><div class="mut">' + t("Récompense : ", "Reward: ") + money(S.mission.rew) + "</div></div>";
+  if (adAvailable() && S.adBoost !== S.day) h += '<div class="card"><h3>📺 ' + t("Coup de pouce", "Boost") + '</h3><div class="mut">' + t("Regardez une courte pub : +20 % de clients aujourd'hui.", "Watch a short ad: +20% customers today.") + '</div><button class="btn b" style="margin-top:8px" data-a="adboost">' + t("Regarder une pub", "Watch an ad") + "</button></div>";
   var low = PRODUCTS.filter(function (p) { return unlocked(p) && S.stock[p.id] === 0; });
   h += '<div class="card"><h3>📋 ' + t("À faire avant d'ouvrir", "Before opening") + '</h3><div class="mut">' + t("1) Achetez du stock (📦). 2) Vérifiez vos prix (🏷️). 3) Ouvrez la boutique.", "1) Buy stock (📦). 2) Check your prices (🏷️). 3) Open the shop.") + "</div>" +
     (low.length ? '<div class="chips" style="margin-top:8px">' + low.map(function (p) { return chip("r", p.ico + " " + t("vide", "empty")); }).join("") + "</div>" : "") + "</div>";
@@ -307,6 +329,7 @@ function finish(r) {
   var btns = "";
   if (S.over) { tail += '<p class="bad"><b>💥 ' + t("Faillite ! Trop de dettes. Votre boutique ferme.", "Bankruptcy! Too much debt. Your shop closes.") + "</b></p>"; btns = '<button class="btn b" data-a="share">📤 ' + t("Partager", "Share") + '</button><button class="btn r" data-a="reset2">' + t("Recommencer", "Start over") + "</button>"; snd("err"); }
   else if (r.needLife) { tail += "<p class=\"bad\"><b>⚠️ " + t("Vous êtes à court d'argent. Votre famille propose de vous prêter 15 000 F (une seule fois).", "You're out of cash. Your family offers to lend you 15,000 F (once only).") + "</b></p>"; btns = '<button class="btn" data-a="life">' + t("Accepter l'aide de la famille", "Accept the family's help") + "</button>"; snd("err"); }
+  else if (adAvailable() && S.adDay !== r.day) { tail += '<div id="adbox"><button class="btn b" data-a="adbonus:' + adBonus(r) + ':' + r.day + '">📺 ' + t("Regarder une pub : +", "Watch an ad: +") + money(adBonus(r)) + "</button></div>"; btns = '<button class="btn" data-a="next">' + t("Jour suivant", "Next day") + "</button>"; }
   else btns = '<button class="btn" data-a="next">' + t("Jour suivant", "Next day") + "</button>";
   if (r.win || r.achs.length) snd(r.win ? "win" : "up");
   modal = { html: "<h2>🌇 " + t("Fin du jour ", "End of day ") + r.day + '</h2><div class="mut">' + esc(r.date) + "</div>" + ctx + head + summaryTable(r) + tail + btns };
@@ -339,6 +362,8 @@ function act(a) {
   else if (k === "mm") { var v = +p[1]; if (v > 0 && S.cash >= v) { S.cash -= v; S.mmFloat += v; } else if (v < 0 && S.mmFloat >= -v) { S.mmFloat += v; S.cash -= v; } save(); render(); }
   else if (k === "loan") { S.loan = 22000; S.cash += 20000; save(); render(); }
   else if (k === "branch") { var bc = 6000000 + S.branches * 2000000; if (S.cash >= bc && S.branches < 5) { S.cash -= bc; S.branches++; snd("win"); save(); render(); } }
+  else if (k === "adboost") { watchAd(function (ok) { if (ok) { S.adBoost = S.day; S.boosts.push({ m: 1.2, d: 1 }); toast(t("+20 % de clients aujourd'hui !", "+20% customers today!")); save(); render(); } }); }
+  else if (k === "adbonus") { var bon = +p[1], dy = +p[2]; watchAd(function (ok) { if (ok) { S.cash += bon; S.adDay = dy; save(); if (modal) { modal.html = modal.html.replace(/<div id="adbox">[\s\S]*?<\/div>/, '<p class="good"><b>✅ +' + money(bon) + "</b></p>"); } render(); snd("up"); } }); }
   else if (k === "open") startDay();
   else if (k === "choice") { var pe = pending; var ch = pe.ev.ch[+p[1]]; var msg = ch.fn(pe.res); closeModal(); pending = null; go(pe.ev, pe.res, msg); }
   else if (k === "next") { closeModal(); S.tab = "day"; save(); render(); }

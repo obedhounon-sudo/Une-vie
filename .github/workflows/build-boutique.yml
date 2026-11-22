@@ -41,6 +41,28 @@ jobs:
           npx capacitor-assets generate --android
           npx cap sync android
 
+      - name: Pubs AdMob (module Android)
+        run: |
+          D=android/app/src/main/java/com/maboutique/jeu
+          ls $D
+          cp android-plugin/AdmobPlugin.java android-plugin/MainActivity.java $D/
+          python3 - <<'PY'
+          p='android/app/build.gradle'; s=open(p).read()
+          dep2="    implementation 'com.google.android.gms:play-services-ads:23.+'\n"
+          if 'play-services-ads' not in s:
+              i=s.index('dependencies {', s.index('android {'))+len('dependencies {')
+              s=s[:i]+'\n'+dep2+s[i:]
+          open(p,'w').write(s)
+          m='android/app/src/main/AndroidManifest.xml'; x=open(m).read()
+          meta='<meta-data android:name="com.google.android.gms.ads.APPLICATION_ID" android:value="ca-app-pub-8084516023976901~2249843406"/>'
+          if 'ads.APPLICATION_ID' not in x:
+              i=x.index('<application'); j=x.index('>',i)+1
+              x=x[:j]+'\n        '+meta+x[j:]
+          open(m,'w').write(x)
+          PY
+          grep -n "play-services-ads" android/app/build.gradle
+          grep -n "APPLICATION_ID" android/app/src/main/AndroidManifest.xml
+
       - name: Numéro de version
         run: |
           F=android/app/build.gradle
