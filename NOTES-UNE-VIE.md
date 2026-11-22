@@ -5,7 +5,7 @@ Habitude : après une mise à jour → push GitHub (obedhounon-sudo/Une-vie), re
 
 ## Liens
 - Web : https://obedhounon-sudo.github.io/Une-vie/
-- itch.io : https://obedklein.itch.io/
+- itch.io (page du jeu) : https://obedklein.itch.io/une-vie  (profil : https://obedklein.itch.io/)
 - Uptodown : https://une-vie.en.uptodown.com/android
 - APK courant : release test-35 (une-vie-1.0.35.apk), construit par .github/workflows/build.yml à chaque push sur main.
 - Un push sur main déclenche un build ; mettre « [skip ci] » dans le message pour l'éviter.
