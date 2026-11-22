@@ -1,0 +1,8 @@
+{
+  "appId": "com.maboutique.jeu",
+  "appName": "Ma Boutique",
+  "webDir": "www",
+  "backgroundColor": "#fbf6e9",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

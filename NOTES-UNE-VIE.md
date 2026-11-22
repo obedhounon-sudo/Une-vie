@@ -30,7 +30,9 @@ Habitude : après une mise à jour → push GitHub (obedhounon-sudo/Une-vie), re
 ## Autre projet
 - Reçus Scolaires : voir recus/NOTES-PROJET.md.
 
-## Ma Boutique (nouveau jeu, boutique/index.html)
-- Jeu de gestion de boutique en FR/EN, fichier unique, sauvegarde localStorage « maboutique_v1 ». Web : https://obedhounon-sudo.github.io/Une-vie/boutique/
-- Mécanique : achat de stock chez le grossiste (prix variables), prix de vente, clients selon réputation/prix/capacité, événements, améliorations (agrandir, vendeur, frigo, enseigne, gardien), micro-crédit, objectif Supermarché + 1 500 000 F.
-- À faire éventuellement : APK (Capacitor), pubs AdMob/Unity, traductions ES/PT, page itch.io.
+## Ma Boutique (jeu 2, boutique/)
+- Gestion d'une boutique à Lomé, FR/EN. Web : https://obedhounon-sudo.github.io/Une-vie/boutique/ (PWA : manifest + sw.js). APK : workflow build-boutique.yml, tags boutique-N, fichier ma-boutique-1.0.N.apk (signé avec les mêmes secrets que Reçus).
+- Sources : boutique/src/{data.js,engine.js,ui.js,style.css,shell.html}; `python3 boutique/src/build.py` produit boutique/index.html.
+- Contenu v2 : 13 produits, 3 fournisseurs (fidélité, marchandage), météo + saisons + jours spéciaux togolais, 20 événements, concurrent, équipe à traits, 10 améliorations, Mobile Money, micro-crédit, succursales, missions du jour, 16 succès, scores locaux, scène SVG animée, sons, partage WhatsApp, 3 difficultés, seconde chance (famille), sauvegarde localStorage « maboutique_v2 ».
+- Équilibrage testé par bot : objectif 4 000 000 F atteint vers le jour 150 (joueur parfait).
+- Idées restantes : ES/PT, pubs (AdMob/Unity) dans l'APK, page itch.io, classement en ligne.

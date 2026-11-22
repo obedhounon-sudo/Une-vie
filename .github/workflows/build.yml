@@ -6,6 +6,10 @@ on:
     paths-ignore:
       - 'recus/**'
       - '.github/workflows/build-recus.yml'
+      - 'boutique/**'
+      - '.github/workflows/build-boutique.yml'
+      - 'traduction/**'
+      - '*.md'
 
 permissions:
   contents: write
