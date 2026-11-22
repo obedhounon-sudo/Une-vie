@@ -29,3 +29,8 @@ Habitude : après une mise à jour → push GitHub (obedhounon-sudo/Une-vie), re
 
 ## Autre projet
 - Reçus Scolaires : voir recus/NOTES-PROJET.md.
+
+## Ma Boutique (nouveau jeu, boutique/index.html)
+- Jeu de gestion de boutique en FR/EN, fichier unique, sauvegarde localStorage « maboutique_v1 ». Web : https://obedhounon-sudo.github.io/Une-vie/boutique/
+- Mécanique : achat de stock chez le grossiste (prix variables), prix de vente, clients selon réputation/prix/capacité, événements, améliorations (agrandir, vendeur, frigo, enseigne, gardien), micro-crédit, objectif Supermarché + 1 500 000 F.
+- À faire éventuellement : APK (Capacitor), pubs AdMob/Unity, traductions ES/PT, page itch.io.

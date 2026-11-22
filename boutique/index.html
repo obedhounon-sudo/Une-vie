@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1f6f4a">
+<title>Ma Boutique</title>
+<style>
+:root{--bg:#fbf6e9;--card:#fff;--ink:#23301f;--mut:#6b7566;--g:#1f6f4a;--g2:#2e8f63;--y:#f2b134;--r:#c8432f;--line:#e6dfc9}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+#app{max-width:520px;margin:0 auto;padding:0 12px 90px}
+.top{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;margin:0 -12px;padding:10px 14px calc(8px);display:flex;justify-content:space-between;align-items:center;gap:8px}
+.top b{font-size:18px}.top small{opacity:.85;display:block;font-size:12px}
+.pill{background:rgba(255,255,255,.18);border-radius:999px;padding:3px 10px;font-size:13px;white-space:nowrap}
+.tabs{display:flex;gap:6px;margin:12px 0}
+.tab{flex:1;border:0;background:#efe7cf;color:var(--ink);padding:10px 2px;border-radius:12px;font:600 14px inherit}
+.tab.on{background:var(--g);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin:10px 0}
+.row{display:flex;align-items:center;gap:8px;justify-content:space-between}
+.pr{padding:10px 0;border-bottom:1px solid var(--line)}.pr:last-child{border:0}
+.pr .n{font-weight:700}.mut{color:var(--mut);font-size:13px}
+.btn{border:0;background:var(--g);color:#fff;border-radius:12px;padding:11px 14px;font:700 15px inherit;min-height:44px}
+.btn.sm{padding:8px 12px;min-height:38px;font-size:14px}.btn.sec{background:#efe7cf;color:var(--ink)}
+.btn.y{background:var(--y);color:#3a2a00}.btn.r{background:var(--r)}.btn:disabled{opacity:.4}
+.btn.big{width:100%;font-size:18px;padding:15px}
+.qty{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.good{color:var(--g)}.bad{color:var(--r)}
+.bar{height:8px;background:#eee6cc;border-radius:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g2)}
+.ov{position:fixed;inset:0;background:rgba(20,30,15,.55);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.md{background:#fff;width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.md h2{margin:0 0 6px;font-size:20px}.md p{margin:6px 0 12px}
+.md .btn{width:100%;margin-top:8px}
+table{width:100%;border-collapse:collapse;font-size:14px}td{padding:4px 0}td:last-child{text-align:right}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#23301f;color:#fff;padding:10px 16px;border-radius:12px;z-index:30;font-size:14px;max-width:90%}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+(function () {
+  "use strict";
+  var KEY = "maboutique_v1";
+  var LANG = "fr";
+  function t(fr, en) { return LANG === "en" ? en : fr; }
+  function money(n) {
+    n = Math.round(n);
+    var s = String(Math.abs(n)).replace(/\B(?=(\d{3})+(?!\d))/g, LANG === "en" ? "," : " ");
+    return (n < 0 ? "-" : "") + s + " F";
+  }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
+  function ri(a, b) { return Math.floor(rnd(a, b + 1)); }
+  function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+
+  // ---------- Données ----------
+  var PRODUCTS = [
+    { id: "riz", ico: "🍚", fr: "Riz (1 kg)", en: "Rice (1 kg)", cost: 450, price: 600, demand: 30, level: 1 },
+    { id: "huile", ico: "🛢️", fr: "Huile (1 L)", en: "Oil (1 L)", cost: 900, price: 1200, demand: 15, level: 1 },
+    { id: "tomate", ico: "🍅", fr: "Tomates (panier)", en: "Tomatoes (basket)", cost: 600, price: 900, demand: 20, level: 1, perish: true },
+    { id: "savon", ico: "🧼", fr: "Savon", en: "Soap", cost: 150, price: 250, demand: 25, level: 1 },
+    { id: "credit", ico: "📱", fr: "Crédit téléphone (1000)", en: "Phone credit (1000)", cost: 950, price: 1000, demand: 20, level: 1 },
+    { id: "jus", ico: "🥤", fr: "Boissons fraîches", en: "Cold drinks", cost: 300, price: 500, demand: 24, level: 2, needFridge: true },
+    { id: "pain", ico: "🥖", fr: "Pain frais", en: "Fresh bread", cost: 120, price: 200, demand: 40, level: 2, perish: true }
+  ];
+  var SHOPS = [
+    { fr: "Petit stand", en: "Small stall", mult: 1, rent: 1500, cap: 100 },
+    { fr: "Boutique", en: "Shop", mult: 1.5, rent: 4000, cap: 170 },
+    { fr: "Supermarché", en: "Supermarket", mult: 2.3, rent: 12000, cap: 300 }
+  ];
+  var SHOP_COST = [0, 60000, 250000];
+  var GOAL = 1500000;
+
+  function fresh() {
+    var s = {
+      day: 1, cash: 25000, rep: 40, lvl: 0, staff: 0, fridge: false, sign: false, guard: false,
+      stock: {}, price: {}, cost: {}, loan: 0, loanDays: 0, owed: [], priceMood: 1, moodDays: 0,
+      log: [], best: 0, total: 0, won: false, over: false, lang: "", tab: "stock", ev: null, last: null
+    };
+    PRODUCTS.forEach(function (p) { s.stock[p.id] = 0; s.price[p.id] = p.price; s.cost[p.id] = p.cost; });
+    rollMarket(s);
+    return s;
+  }
+  var S = null;
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+  function load() {
+    try { var j = localStorage.getItem(KEY); if (j) { var s = JSON.parse(j); if (s && s.stock) return s; } } catch (e) {}
+    return null;
+  }
+
+  function rollMarket(s) {
+    PRODUCTS.forEach(function (p) {
+      var drift = s.cost[p.id] ? s.cost[p.id] / p.cost : 1;
+      var target = rnd(0.88, 1.15) * (s.moodDays > 0 ? s.priceMood : 1);
+      var v = clamp(drift * 0.4 + target * 0.6, 0.8, 1.45);
+      s.cost[p.id] = Math.round(p.cost * v / 5) * 5;
+    });
+  }
+  function avail(p) {
+    if (p.level - 1 > S.lvl) return false;
+    if (p.needFridge && !S.fridge) return false;
+    return true;
+  }
+  function capacity() { return SHOPS[S.lvl].cap + S.staff * 50; }
+  function dailyCosts() { return SHOPS[S.lvl].rent + S.staff * 2000 + (S.fridge ? 300 : 0) + (S.guard ? 1000 : 0); }
+
+  // ---------- Événements ----------
+  var EVENTS = [
+    { id: "pluie", w: 10, fr: ["Pluie forte", "Il pleut des cordes : peu de clients sortent aujourd'hui."], en: ["Heavy rain", "It's pouring: few customers come out today."], dem: 0.65 },
+    { id: "fete", w: 8, fr: ["Fête du quartier", "Un grand mariage a lieu à côté : tout le monde fait des courses !"], en: ["Neighborhood party", "A big wedding is next door: everyone is shopping!"], dem: 1.45 },
+    { id: "controle", w: 6,
+      fr: ["Contrôle d'hygiène", "Un inspecteur passe dans la boutique."], en: ["Hygiene inspection", "An inspector walks into your shop."],
+      ch: [{ fr: "Présenter vos papiers en règle", en: "Show your papers", fn: function (r) { if (S.rep >= 50) { S.rep += 3; return t("Tout est en ordre. Félicitations de l'inspecteur !", "All in order. The inspector congratulates you!"); } S.cash -= 4000; return t("Il trouve des manques : amende de 4 000 F.", "He finds shortcomings: a 4,000 F fine."); } },
+        { fr: "Fermer discrètement (perte de la journée)", en: "Quietly close (lose the day)", fn: function (r) { r.closed = true; S.rep -= 3; return t("Vous restez fermé. Les clients s'étonnent.", "You stay closed. Customers wonder why."); } }] },
+    { id: "vol", w: 6,
+      fr: ["Vol à l'étalage", "Un groupe d'enfants rôde autour de l'étal."], en: ["Shoplifting", "A group of kids lurks around the stall."],
+      ch: [{ fr: "Surveiller de près", en: "Watch closely", fn: function (r) { if (S.guard || Math.random() < 0.6) return t("Vous les repérez à temps. Rien de perdu.", "You spot them in time. Nothing lost."); loseStock(0.12); return t("Quelques articles disparaissent.", "A few items disappear."); } },
+        { fr: "Ne rien faire", en: "Do nothing", fn: function (r) { if (S.guard) return t("Votre gardien veille. Rien de perdu.", "Your guard is watching. Nothing lost."); loseStock(0.2); return t("Vous perdez une partie du stock.", "You lose part of your stock."); } }] },
+    { id: "hausse", w: 7, fr: ["Hausse des prix", "Les grossistes augmentent leurs prix pour quelques jours."], en: ["Price hike", "Wholesalers raise their prices for a few days."], mood: 1.22 },
+    { id: "baisse", w: 5, fr: ["Promotion chez les grossistes", "Les grossistes baissent leurs prix pour quelques jours."], en: ["Wholesaler sale", "Wholesalers lower their prices for a few days."], mood: 0.86 },
+    { id: "credit", w: 7,
+      fr: ["Un voisin demande à crédit", "« Je te rembourse dans trois jours », promet un voisin qui veut 5 000 F de marchandises."], en: ["A neighbor asks for credit", "\"I'll pay you back in three days,\" promises a neighbor who wants 5,000 F of goods."],
+      ch: [{ fr: "Accepter", en: "Accept", fn: function () { S.owed.push({ d: 3, a: 5000, ok: Math.random() < 0.75 }); S.rep += 2; return t("Il emporte la marchandise. Réponse dans 3 jours.", "He takes the goods. Answer in 3 days."); } },
+        { fr: "Refuser poliment", en: "Politely decline", fn: function () { S.rep -= 1; return t("Il repart un peu vexé.", "He leaves slightly offended."); } }] },
+    { id: "lot", w: 6, need: function () { return S.cash >= 12000; },
+      fr: ["Un lot de riz à prix cassé", "Un camionneur propose 30 kg de riz à 380 F le kilo (11 400 F)."], en: ["A cheap lot of rice", "A trucker offers 30 kg of rice at 380 F per kg (11,400 F)."],
+      ch: [{ fr: "Acheter le lot", en: "Buy the lot", fn: function () { S.cash -= 11400; S.stock.riz += 30; return t("Bonne affaire : 30 kg de riz en stock.", "Great deal: 30 kg of rice in stock."); } },
+        { fr: "Refuser", en: "Decline", fn: function () { return t("Vous préférez rester prudent.", "You prefer to stay careful."); } }] },
+    { id: "coupure", w: 6, fr: ["Coupure d'électricité", "Plus de courant : les produits frais souffrent."], en: ["Power cut", "No electricity: fresh goods suffer."], cut: true }
+  ];
+  function loseStock(frac) {
+    PRODUCTS.forEach(function (p) { S.stock[p.id] = Math.floor(S.stock[p.id] * (1 - frac)); });
+  }
+  function pickEvent() {
+    if (Math.random() > 0.4) return null;
+    var pool = EVENTS.filter(function (e) { return !e.need || e.need(); });
+    var tot = pool.reduce(function (a, e) { return a + e.w; }, 0), x = Math.random() * tot;
+    for (var i = 0; i < pool.length; i++) { x -= pool[i].w; if (x <= 0) return pool[i]; }
+    return pool[0];
+  }
+
+  // ---------- Journée ----------
+  function runDay(ev, res) {
+    var sale = { rows: [], rev: 0, cogs: 0, spoil: 0, lost: 0, served: 0 };
+    var demMult = (ev && ev.dem) || 1;
+    var rep = clamp(S.rep, 0, 100);
+    var repF = 0.6 + rep / 100 * 0.8;
+    var signF = S.sign ? 1.12 : 1;
+    var dayF = rnd(0.85, 1.15);
+    var capLeft = capacity();
+    if (res.closed) { capLeft = 0; demMult = 0; }
+    var happy = 0, totWant = 0;
+    PRODUCTS.forEach(function (p) {
+      if (!avail(p)) return;
+      var ref = p.price;
+      var pr = S.price[p.id];
+      var el = Math.pow(ref / pr, 2.2);
+      var d = Math.round(p.demand * SHOPS[S.lvl].mult * repF * signF * dayF * demMult * clamp(el, 0.05, 2.2) * rnd(0.9, 1.1));
+      var want = d, can = Math.min(d, S.stock[p.id], capLeft);
+      totWant += want;
+      capLeft -= can;
+      S.stock[p.id] -= can;
+      var rev = can * pr;
+      sale.rev += rev; sale.cogs += can * S.cost[p.id]; sale.served += can;
+      sale.rows.push({ p: p, sold: can, want: want, rev: rev, left: S.stock[p.id] });
+      happy += can;
+    });
+    // pertes des produits frais
+    PRODUCTS.forEach(function (p) {
+      if (!p.perish || !avail(p)) return;
+      var left = S.stock[p.id];
+      var rate = S.fridge ? 0.05 : 0.5;
+      if (ev && ev.cut && !S.fridge) rate = 0.7;
+      if (ev && ev.cut && S.fridge) rate = 0.3;
+      var lost = Math.floor(left * rate);
+      if (lost > 0) { S.stock[p.id] -= lost; sale.spoil += lost * S.cost[p.id]; sale.rows.forEach(function (r) { if (r.p === p) r.spoiled = lost; }); }
+    });
+    // réputation
+    var priceTooHigh = sale.rows.some(function (r) { return S.price[r.p.id] > r.p.price * 1.35; });
+    var fill = totWant > 0 ? happy / totWant : 1;
+    var dRep = res.closed ? -2 : (fill >= 0.9 ? 1.2 : fill >= 0.7 ? 0.2 : -(0.7 - fill) * 3);
+    S.rep = clamp(S.rep + dRep - (priceTooHigh ? 1 : 0), 0, 100);
+    // frais
+    var costs = dailyCosts(), extra = [];
+    S.cash += sale.rev;
+    S.cash -= costs;
+    if (S.loan > 0) { var pay = Math.min(2200, S.loan); S.cash -= pay; S.loan -= pay; S.loanDays -= 1; extra.push([t("Remboursement du prêt", "Loan repayment"), -pay]); }
+    // crédits aux voisins
+    S.owed = S.owed.filter(function (o) {
+      o.d -= 1;
+      if (o.d <= 0) {
+        if (o.ok) { S.cash += o.a; extra.push([t("Le voisin vous rembourse", "The neighbor pays you back"), o.a]); S.rep = clamp(S.rep + 1, 0, 100); }
+        else extra.push([t("Le voisin ne rembourse pas…", "The neighbor does not pay back…"), 0]);
+        return false;
+      }
+      return true;
+    });
+    S.cash -= 0;
+    S.total += sale.rev;
+    var profit = sale.rev - sale.cogs - costs - sale.spoil;
+    S.moodDays = Math.max(0, S.moodDays - 1);
+    var summary = { day: S.day, sale: sale, costs: costs, extra: extra, profit: profit, cash: S.cash, ev: ev, res: res };
+    S.last = summary;
+    S.day += 1;
+    S.best = Math.max(S.best, S.cash);
+    rollMarket(S);
+    if (S.cash < -15000) S.over = true;
+    if (!S.won && S.lvl === 2 && S.cash >= GOAL) S.won = true, summary.win = true;
+    save();
+    return summary;
+  }
+
+  // ---------- Interface ----------
+  var app = document.getElementById("app");
+  var modal = null, toastTimer = null;
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+  function pname(p) { return LANG === "en" ? p.en : p.fr; }
+  function toast(msg) {
+    var d = document.createElement("div"); d.className = "toast"; d.textContent = msg; document.body.appendChild(d);
+    setTimeout(function () { d.remove(); }, 1800);
+  }
+  function render() {
+    var h = '<div class="top"><div><b>' + t("Ma Boutique", "My Shop") + '</b><small>' + t("Jour ", "Day ") + S.day + " · " + esc(LANG === "en" ? SHOPS[S.lvl].en : SHOPS[S.lvl].fr) + '</small></div>' +
+      '<div style="text-align:right"><div class="pill">💰 ' + money(S.cash) + '</div><small>⭐ ' + Math.round(S.rep) + "/100</small></div></div>";
+    h += '<div class="tabs">' + [["stock", t("Stock", "Stock")], ["prix", t("Prix", "Prices")], ["shop", t("Boutique", "Shop")], ["bilan", t("Bilan", "Stats")]].map(function (x) {
+      return '<button class="tab' + (S.tab === x[0] ? " on" : "") + '" data-a="tab:' + x[0] + '">' + x[1] + "</button>";
+    }).join("") + "</div>";
+    if (S.tab === "stock") h += vStock();
+    else if (S.tab === "prix") h += vPrix();
+    else if (S.tab === "shop") h += vShop();
+    else h += vBilan();
+    h += '<div style="position:fixed;left:0;right:0;bottom:0;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:linear-gradient(transparent,#fbf6e9 40%)"><div style="max-width:520px;margin:0 auto"><button class="btn y big" data-a="open">' + t("Ouvrir la boutique ▶", "Open the shop ▶") + "</button></div></div>";
+    app.innerHTML = h;
+    if (modal) showModal(modal);
+  }
+  function vStock() {
+    var h = '<div class="card"><div class="mut">' + t("Achetez chez le grossiste pour la journée. Les prix changent chaque jour. Vous pouvez servir environ " + capacity() + " ventes par jour.", "Buy from the wholesaler for the day. Prices change daily. You can serve about " + capacity() + " sales a day.") + "</div>" +
+      (S.moodDays > 0 ? '<div class="' + (S.priceMood > 1 ? "bad" : "good") + '">' + (S.priceMood > 1 ? t("Prix élevés chez les grossistes", "High wholesale prices") : t("Promo chez les grossistes", "Wholesale sale")) + "</div>" : "") + "</div>";
+    h += '<div class="card">';
+    PRODUCTS.forEach(function (p) {
+      if (p.level - 1 > S.lvl) { h += '<div class="pr mut">🔒 ' + esc(pname(p)) + " — " + t("avec une boutique plus grande", "with a bigger shop") + "</div>"; return; }
+      if (p.needFridge && !S.fridge) { h += '<div class="pr mut">🔒 ' + esc(pname(p)) + " — " + t("il faut un frigo", "needs a fridge") + "</div>"; return; }
+      var c = S.cost[p.id];
+      h += '<div class="pr"><div class="row"><div><span class="n">' + p.ico + " " + esc(pname(p)) + '</span><div class="mut">' + t("Achat ", "Cost ") + money(c) + " · " + t("en stock : ", "in stock: ") + S.stock[p.id] + (p.perish ? " · " + t("frais", "fresh") : "") + "</div></div></div>" +
+        '<div class="qty">' + [1, 5, 10, 25].map(function (q) { return '<button class="btn sm sec" data-a="buy:' + p.id + ":" + q + '"' + (S.cash < c * q ? " disabled" : "") + ">+" + q + "</button>"; }).join("") +
+        '<button class="btn sm sec" data-a="buymax:' + p.id + '">Max</button></div></div>';
+    });
+    return h + "</div>";
+  }
+  function vPrix() {
+    var h = '<div class="card"><div class="mut">' + t("Vos prix de vente. Trop cher : moins de clients. Trop bas : moins de profit.", "Your selling prices. Too high: fewer customers. Too low: less profit.") + "</div></div><div class=\"card\">";
+    PRODUCTS.forEach(function (p) {
+      if (!avail(p)) return;
+      var pr = S.price[p.id], m = pr - S.cost[p.id];
+      h += '<div class="pr"><div class="row"><div><span class="n">' + p.ico + " " + esc(pname(p)) + '</span><div class="mut">' + t("Marge ", "Margin ") + '<span class="' + (m > 0 ? "good" : "bad") + '">' + money(m) + "</span> / " + t("unité", "unit") + "</div></div>" +
+        '<div class="row" style="gap:6px"><button class="btn sm sec" data-a="pr:' + p.id + ':-50">−</button><b style="min-width:70px;text-align:center">' + money(pr) + '</b><button class="btn sm sec" data-a="pr:' + p.id + ':50">+</button></div></div></div>';
+    });
+    return h + "</div>";
+  }
+  function vShop() {
+    var h = "";
+    var up = [];
+    if (S.lvl < 2) up.push({ id: "lvl", ico: "🏪", fr: "Agrandir : " + SHOPS[S.lvl + 1].fr, en: "Expand: " + SHOPS[S.lvl + 1].en, d: t("Plus de clients, plus de produits. Loyer " + money(SHOPS[S.lvl + 1].rent) + "/jour.", "More customers, more products. Rent " + money(SHOPS[S.lvl + 1].rent) + "/day."), c: SHOP_COST[S.lvl + 1] });
+    up.push({ id: "staff", ico: "🧑‍🤝‍🧑", fr: "Embaucher un vendeur (" + S.staff + ")", en: "Hire a clerk (" + S.staff + ")", d: t("Sert 50 ventes de plus par jour. Salaire 2 000 F/jour.", "Serves 50 more sales a day. Wage 2,000 F/day."), c: 10000 + S.staff * 6000, hide: S.staff >= 5 });
+    up.push({ id: "fridge", ico: "🧊", fr: "Acheter un frigo", en: "Buy a fridge", d: t("Les produits frais ne se gâtent plus. Débloque les boissons. 300 F/jour d'électricité.", "Fresh goods stop spoiling. Unlocks drinks. 300 F/day electricity."), c: 40000, hide: S.fridge });
+    up.push({ id: "sign", ico: "🪧", fr: "Enseigne lumineuse", en: "Bright sign", d: t("+12 % de clients.", "+12% customers."), c: 15000, hide: S.sign });
+    up.push({ id: "guard", ico: "💂", fr: "Gardien de nuit", en: "Night guard", d: t("Protège contre les vols. 1 000 F/jour.", "Protects against theft. 1,000 F/day."), c: 8000, hide: S.guard });
+    h += '<div class="card">';
+    up.forEach(function (u) {
+      if (u.hide) return;
+      h += '<div class="pr"><div class="row"><div><span class="n">' + u.ico + " " + esc(LANG === "en" ? u.en : u.fr) + '</span><div class="mut">' + esc(u.d) + '</div></div><button class="btn sm" data-a="up:' + u.id + '"' + (S.cash < u.c ? " disabled" : "") + ">" + money(u.c) + "</button></div></div>";
+    });
+    h += "</div>";
+    h += '<div class="card"><div class="n">🏦 ' + t("Micro-crédit", "Micro-loan") + '</div><div class="mut">' + t("Empruntez 20 000 F, remboursés 2 200 F par jour pendant 10 jours.", "Borrow 20,000 F, repaid 2,200 F a day for 10 days.") + "</div>" +
+      (S.loan > 0 ? '<div class="mut">' + t("Reste à rembourser : ", "Left to repay: ") + money(S.loan) + "</div>" : '<button class="btn sm" style="margin-top:8px" data-a="loan">' + t("Emprunter 20 000 F", "Borrow 20,000 F") + "</button>") + "</div>";
+    h += '<div class="card"><div class="n">⚙️ ' + t("Réglages", "Settings") + '</div><div class="qty"><button class="btn sm sec" data-a="lang:fr">Français</button><button class="btn sm sec" data-a="lang:en">English</button><button class="btn sm r" data-a="reset">' + t("Nouvelle partie", "New game") + "</button></div></div>";
+    return h;
+  }
+  function vBilan() {
+    var h = '<div class="card"><div class="n">🎯 ' + t("Objectif", "Goal") + "</div><div class=\"mut\">" + t("Devenir un Supermarché avec " + money(GOAL) + " en caisse.", "Become a Supermarket with " + money(GOAL) + " in cash.") + "</div>" +
+      '<div class="bar" style="margin-top:8px"><i style="width:' + clamp(S.cash / GOAL * 100, 0, 100) + '%"></i></div></div>';
+    h += '<div class="card"><table><tr><td>' + t("Jours joués", "Days played") + "</td><td>" + (S.day - 1) + "</td></tr><tr><td>" + t("Chiffre d'affaires total", "Total revenue") + "</td><td>" + money(S.total) + "</td></tr><tr><td>" + t("Meilleure trésorerie", "Best cash") + "</td><td>" + money(S.best) + "</td></tr><tr><td>" + t("Charges par jour", "Daily costs") + "</td><td>" + money(dailyCosts()) + "</td></tr><tr><td>" + t("Capacité de service", "Service capacity") + "</td><td>" + capacity() + " " + t("clients", "customers") + "</td></tr></table></div>";
+    if (S.last) h += '<div class="card"><div class="n">' + t("Dernière journée", "Last day") + " (" + S.last.day + ')</div>' + summaryTable(S.last) + "</div>";
+    return h;
+  }
+  function summaryTable(r) {
+    var h = "<table>";
+    r.sale.rows.forEach(function (x) {
+      h += "<tr><td>" + x.p.ico + " " + esc(pname(x.p)) + ' <span class="mut">' + x.sold + "/" + x.want + (x.spoiled ? " · 🗑️" + x.spoiled : "") + "</span></td><td>" + money(x.rev) + "</td></tr>";
+    });
+    h += "<tr><td><b>" + t("Ventes", "Sales") + "</b></td><td><b>" + money(r.sale.rev) + "</b></td></tr>";
+    h += "<tr><td>" + t("Coût d'achat des ventes", "Cost of goods sold") + '</td><td class="bad">' + money(-r.sale.cogs) + "</td></tr>";
+    if (r.sale.spoil > 0) h += "<tr><td>" + t("Produits gâtés", "Spoiled goods") + '</td><td class="bad">' + money(-r.sale.spoil) + "</td></tr>";
+    h += "<tr><td>" + t("Loyer et salaires", "Rent and wages") + '</td><td class="bad">' + money(-r.costs) + "</td></tr>";
+    r.extra.forEach(function (e) { h += "<tr><td>" + esc(e[0]) + '</td><td class="' + (e[1] >= 0 ? "good" : "bad") + '">' + money(e[1]) + "</td></tr>"; });
+    h += "<tr><td><b>" + t("Résultat du jour", "Day result") + '</b></td><td class="' + (r.profit >= 0 ? "good" : "bad") + '"><b>' + money(r.profit) + "</b></td></tr></table>";
+    return h;
+  }
+  function showModal(m) {
+    var old = document.querySelector(".ov"); if (old) old.remove();
+    var d = document.createElement("div"); d.className = "ov";
+    d.innerHTML = '<div class="md">' + m.html + "</div>";
+    document.body.appendChild(d);
+  }
+  function closeModal() { modal = null; var o = document.querySelector(".ov"); if (o) o.remove(); }
+
+  // ---------- Actions ----------
+  var pending = null;
+  function startDay() {
+    var ev = pickEvent();
+    if (ev && ev.mood) { S.priceMood = ev.mood; S.moodDays = 3; rollMarket(S); }
+    if (ev && ev.ch) {
+      pending = ev;
+      var title = LANG === "en" ? ev.en[0] : ev.fr[0], text = LANG === "en" ? ev.en[1] : ev.fr[1];
+      modal = { html: "<h2>📣 " + esc(title) + "</h2><p>" + esc(text) + "</p>" + ev.ch.map(function (c, i) { return '<button class="btn' + (i ? " sec" : "") + '" data-a="choice:' + i + '">' + esc(LANG === "en" ? c.en : c.fr) + "</button>"; }).join("") };
+      showModal(modal);
+      return;
+    }
+    endDay(ev, {}, null);
+  }
+  function endDay(ev, res, msg) {
+    var r = runDay(ev, res);
+    var head = "";
+    if (ev && !ev.ch) head = "<p><b>📣 " + esc(LANG === "en" ? ev.en[0] : ev.fr[0]) + "</b><br>" + esc(LANG === "en" ? ev.en[1] : ev.fr[1]) + "</p>";
+    if (msg) head += "<p><b>📣 " + esc(LANG === "en" ? pending.en[0] : pending.fr[0]) + "</b><br>" + esc(msg) + "</p>";
+    var tail = "";
+    if (r.win) tail = "<p><b>🏆 " + t("Bravo ! Vous êtes devenu un Supermarché. Vous pouvez continuer à jouer.", "Congratulations! You became a Supermarket. You can keep playing.") + "</b></p>";
+    if (S.over) tail = "<p class=\"bad\"><b>💥 " + t("Faillite ! Trop de dettes. Votre boutique ferme.", "Bankruptcy! Too much debt. Your shop closes.") + "</b></p>";
+    modal = { html: "<h2>🌇 " + t("Fin du jour ", "End of day ") + r.day + "</h2>" + head + summaryTable(r) + tail + (S.over ? '<button class="btn r" data-a="reset2">' + t("Recommencer", "Start over") + "</button>" : '<button class="btn" data-a="next">' + t("Jour suivant", "Next day") + "</button>") };
+    pending = null;
+    render();
+  }
+  function act(a) {
+    var p = a.split(":");
+    var k = p[0];
+    if (k === "tab") { S.tab = p[1]; save(); render(); }
+    else if (k === "buy" || k === "buymax") {
+      var pr = PRODUCTS.filter(function (x) { return x.id === p[1]; })[0], c = S.cost[pr.id];
+      var q = k === "buymax" ? Math.floor(S.cash / c) : +p[2];
+      if (q > 0 && S.cash >= c * q) { S.cash -= c * q; S.stock[pr.id] += q; save(); render(); }
+      else toast(t("Pas assez d'argent", "Not enough cash"));
+    }
+    else if (k === "pr") { var id = p[1], base = PRODUCTS.filter(function (x) { return x.id === id; })[0]; S.price[id] = clamp(S.price[id] + (+p[2]), 50, base.price * 3); save(); render(); }
+    else if (k === "up") {
+      var cost = { lvl: SHOP_COST[S.lvl + 1], staff: 10000 + S.staff * 6000, fridge: 40000, sign: 15000, guard: 8000 }[p[1]];
+      if (S.cash < cost) { toast(t("Pas assez d'argent", "Not enough cash")); return; }
+      S.cash -= cost;
+      if (p[1] === "lvl") S.lvl++; else if (p[1] === "staff") S.staff++; else S[p[1]] = true;
+      toast(t("Achat effectué", "Purchased")); save(); render();
+    }
+    else if (k === "loan") { S.loan = 22000; S.loanDays = 10; S.cash += 20000; save(); render(); }
+    else if (k === "open") startDay();
+    else if (k === "choice") {
+      var ev = pending, c2 = ev.ch[+p[1]], res = {}, msg = c2.fn(res);
+      closeModal(); endDay(ev, res, msg);
+    }
+    else if (k === "next") { closeModal(); S.tab = "stock"; save(); render(); }
+    else if (k === "lang") { S.lang = p[1]; LANG = p[1]; document.documentElement.lang = LANG; save(); render(); }
+    else if (k === "reset") { if (confirm(t("Effacer la partie en cours ?", "Erase the current game?"))) { var l = S.lang; S = fresh(); S.lang = l; save(); render(); } }
+    else if (k === "reset2") { var l2 = S.lang; S = fresh(); S.lang = l2; closeModal(); save(); render(); }
+  }
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-a]"); if (!el || el.disabled) return;
+    act(el.getAttribute("data-a"));
+  });
+
+  S = load() || fresh();
+  if (!S.lang) { try { S.lang = /^fr/i.test(navigator.language || "") ? "fr" : "en"; } catch (e) { S.lang = "fr"; } }
+  LANG = S.lang === "en" ? "en" : "fr"; document.documentElement.lang = LANG;
+  window.__S = function () { return S; };
+  render();
+})();
+</script>
+</body>
+</html>
