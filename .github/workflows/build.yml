@@ -9,9 +9,11 @@ on:
       - 'boutique/**'
       - 'tontine/**'
       - 'marche/**'
+      - 'harmattan/**'
       - '.github/workflows/build-boutique.yml'
       - '.github/workflows/build-tontine.yml'
       - '.github/workflows/build-marche.yml'
+      - '.github/workflows/build-harmattan.yml'
       - 'traduction/**'
       - '*.md'
 

@@ -1,0 +1,14 @@
+{
+  "name": "harmattan",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Harmattan : convoi et commerce",
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/cli": "latest",
+    "@capacitor/core": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "latest"
+  }
+}

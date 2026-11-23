@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#2a1a10">
+<title>Harmattan</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#1d130d;--card:#2e2018;--card2:#3a281d;--line:#4d3626;--ink:#fbeedd;--mut:#c9ae93;--gold:#f2b23a;--red:#d9503a;--green:#59b36f;--blue:#5fb0e6}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#000;overflow:hidden;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none;touch-action:manipulation}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block}
+#ui{position:fixed;inset:0;overflow-y:auto;display:none;background:linear-gradient(180deg,rgba(20,12,8,.78),rgba(20,12,8,.92));padding:calc(10px + env(safe-area-inset-top)) 12px 24px}
+#ui.on{display:block}
+.wrap{max-width:560px;margin:0 auto}
+h1{font-size:44px;margin:0;text-align:center;font-weight:900;letter-spacing:3px;color:var(--gold);text-shadow:0 3px 0 #6b3a10}
+h2{margin:0 0 8px;font-size:20px}
+.sub{color:var(--mut);font-size:14px;text-align:center;margin-bottom:12px}
+.top{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-bottom:8px}
+.pill{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:6px 10px;font-size:13px;font-weight:700;white-space:nowrap}
+.pill b{color:var(--gold)}
+.tabs{display:flex;gap:6px;margin:8px 0;overflow-x:auto}
+.tab{flex:1;min-width:72px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 6px;text-align:center;font-size:13px;font-weight:700;color:var(--mut)}
+.tab.on{background:var(--gold);color:#2a1700;border-color:var(--gold)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin:8px 0}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1;min-width:0}
+.btn{border:0;border-radius:12px;padding:12px 14px;font-weight:800;font-size:15px;background:var(--gold);color:#2a1700;cursor:pointer}
+.btn.g{background:var(--card2);color:var(--ink);border:1px solid var(--line)}
+.btn.s{padding:7px 10px;font-size:13px;border-radius:10px}
+.btn.full{display:block;width:100%;margin:8px 0;text-align:center}
+.btn:disabled{opacity:.4}
+.bar{height:8px;border-radius:5px;background:#120a06;overflow:hidden;margin-top:4px}
+.bar i{display:block;height:100%}
+small,.mut{color:var(--mut)}
+.good{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)}
+.good .ic{font-size:26px;width:34px;text-align:center}
+.up{color:var(--green)}.dn{color:var(--red)}
+.qty{display:flex;gap:4px}
+.toast{position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#000c;border:1px solid var(--line);padding:9px 14px;border-radius:12px;z-index:60;font-size:14px;max-width:90%;text-align:center}
+#modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.62);z-index:50;padding:14px}
+#modal.on{display:flex}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;max-width:480px;width:100%;max-height:92vh;overflow-y:auto}
+.opt{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);color:var(--ink);font-size:15px;font-weight:700}
+.opt small{display:block;font-weight:500;margin-top:2px}
+.opt:disabled{opacity:.4}
+#hud{position:fixed;inset:0;pointer-events:none;display:none}
+#hud.on{display:block}
+#hud>*{pointer-events:auto}
+.hudtop{position:absolute;left:0;right:0;top:0;padding:calc(8px + env(safe-area-inset-top)) 10px 0;display:flex;gap:8px;align-items:flex-start;pointer-events:none}
+.hudbox{background:#000a;border-radius:12px;padding:6px 9px;font-size:12px;font-weight:700;pointer-events:none}
+.gauges{display:grid;grid-template-columns:auto 1fr;gap:3px 6px;align-items:center;min-width:118px}
+.gauges .bar{margin:0;height:7px;width:70px}
+.spd{position:absolute;right:10px;top:calc(8px + env(safe-area-inset-top));text-align:right;font-weight:900;font-size:30px;line-height:1;text-shadow:0 2px 0 #000;pointer-events:none}
+.spd small{display:block;font-size:11px;font-weight:700}
+.prog{position:absolute;left:10px;right:10px;bottom:calc(150px + env(safe-area-inset-bottom));height:8px;border-radius:5px;background:#0008;pointer-events:none;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold)}
+.steer{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));width:24%;max-width:200px;height:96px;border-radius:22px;background:#ffffff22;border:2px solid #ffffff44;font-size:40px;font-weight:900;color:#fff;display:flex;align-items:center;justify-content:center}
+.steer:active,.steer.on{background:#ffffff55}
+.gears{position:absolute;right:10px;top:calc(72px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:5px;width:104px}
+.gear{width:100%;padding:7px 0;border-radius:14px;background:#0009;border:2px solid #fff4;color:#fff;font-weight:800;font-size:13px;text-align:center}
+.gear.on{background:var(--gold);color:#2a1700;border-color:var(--gold)}
+.msg{position:absolute;left:0;right:0;top:34%;text-align:center;font-size:24px;font-weight:900;text-shadow:0 2px 0 #000;pointer-events:none}
+.warn{color:#ff8a70}
+
+</style></head><body>
+<canvas id="gl"></canvas>
+<div id="hud"></div>
+<div id="ui" class="on"></div>
+<div id="modal"></div>
+<script src="lib/three.min.js"></script>
+<script>
+"use strict";
+/* ================================================================
+   HARMATTAN — jeu de convoi (solo)
+   ================================================================ */
+var LANG=(navigator.language||"fr").slice(0,2)==="fr"?"fr":"en";
+try{var _l=localStorage.getItem("harm_lang");if(_l)LANG=_l;}catch(e){}
+function L(a){return Array.isArray(a)?(LANG==="fr"?a[0]:a[1]):a;}
+function rnd(a,b){return a+Math.random()*(b-a);}
+function ri(n){return Math.floor(Math.random()*n);}
+function pick(a){return a[ri(a.length)];}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function lerp(a,b,u){return a+(b-a)*u;}
+function F(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g," ");}
+function $(s){return document.querySelector(s);}
+
+/* ================= Données ================= */
+var GOODS={
+ riz:{ic:"🍚",n:["Riz (sac)","Rice (bag)"],base:18000,w:1},
+ mais:{ic:"🌽",n:["Maïs (sac)","Maize (bag)"],base:9000,w:1},
+ igname:{ic:"🍠",n:["Igname (lot)","Yam (batch)"],base:12000,w:1},
+ huile:{ic:"🛢️",n:["Huile de palme (bidon)","Palm oil (drum)"],base:22000,w:1.5},
+ ciment:{ic:"🧱",n:["Ciment (sac)","Cement (bag)"],base:5500,w:2},
+ tissu:{ic:"🧵",n:["Pagnes (balle)","Fabric (bale)"],base:40000,w:1.5},
+ tel:{ic:"📱",n:["Téléphones (carton)","Phones (box)"],base:150000,w:.4},
+ med:{ic:"💊",n:["Médicaments (carton)","Medicine (box)"],base:90000,w:.3},
+ karite:{ic:"🧴",n:["Beurre de karité","Shea butter"],base:26000,w:1},
+ sel:{ic:"🧂",n:["Sel (sac)","Salt (bag)"],base:6000,w:1}
+};
+var GIDS=Object.keys(GOODS);
+var CITIES={
+ lome:{n:"Lomé",lat:0,mx:30,my:92,depth:44,d:["Capitale et grand port. Marchés immenses, produits importés bon marché.","Capital and big port. Huge markets, cheap imports."],m:{riz:.85,mais:1.15,igname:1.25,huile:.85,ciment:.8,tissu:.9,tel:.85,med:.9,karite:1.5,sel:.85}},
+ aneho:{n:"Aného",lat:0,mx:50,my:95,depth:20,d:["Ville côtière et lagune. Le sel y est presque gratuit.","Lagoon coast town. Salt is almost free here."],m:{riz:.95,mais:.9,igname:1.0,huile:.9,ciment:1.0,tissu:1.05,tel:1.1,med:1.1,karite:1.45,sel:.6}},
+ kpalime:{n:"Kpalimé",lat:.1,mx:10,my:70,depth:22,d:["Ville des collines et des plantations, fraîche et verte.","Hill town of plantations, cool and green."],m:{riz:1.15,mais:.8,igname:.85,huile:.95,ciment:1.1,tissu:1.1,tel:1.15,med:1.15,karite:1.3,sel:1.1}},
+ tsevie:{n:"Tsévié",lat:.05,mx:30,my:80,depth:24,d:["Carrefour agricole au nord de Lomé.","Farming crossroads north of Lomé."],m:{riz:1.0,mais:.95,igname:.95,huile:1.0,ciment:.95,tissu:1.0,tel:1.0,med:1.0,karite:1.25,sel:1.0}},
+ atakpame:{n:"Atakpamé",lat:.25,mx:28,my:58,depth:26,d:["Grande région d'ignames, au centre du pays.","A big yam region at the heart of the country."],m:{riz:1.1,mais:.75,igname:.7,huile:1.0,ciment:1.1,tissu:1.1,tel:1.15,med:1.15,karite:1.0,sel:1.1}},
+ sokode:{n:"Sokodé",lat:.45,mx:38,my:40,depth:28,d:["Deuxième ville du pays, étape des convois du nord.","Second city, a stop for northbound convoys."],m:{riz:1.2,mais:.8,igname:.8,huile:1.1,ciment:1.2,tissu:1.2,tel:1.25,med:1.25,karite:.8,sel:1.25}},
+ kara:{n:"Kara",lat:.6,mx:46,my:25,depth:32,d:["Grand marché du nord, le karité y est roi.","Big northern market where shea is king."],m:{riz:1.25,mais:.7,igname:.9,huile:1.15,ciment:1.25,tissu:1.25,tel:1.3,med:1.3,karite:.65,sel:1.3}},
+ dapaong:{n:"Dapaong",lat:.85,mx:42,my:10,depth:22,d:["Extrême nord, sec et poussiéreux. On y paie cher les produits du sud.","Far north, dry and dusty. Southern goods sell high."],m:{riz:1.35,mais:.65,igname:1.1,huile:1.25,ciment:1.4,tissu:1.35,tel:1.4,med:1.4,karite:.6,sel:1.4}},
+ ouaga:{n:"Ouagadougou",lat:1,mx:80,my:6,depth:50,d:["Grande capitale au-delà de la frontière : la plus grosse demande de la région.","The big capital across the border: the region's strongest demand."],m:{riz:1.5,mais:.9,igname:1.4,huile:1.45,ciment:1.5,tissu:1.5,tel:1.6,med:1.55,karite:.9,sel:1.5}}
+};
+var CIDS=Object.keys(CITIES);
+var EDGES=[
+ {a:"lome",b:"aneho",km:45,t:"road"},{a:"lome",b:"tsevie",km:35,t:"road"},{a:"lome",b:"kpalime",km:120,t:"road"},
+ {a:"tsevie",b:"atakpame",km:130,t:"road"},{a:"kpalime",b:"atakpame",km:90,t:"piste"},
+ {a:"atakpame",b:"sokode",km:150,t:"road"},{a:"sokode",b:"kara",km:75,t:"road"},
+ {a:"kara",b:"dapaong",km:290,t:"road"},{a:"sokode",b:"dapaong",km:260,t:"piste"},{a:"dapaong",b:"ouaga",km:450,t:"frontier"}
+];
+var VEH={
+ moto:{n:["Moto-cargo","Cargo bike"],cap:12,spd:1.2,hp:70,tank:25,cons:.05,cost:180000,col:0xd9503a,hw:.55,hl:1.1,i:"🛵"},
+ van:{n:["Camionnette","Pickup van"],cap:40,spd:1,hp:110,tank:80,cons:.12,cost:900000,col:0x3a78c9,hw:1.0,hl:2.3,i:"🚐"},
+ truck:{n:["Camion","Truck"],cap:110,spd:.86,hp:180,tank:200,cons:.26,cost:3500000,col:0x4f9a5a,hw:1.25,hl:3.5,i:"🚚"}
+};
+var UPG={
+ eng:{n:["Moteur","Engine"],d:["+6 % de vitesse, chauffe moins","+6% speed, runs cooler"],ic:"⚙️"},
+ tir:{n:["Pneus renforcés","Heavy tyres"],d:["Moins de crevaisons, meilleure tenue","Fewer punctures"],ic:"🛞"},
+ fil:{n:["Filtre à air","Air filter"],d:["Résiste mieux à la poussière","Resists dust better"],ic:"🌫️"},
+ cha:{n:["Châssis et suspension","Chassis & suspension"],d:["Moins de dégâts sur les chocs","Less damage from impacts"],ic:"🔩"}
+};
+var NAMES=["Kodjo","Afi","Komlan","Ayaba","Yawo","Edem","Mawuena","Sena","Kafui","Dzifa","Selom","Kossi","Abla","Essi","Koffi","Ama","Yao","Akouvi","Mawuli","Dela"];
+var ROLES={driver:["Chauffeur","Driver","🚦"],nav:["Navigateur","Navigator","🧭"],trader:["Négociant","Trader","🤝"],mech:["Mécanicien","Mechanic","🔧"]};
+var TRAITS={prudent:["Prudent","Careful"],econ:["Économe","Thrifty"],chance:["Chanceux","Lucky"],costaud:["Costaud","Tough"]};
+var FUEL_PRICE=700;
+
+/* ================= État ================= */
+var GS=null,TAB="market",D=null,GAMEOVER=false;
+var SAVE_KEY="harm_save_v1";
+function saveGame(){try{if(GS&&!GAMEOVER)localStorage.setItem(SAVE_KEY,JSON.stringify(GS));}catch(e){}}
+function loadGame(){try{var s=JSON.parse(localStorage.getItem(SAVE_KEY));if(s&&s.veh&&s.crew)return s;}catch(e){}return null;}
+function hasSave(){try{return !!localStorage.getItem(SAVE_KEY);}catch(e){return false;}}
+function mkCrew(role,skill,trait){
+ var tr=trait||pick(Object.keys(TRAITS));
+ return {id:Math.random().toString(36).slice(2,8),n:pick(NAMES),role:role,skill:skill,trait:tr,morale:75,fat:0,wage:Math.round((3000+2500*skill)*(tr==="econ"?.8:1))};
+}
+function newGame(){
+ GS={day:1,deadline:60,money:500000,debt:1000000,city:"lome",seed:Math.random()*1000,
+  veh:{t:"van",hp:80,fuel:40,tires:70,filter:75,up:{eng:0,tir:0,fil:0,cha:0}},
+  cargo:{},crew:[mkCrew("mech",2,"econ")],cand:[],rep:{m:0,t:0,v:0},imp:{},nz:{},ev:[],log:[],stats:{legs:0,km:0,profit:0,sold:0,events:0},tut:0};
+ CIDS.forEach(function(c){GS.imp[c]={};GS.nz[c]={};GIDS.forEach(function(g){GS.imp[c][g]=0;GS.nz[c][g]=rnd(-.08,.08);});});
+ genCands();
+ GAMEOVER=false;
+ addLog(["Tu as hérité d'une vieille camionnette et d'une dette de 1 000 000 F. Tu as 60 jours.","You inherited an old van and a 1,000,000 F debt. You have 60 days."]);
+}
+function addLog(t){GS.log.unshift({d:GS.day,t:t});if(GS.log.length>40)GS.log.pop();}
+
+/* ---- équipage ---- */
+function crewBest(role){
+ var b=0;GS.crew.forEach(function(c){if(c.role===role){var s=c.skill-(c.fat>75?1:0)-(c.morale<25?1:0);if(s>b)b=s;}});return Math.max(0,b);
+}
+function luck(){var l=0;GS.crew.forEach(function(c){if(c.trait==="chance")l=.05;});return l;}
+function wages(){var s=0;GS.crew.forEach(function(c){s+=c.wage;});return s;}
+function genCands(){
+ GS.cand=[];var roles=Object.keys(ROLES);
+ for(var i=0;i<3;i++){var r=roles[ri(4)],sk=clamp(1+Math.floor(Math.abs(rnd(-1,1))*3.2+Math.random()*(1+GS.rep.t/20)),1,5);GS.cand.push(mkCrew(r,sk));}
+}
+function maxCrew(){return 3+(GS.rep.t+GS.rep.m+GS.rep.v>=40?1:0);}
+
+/* ---- météo : harmattan ---- */
+function noise(i){var s=Math.sin(i*12.9898+GS.seed*78.233)*43758.5453;return s-Math.floor(s);}
+function vnoise(t){var i=Math.floor(t),f=t-i;f=f*f*(3-2*f);return noise(i)*(1-f)+noise(i+1)*f;}
+function harm(day,lat){return clamp(.14+.42*lat+vnoise(day/3.1)*.55-.16,0,1);}
+function forecast(day,lat){return clamp(harm(day,lat)+(noise(day*7.1)-.5)*.55*(1-.19*crewBest("nav")),0,1);}
+function wxName(h){return h<.25?["Dégagé","Clear"]:h<.5?["Brume sèche","Dry haze"]:h<.75?["Poussiéreux","Dusty"]:["Tempête de sable","Sandstorm"];}
+function wxIcon(h){return h<.25?"☀️":h<.5?"🌤️":h<.75?"🌫️":"🌪️";}
+
+/* ---- marché ---- */
+function depthOf(c,g){return CITIES[c].depth*(GOODS[g].base>80000?.5:1);}
+function stepOf(c,g){return .9/depthOf(c,g);}
+function evMult(c,g){var m=1;GS.ev.forEach(function(e){if(e.c===c&&e.g===g&&e.until>=GS.day)m*=e.k;});return m;}
+function baseK(c,g){return CITIES[c].m[g]*GOODS[g].base*(1+GS.nz[c][g])*evMult(c,g);}
+function mid(c,g){return baseK(c,g)*(1+GS.imp[c][g]);}
+function repBonus(){return Math.min(.04,(GS.rep.m+GS.rep.t+GS.rep.v)/600);}
+function quote(c,g,n,side){
+ var k=baseK(c,g),im=GS.imp[c][g],st=stepOf(c,g),tot=0,tb=crewBest("trader")*.025;
+ for(var i=0;i<n;i++){
+  if(side==="buy")tot+=k*(1+im+i*st)*1.04*(1-tb);
+  else tot+=k*Math.max(.35,1+im-i*st)*.96*(1+tb+repBonus());
+ }
+ return tot;
+}
+function cargoWeight(){var w=0;for(var g in GS.cargo)w+=GS.cargo[g].q*GOODS[g].w;return w;}
+function cargoUnits(){var n=0;for(var g in GS.cargo)n+=GS.cargo[g].q;return n;}
+function capFree(){return VEH[GS.veh.t].cap-cargoWeight();}
+function buyGood(g,n){
+ var c=GS.city,maxByCap=Math.floor((capFree()+1e-6)/GOODS[g].w);n=Math.min(n,maxByCap);
+ if(n<=0)return 0;
+ while(n>0&&quote(c,g,n,"buy")>GS.money)n--;
+ if(n<=0)return 0;
+ var cost=quote(c,g,n,"buy");GS.money-=cost;
+ var h=GS.cargo[g]||(GS.cargo[g]={q:0,avg:0});h.avg=(h.avg*h.q+cost)/(h.q+n);h.q+=n;
+ GS.imp[c][g]+=n*stepOf(c,g);
+ return n;
+}
+function sellGood(g,n){
+ var c=GS.city,h=GS.cargo[g];if(!h)return 0;n=Math.min(n,h.q);if(n<=0)return 0;
+ var rev=quote(c,g,n,"sell");GS.money+=rev;GS.stats.profit+=rev-h.avg*n;GS.stats.sold+=n;
+ h.q-=n;GS.imp[c][g]=Math.max(-.65,GS.imp[c][g]-n*stepOf(c,g));
+ if(h.q<=0)delete GS.cargo[g];
+ return rev;
+}
+
+/* ---- passage des jours ---- */
+function advanceDay(){
+ GS.day++;
+ CIDS.forEach(function(c){GIDS.forEach(function(g){
+  GS.imp[c][g]*=.86;GS.nz[c][g]=clamp(GS.nz[c][g]*.9+rnd(-.045,.045),-.22,.22);
+ });});
+ GS.ev=GS.ev.filter(function(e){return e.until>=GS.day;});
+ if(Math.random()<.35){var c=pick(CIDS),g=pick(GIDS),sh=Math.random()<.6;GS.ev.push({c:c,g:g,k:sh?1.38:.76,until:GS.day+rnd(4,8)|0});}
+ var w=wages(),paid=Math.min(GS.money,w);GS.money-=paid;
+ GS.crew.forEach(function(c){
+  if(paid<w)c.morale=clamp(c.morale-12,0,100);
+  c.fat=clamp(c.fat-(c.trait==="costaud"?12:7),0,100);
+  c.morale=clamp(c.morale+(c.morale<60?1.5:0)-(c.morale>80?.5:0),0,100);
+ });
+ // départs d'équipiers démoralisés
+ for(var i=GS.crew.length-1;i>=0;i--){if(GS.crew[i].morale<=8){addLog([GS.crew[i].n+" a quitté ton équipe.",GS.crew[i].n+" left your crew."]);GS.crew.splice(i,1);}}
+ if(Math.random()<.4)genCands();
+}
+function evNews(){
+ var out=[];GS.ev.forEach(function(e){if(e.until>=GS.day&&(e.c===GS.city||Math.random()<2)){out.push(e);}});return out;
+}
+
+/* ================= Audio ================= */
+var AC=null,eng=null,SND=true;
+try{SND=localStorage.getItem("harm_snd")!=="0";}catch(e){}
+function ac(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();}catch(e){}}return AC;}
+function tone(f,d,type,v,sl){
+ if(!SND)return;var A=ac();if(!A)return;
+ try{var o=A.createOscillator(),g=A.createGain();o.type=type||"sine";o.frequency.value=f;if(sl)o.frequency.exponentialRampToValueAtTime(Math.max(30,f*sl),A.currentTime+d);g.gain.value=v||.05;g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+d);o.connect(g);g.connect(A.destination);o.start();o.stop(A.currentTime+d);}catch(e){}
+}
+function sfx(k){
+ if(k==="click")tone(520,.05,"square",.03);
+ else if(k==="coin"){tone(900,.07,"triangle",.05);setTimeout(function(){tone(1300,.1,"triangle",.05);},60);}
+ else if(k==="hit")tone(110,.3,"sawtooth",.09,.35);
+ else if(k==="horn"){tone(330,.28,"square",.05);tone(415,.28,"square",.05);}
+ else if(k==="ok"){tone(523,.1,"triangle",.06);setTimeout(function(){tone(784,.15,"triangle",.06);},90);}
+ else if(k==="bad")tone(200,.25,"sawtooth",.06,.5);
+}
+function engineSound(on,spd){
+ if(!SND||!ac()){return;}
+ try{
+  if(on&&!eng){var o=AC.createOscillator(),g=AC.createGain();o.type="sawtooth";g.gain.value=.012;o.connect(g);g.connect(AC.destination);o.start();eng={o:o,g:g};}
+  if(eng){if(on){eng.o.frequency.value=48+spd*3.2;eng.g.gain.value=.012+spd*.0004;}else{eng.o.stop();eng.g.disconnect();eng=null;}}
+ }catch(e){eng=null;}
+}
+
+/* ================= 3D ================= */
+var R=null;
+var GEO=null,MAT={};
+function mat(c){return MAT[c]||(MAT[c]=new THREE.MeshStandardMaterial({color:c,flatShading:true,roughness:.85,metalness:.04}));}
+function bmat(c){var k="b"+c;return MAT[k]||(MAT[k]=new THREE.MeshBasicMaterial({color:c,fog:false}));}
+function mesh(g,c,sx,sy,sz,x,y,z){var m=new THREE.Mesh(g,typeof c==="object"?c:mat(c));m.scale.set(sx,sy,sz);m.position.set(x,y,z);return m;}
+function canvasTex(w,h,fn,rx,ry){
+ var c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"),w,h);
+ var t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rx||1,ry||1);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=2;return t;
+}
+function init3D(){
+ GEO={box:new THREE.BoxGeometry(1,1,1),cyl:new THREE.CylinderGeometry(.5,.5,1,12),cone:new THREE.ConeGeometry(.5,1,7),ico:new THREE.IcosahedronGeometry(.5,0),plane:new THREE.PlaneGeometry(1,1)};
+ var cv=$("#gl");
+ var r=new THREE.WebGLRenderer({canvas:cv,antialias:false});
+ r.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+ var sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(62,1,.5,800);
+ var hemi=new THREE.HemisphereLight(0xdfe8ff,0x9a7a4a,.95);sc.add(hemi);
+ var sun=new THREE.DirectionalLight(0xffe0a8,1.2);sun.position.set(-40,60,-30);sc.add(sun);
+ sc.fog=new THREE.Fog(0xcfa56a,40,420);sc.background=new THREE.Color(0xcfa56a);
+ R={r:r,sc:sc,cam:cam,hemi:hemi,sun:sun,dec:[],obs:[],veh:null,cargoG:null,t:0,fogCol:new THREE.Color(),shake:0};
+ // sol et route
+ var gt=canvasTex(128,128,function(g,w,h){g.fillStyle="#b8894f";g.fillRect(0,0,w,h);for(var i=0;i<700;i++){g.fillStyle="rgba("+(i%3?"110,80,40":"200,160,100")+","+rnd(.08,.25)+")";g.fillRect(Math.random()*w,Math.random()*h,rnd(1,5),rnd(1,3));}},30,150);
+ var gm=new THREE.Mesh(GEO.plane,new THREE.MeshStandardMaterial({map:gt,roughness:1}));gm.rotation.x=-Math.PI/2;gm.scale.set(900,3000,1);gm.position.y=-.02;sc.add(gm);R.ground=gm;R.gt=gt;
+ R.roadTex={road:canvasTex(128,256,function(g,w,h){
+   g.fillStyle="#b79763";g.fillRect(0,0,w,h);
+   g.fillStyle="#3a3a3e";g.fillRect(18,0,92,h);
+   for(var i=0;i<900;i++){g.fillStyle="rgba(255,255,255,"+rnd(.02,.09)+")";g.fillRect(18+Math.random()*92,Math.random()*h,rnd(1,3),rnd(1,3));}
+   g.fillStyle="#e6e6e6";g.fillRect(21,0,3,h);g.fillRect(104,0,3,h);
+   g.fillStyle="#f0c84a";g.fillRect(62,0,4,128);
+  },1,150),piste:canvasTex(128,256,function(g,w,h){
+   g.fillStyle="#a8763f";g.fillRect(0,0,w,h);
+   g.fillStyle="#8f5f30";g.fillRect(24,0,24,h);g.fillRect(80,0,24,h);
+   for(var i=0;i<900;i++){g.fillStyle="rgba("+(i%2?"60,40,20":"220,180,120")+","+rnd(.05,.18)+")";g.fillRect(Math.random()*w,Math.random()*h,rnd(1,4),rnd(1,3));}
+  },1,150)};
+ var rm=new THREE.Mesh(GEO.plane,new THREE.MeshStandardMaterial({map:R.roadTex.road,roughness:.95}));rm.rotation.x=-Math.PI/2;rm.scale.set(14,3000,1);sc.add(rm);R.road=rm;
+ // soleil
+ var sunm=new THREE.Mesh(new THREE.CircleGeometry(40,24),bmat(0xfff2c0));sunm.position.set(-150,130,-600);sc.add(sunm);R.sunm=sunm;
+ // collines lointaines
+ for(var i=0;i<10;i++){var h=mesh(GEO.cone,0x8a6a45,rnd(120,260),rnd(40,110),rnd(120,200),(i%2?1:-1)*rnd(260,420),rnd(10,30)-10,-i*80);h.material=new THREE.MeshStandardMaterial({color:0x8a6a45,flatShading:true,fog:true});R.dec.push({m:h,k:"hill",z:-i*80});sc.add(h);}
+ // décors
+ for(var j=0;j<34;j++)addTree(j);
+ for(var j2=0;j2<10;j2++)addHut(j2);
+ for(var j3=0;j3<22;j3++)addPole(j3);
+ // poussière
+ var N=450,pg=new THREE.BufferGeometry(),pa=new Float32Array(N*3);
+ for(var q=0;q<N;q++){pa[q*3]=rnd(-40,40);pa[q*3+1]=rnd(.3,14);pa[q*3+2]=rnd(-120,10);}
+ pg.setAttribute("position",new THREE.BufferAttribute(pa,3));
+ R.dust=new THREE.Points(pg,new THREE.PointsMaterial({color:0xd8b684,size:.7,transparent:true,opacity:.0,depthWrite:false}));R.dust.frustumCulled=false;sc.add(R.dust);
+ R.dustN=N;
+ // véhicule du joueur
+ R.veh=new THREE.Group();sc.add(R.veh);
+ window.addEventListener("resize",resize3D);resize3D();
+ refreshVehicle();
+}
+function resize3D(){if(!R)return;var w=innerWidth,h=innerHeight;R.r.setSize(w,h,false);R.cam.aspect=w/h;R.cam.updateProjectionMatrix();}
+function addTree(i){
+ var g=new THREE.Group();
+ g.add(mesh(GEO.cyl,0x5a3b22,.35,2.6,.35,0,1.3,0));
+ var cr=mesh(GEO.ico,0x6d8a3a,3.2,1.4,3.2,0,3.2,0);g.add(cr);
+ g.add(mesh(GEO.ico,0x7a9a42,2.2,1,2.2,.6,3.7,.3));
+ var side=i%2?1:-1,x=side*rnd(9,40),z=-rnd(0,600);
+ g.position.set(x,0,z);var s=rnd(.8,1.5);g.scale.set(s,s,s);R.sc.add(g);R.dec.push({m:g,k:"tree",z:z,x:x});
+}
+function addHut(i){
+ var g=new THREE.Group();
+ g.add(mesh(GEO.box,0xc9a06a,4,2.4,4,0,1.2,0));
+ g.add(mesh(GEO.cone,0x8a5a2b,6.4,2.4,6.4,0,3.5,0)).rotation.y=Math.PI/4;
+ g.add(mesh(GEO.box,0x3a2a1a,1,1.7,.1,0,.85,2.02));
+ var side=i%2?1:-1,x=side*rnd(10,22),z=-rnd(0,600);g.position.set(x,0,z);g.rotation.y=side>0?-.4:.4;
+ R.sc.add(g);R.dec.push({m:g,k:"hut",z:z,x:x});
+}
+function addPole(i){
+ var g=new THREE.Group();g.add(mesh(GEO.cyl,0x4b3a2b,.25,7,.25,0,3.5,0));g.add(mesh(GEO.box,0x4b3a2b,2.2,.18,.18,0,6.8,0));
+ var side=i%2?1:-1,x=side*7.8,z=-i*30;g.position.set(x,0,z);R.sc.add(g);R.dec.push({m:g,k:"pole",z:z,x:x});
+}
+function buildVehicle(t,color,fill,oncoming){
+ var g=new THREE.Group(),wheels=[];
+ function wheel(x,y,z,r){var p=new THREE.Group();p.position.set(x,y,z);var w=mesh(GEO.cyl,0x151515,r*2,.4,r*2,0,0,0);w.rotation.z=Math.PI/2;p.add(w);g.add(p);wheels.push(p);}
+ if(t==="moto"){
+  g.add(mesh(GEO.box,color,.35,.45,1.7,0,.75,0));
+  g.add(mesh(GEO.box,0x222,.12,.12,.9,0,1.15,-.9)).rotation.x=0;
+  g.add(mesh(GEO.box,0x222,.8,.08,.08,0,1.2,-.7));
+  g.add(mesh(GEO.box,0x333,.5,.55,.9,0,1.05,.5));
+  g.add(mesh(GEO.ico,0x6b4a33,.45,.5,.45,0,1.7,0));
+  g.add(mesh(GEO.box,0x2d6bb0,.5,.7,.35,0,1.35,.05));
+  wheel(0,.38,-.75,.38);wheel(0,.38,.75,.38);
+  g.add(mesh(GEO.box,0xc9a46a,.9,.6,.8,0,1.0,1.0));
+ }else{
+  var big=t==="truck",L=big?7:4.6,W=big?2.5:2.0,hh=big?1.7:1.3;
+  g.add(mesh(GEO.box,0x252525,W*.95,.4,L,0,.6,0));
+  g.add(mesh(GEO.box,color,W,hh,L*.3,0,.9+hh/2,-L*.33));
+  g.add(mesh(GEO.box,0xa6d6ff,W*.88,hh*.42,.06,0,.9+hh*.62,-L*.33-L*.151));
+  g.add(mesh(GEO.box,0x1a1a1a,W*1.0,.3,.2,0,.5,-L*.5-.05));
+  g.add(mesh(GEO.box,bmat(oncoming?0xfff2a0:0xffe9a0),.35,.22,.08,-W*.32,.85,-L*.5-.05));
+  g.add(mesh(GEO.box,bmat(oncoming?0xfff2a0:0xffe9a0),.35,.22,.08,W*.32,.85,-L*.5-.05));
+  g.add(mesh(GEO.box,bmat(0xff2a2a),.3,.2,.08,-W*.35,.85,L*.5+.04));
+  g.add(mesh(GEO.box,bmat(0xff2a2a),.3,.2,.08,W*.35,.85,L*.5+.04));
+  g.add(mesh(GEO.box,0x6b4a2a,W*.96,.55,L*.56,0,1.15,L*.17));
+  var cg=new THREE.Group();cg.position.set(0,1.45,L*.17);g.add(cg);
+  var n=Math.round(clamp(fill||0,0,1)*(big?14:8));
+  for(var i=0;i<n;i++){var cx_=(i%2?-1:1)*W*.22,row=Math.floor(i/2),cz=-L*.22+row*(L*.5/Math.max(1,Math.ceil(n/2)));cg.add(mesh(GEO.box,i%3?0xc9a46a:0xb08850,W*.42,.7+(i%3)*.12,.9,cx_,0,cz));}
+  if(n>0)cg.add(mesh(GEO.box,0x7a6a58,W*.93,.14,L*.5,0,.55+.2,0));
+  var wx=W*.5;
+  wheel(-wx,.5,-L*.33,.5);wheel(wx,.5,-L*.33,.5);wheel(-wx,.5,L*.3,.5);wheel(wx,.5,L*.3,.5);
+  if(big){wheel(-wx,.5,L*.1,.5);wheel(wx,.5,L*.1,.5);}
+ }
+ g.userData.wheels=wheels;return g;
+}
+function refreshVehicle(){
+ if(!R)return;
+ while(R.veh.children.length)R.veh.remove(R.veh.children[0]);
+ var t=GS?GS.veh.t:"van",V=VEH[t],fill=GS?cargoWeight()/V.cap:0;
+ var b=buildVehicle(t,V.col,fill,false);R.veh.add(b);R.vb=b;
+}
+function clearObs(){R.obs.forEach(function(o){R.sc.remove(o.m);});R.obs=[];}
+function makeObstacle(k,x,z){
+ var m=null,o={k:k,x:x,z:z,hit:false,hw:.8,hl:.8,vs:0};
+ if(k==="pothole"){m=new THREE.Group();m.add(mesh(GEO.cyl,0x7a6a5a,2.3,.02,2.1,0,.03,0));m.add(mesh(GEO.cyl,0x15110d,1.8,.04,1.6,0,.05,0));o.hw=.95;o.hl=.9;}
+ else if(k==="rock"){m=mesh(GEO.ico,0x6b6258,1.6,1.2,1.5,0,.5,0);o.hw=.75;o.hl=.7;}
+ else if(k==="goat"){m=new THREE.Group();for(var i=0;i<3;i++){var gg=new THREE.Group();gg.add(mesh(GEO.box,i%2?0xeadfcf:0x6b4a33,.5,.5,.95,0,.6,0));gg.add(mesh(GEO.box,i%2?0xeadfcf:0x6b4a33,.3,.35,.4,0,.95,.55));[[-.18,-.35],[.18,-.35],[-.18,.35],[.18,.35]].forEach(function(l){gg.add(mesh(GEO.box,0x3a2a1a,.1,.5,.1,l[0],.25,l[1]));});gg.position.set(0,0,i*1.3-1.3);m.add(gg);}o.hw=.75;o.hl=1.9;o.moving=false;o.dir=x>0?-1:1;}
+ else if(k==="slow"){var t=Math.random()<.5?"moto":"van";m=buildVehicle(t,pick([0xe0b020,0xd9503a,0x4a8fd9,0xffffff]),Math.random(),false);o.hw=t==="moto"?.6:1.0;o.hl=t==="moto"?1.1:2.3;o.vs=rnd(9,13);}
+ else if(k==="oncoming"){var t2=pick(["van","truck","moto"]);m=buildVehicle(t2,pick([0xb8302a,0x2a8a5a,0x2a5fb8,0xcfcfcf]),Math.random(),true);m.rotation.y=Math.PI;o.hw=t2==="moto"?.6:(t2==="truck"?1.3:1.0);o.hl=t2==="moto"?1.1:(t2==="truck"?3.5:2.3);o.vs=-17;}
+ m.position.set(x,0,-z);R.sc.add(m);o.m=m;return o;
+}
+function setScene(h,type,travel,spd){
+ // brouillard / lumière selon l'harmattan
+ var clear=new THREE.Color(0x8fc3ee),dust=new THREE.Color(0xc99e63);
+ R.fogCol.copy(clear).lerp(dust,Math.pow(h,.7));
+ R.sc.fog.color.copy(R.fogCol);R.sc.background=R.fogCol;
+ R.sc.fog.far=lerp(440,62,Math.pow(h,.85));R.sc.fog.near=lerp(60,6,h);
+ R.hemi.intensity=lerp(1.0,.62,h);R.sun.intensity=lerp(1.25,.55,h);
+ R.sunm.material.color.set(h>.6?0xffb15a:0xfff2c0);
+ R.dust.material.opacity=h*.55;
+ var rt=type==="piste"?R.roadTex.piste:R.roadTex.road;
+ if(R.road.material.map!==rt){R.road.material.map=rt;R.road.material.needsUpdate=true;}
+ R.road.position.z=-travel;R.ground.position.z=-travel;
+ R.roadTex.road.offset.y=travel/20;R.roadTex.piste.offset.y=travel/20;R.gt.offset.y=travel/30;
+ R.sunm.position.z=-travel-600;R.sunm.position.x=-150;
+}
+function updateDecor(travel){
+ var cz=-travel;
+ R.dec.forEach(function(d){
+  var lim=d.k==="hill"?200:30;
+  if(d.m.position.z>cz+lim){
+   var far=d.k==="hill"?900:d.k==="pole"?660:620;
+   d.m.position.z-=far+rnd(0,d.k==="pole"?0:80);
+   if(d.k==="tree"||d.k==="hut")d.m.position.x=(d.m.position.x>0?1:-1)*rnd(d.k==="hut"?10:9,d.k==="hut"?22:40);
+  }
+ });
+ // poussière
+ var a=R.dust.geometry.attributes.position.array,N=R.dustN;
+ for(var i=0;i<N;i++){var zi=i*3+2;if(a[zi]+(-travel)>cz+8||a[zi]>cz+8){a[zi]=cz-rnd(60,130);a[i*3]=rnd(-40,40);a[i*3+1]=rnd(.3,14);}}
+ R.dust.geometry.attributes.position.needsUpdate=true;
+}
+function updateDustFlow(dt,spd){
+ var a=R.dust.geometry.attributes.position.array,N=R.dustN,cz=R.cam.position.z;
+ for(var i=0;i<N;i++){var zi=i*3+2;a[zi]+=(spd*.0+9+Math.sin(i)*3)*dt;a[i*3]+=Math.sin(R.t*.6+i)*.02;if(a[zi]>cz+6){a[zi]=cz-rnd(70,130);a[i*3]=cam_x()+rnd(-40,40);a[i*3+1]=rnd(.3,14);}}
+ R.dust.geometry.attributes.position.needsUpdate=true;
+}
+function cam_x(){return R.cam.position.x;}
+
+/* ================= Rencontres ================= */
+var EVS={};
+function ev(id,o){EVS[id]=o;o.id=id;}
+ev("breakdown",{t:["Panne moteur","Engine failure"],tx:["Le moteur crache une fumée noire puis s'arrête sur le bas-côté.","The engine coughs black smoke and dies at the roadside."],
+ o:[
+ {l:["Réparer sur place","Repair on the spot"],role:"mech",base:.3,ok:{hp:12,days:.3,t:["Le mécanicien remet le moteur en marche.","The mechanic gets it running again."]},ko:{money:-25000,days:1,t:["Impossible : il faut un dépanneur. 25 000 F et une journée perdue.","No luck: a tow is needed. 25,000 F and a day lost."]}},
+ {l:["Appeler un dépanneur","Call a tow truck"],cost:30000,sure:{money:-30000,hp:15,days:1,t:["Le dépanneur arrive en fin de journée et répare.","The tow truck arrives by evening and fixes it."]}},
+ {l:["Repartir en forçant","Push on"],role:"driver",base:.35,ok:{t:["Le moteur tousse mais tient.","The engine splutters but holds."]},ko:{hp:-15,t:["Le moteur casse un peu plus. Dégâts !","The engine gets worse. Damage!"]}}]});
+ev("flat",{t:["Crevaison","Flat tyre"],tx:["Un bruit sec : un pneu éclate.","A sharp bang: a tyre bursts."],
+ o:[{l:["Changer la roue","Change the wheel"],role:"mech",base:.45,ok:{tires:40,days:.2,t:["Roue changée rapidement.","Wheel changed quickly."]},ko:{tires:20,money:-8000,days:.5,t:["La roue de secours est à plat aussi. 8 000 F et du temps perdus.","The spare is flat too. 8,000 F and time lost."]}},
+ {l:["Faire venir un vulcanisateur","Call a tyre repairer"],cost:12000,sure:{money:-12000,tires:45,days:.5,t:["Réparé par un vulcanisateur du coin.","Fixed by a local repairer."]}}]});
+ev("weigh",{t:["Contrôle de charge","Load check"],tx:["Un poste de pesage : ton chargement est jugé lourd.","A weigh station: your load is judged heavy."],
+ o:[{l:["Payer l'amende","Pay the fine"],cost:12000,sure:{money:-12000,rep:{t:1},t:["Amende réglée, tu repars en règle.","Fine paid, you are in order."]}},
+ {l:["Négocier avec l'agent","Negotiate with the officer"],role:"trader",base:.3,ok:{rep:{t:2},t:["Accord trouvé, avertissement seulement.","Deal reached, warning only."]},ko:{money:-18000,t:["Négociation ratée : amende majorée.","Negotiation failed: higher fine."]}}]});
+ev("stranded",{t:["Voyageur en panne","Stranded traveller"],tx:["Une famille fait signe : leur voiture est en panne et le soleil tape fort.","A family flags you down: their car broke down and the sun is fierce."],
+ o:[{l:["Les aider à réparer","Help them repair"],role:"mech",base:.5,ok:{days:.2,rep:{v:3,t:2},money:6000,t:["Réparé ! Ils te remercient (6 000 F).","Fixed! They thank you (6,000 F)."]},ko:{days:.3,rep:{v:1},t:["Tu n'y arrives pas, mais ils apprécient l'effort.","You fail, but they appreciate the effort."]}},
+ {l:["Continuer ta route","Keep driving"],sure:{rep:{v:-1},t:["Tu passes sans t'arrêter.","You drive past."]}}]});
+ev("storm",{t:["Tempête de sable","Sandstorm"],tx:["Un mur de poussière orange avance sur la route. La visibilité tombe à quelques mètres.","A wall of orange dust sweeps the road. Visibility drops to a few metres."],
+ o:[{l:["Attendre que ça passe","Wait it out"],sure:{days:.5,morale:2,t:["Vous patientez à l'abri. La tempête passe.","You wait in shelter. The storm passes."]}},
+ {l:["Abri au relais (6 000 F)","Roadside shelter (6,000 F)"],cost:6000,sure:{money:-6000,morale:8,filter:5,t:["Un relais vous accueille : thé chaud et repos.","A rest stop welcomes you: hot tea and rest."]}},
+ {l:["Foncer à travers","Drive through"],role:"nav",base:.35,ok:{t:["Le navigateur guide bien : vous traversez.","The navigator guides well: you get through."]},ko:{hp:-12,filter:-25,t:["Tu rates la route et tapes un talus. Filtre encrassé.","You miss the road and hit a bank. Filter clogged."]}}]});
+ev("river",{t:["Pont emporté","Washed-out bridge"],tx:["Le pont a cédé. Un gué boueux est la seule option rapide.","The bridge has collapsed. A muddy ford is the quick option."],
+ o:[{l:["Traverser le gué","Cross the ford"],role:"driver",base:.35,ok:{t:["Tu passes sans encombre.","You cross without trouble."]},ko:{hp:-18,cargo:.1,t:["Le véhicule s'embourbe : dégâts et marchandises mouillées (10 % perdus).","The vehicle bogs down: damage and wet goods (10% lost)."]}},
+ {l:["Faire le détour","Take the detour"],sure:{days:1,fuel:-6,t:["Un grand détour : une journée perdue et du carburant.","A long detour: a day and some fuel lost."]}}]});
+ev("toll",{t:["Barrage de péage","Toll barrier"],tx:["Un groupe de jeunes tient une corde en travers de la piste et demande une contribution.","A group of young men hold a rope across the track and ask for a contribution."],
+ o:[{l:["Payer 3 000 F","Pay 3,000 F"],cost:3000,sure:{money:-3000,t:["Ils lèvent la corde.","They lift the rope."]}},
+ {l:["Négocier","Negotiate"],role:"trader",base:.35,ok:{money:-500,rep:{v:1},t:["Tu discutes : 500 F suffisent.","You talk it through: 500 F is enough."]},ko:{money:-5000,t:["Ça tourne mal : 5 000 F.","It goes badly: 5,000 F."]}}]});
+ev("frontier",{t:["Frontière","Border post"],tx:["Poste frontière. Les papiers du convoi doivent être en règle.","Border post. The convoy's papers must be in order."],
+ o:[{l:["Présenter les papiers","Show the papers"],role:"nav",base:.35,ok:{days:.3,rep:{t:3},t:["Dossier complet : formalités rapides.","Complete file: quick formalities."]},ko:{money:-30000,days:1,t:["Il manque un tampon : 30 000 F et une journée.","A stamp is missing: 30,000 F and a day."]}},
+ {l:["Payer un transitaire","Pay a clearing agent"],cost:25000,sure:{money:-25000,days:.5,t:["Le transitaire règle tout pour 25 000 F.","The agent handles it for 25,000 F."]}}]});
+ev("fuelout",{t:["Panne sèche","Out of fuel"],tx:["Le réservoir est vide. Tu es à l'arrêt, loin de tout.","The tank is empty. You are stopped, far from anything."],forced:true,
+ o:[{l:["Acheter 20 L à un passant","Buy 20 L from a passer-by"],cost:30000,sure:{money:-30000,fuel:20,t:["Un motard te vend du carburant à prix d'or.","A rider sells you fuel at a steep price."]}},
+ {l:["Attendre un secours","Wait for help"],sure:{days:1,fuel:12,t:["Un camion s'arrête le lendemain et te dépanne.","A truck stops the next day and helps."]}}]});
+ev("overheat",{t:["Surchauffe","Overheating"],tx:["La jauge de température est au rouge. Un panache de vapeur sort du capot.","The temperature gauge is red. Steam pours from the bonnet."],forced:true,
+ o:[{l:["Laisser refroidir","Let it cool"],sure:{days:.3,temp:-35,t:["Une heure d'attente et le moteur est calmé.","An hour's wait and the engine settles."]}},
+ {l:["Réparer la durite","Fix the hose"],role:"mech",base:.35,ok:{hp:8,temp:-40,t:["Durite colmatée : le moteur retrouve sa forme.","Hose patched: the engine recovers."]},ko:{hp:-12,temp:-25,days:.5,t:["Réparation de fortune, dégâts supplémentaires.","A makeshift fix, extra damage."]}}]});
+var EVBUILD={
+ merchant:function(){
+  var g=pick(GIDS),n=Math.min(6,Math.floor(capFree()/GOODS[g].w)),p=Math.round(GOODS[g].base*rnd(.62,.85)*n);
+  return {t:["Marchand ambulant","Roaming trader"],tx:["Un marchand propose "+n+" "+L(GOODS[g].n)+" à prix cassé : "+F(p)+" F.","A trader offers "+n+" "+L(GOODS[g].n)+" at a low price: "+F(p)+" F."],
+   o:[{l:["Acheter","Buy"],cost:p,dis:n<=0,sure:{money:-p,units:{g:g,q:n,c:p},t:["Affaire conclue.","Deal done."]}},
+   {l:["Marchander","Haggle"],role:"trader",base:.3,dis:n<=0,ok:{money:-Math.round(p*.75),units:{g:g,q:n,c:Math.round(p*.75)},t:["Bien joué : 25 % de rabais !","Well played: 25% off!"]},ko:{t:["Le marchand s'énerve et remballe.","The trader gets annoyed and packs up."]}},
+   {l:["Passer son chemin","Move on"],sure:{t:["Tu continues.","You keep going."]}}],haggleCost:Math.round(p*.75)};
+ },
+ village:function(){
+  var has=null;["riz","mais","igname"].forEach(function(g){if(GS.cargo[g]&&GS.cargo[g].q>=4)has=g;});
+  return {t:["Village affamé","Hungry village"],tx:["Un village a perdu sa récolte. Les habitants demandent un peu de nourriture.","A village lost its harvest. Locals ask for a little food."],
+   o:[{l:has?["Donner 4 "+L(GOODS[has].n),"Give 4 "+L(GOODS[has].n)]:["Donner de la nourriture (tu n'en as pas)","Give food (you have none)"],dis:!has,sure:{donate:has,rep:{v:6,m:2},morale:6,t:["Les villageois te remercient. Ta réputation grandit.","Villagers thank you. Your reputation grows."]}},
+   {l:["S'excuser et partir","Apologise and leave"],sure:{rep:{v:-1},t:["Tu repars, un peu gêné.","You leave, a little embarrassed."]}}]};
+ },
+ pump:function(){
+  return {t:["Pompe de fortune","Roadside pump"],tx:["Un vendeur de bidons propose 25 L de carburant à 650 F le litre.","A vendor offers 25 L of fuel at 650 F per litre."],
+   o:[{l:["Acheter 25 L (16 250 F)","Buy 25 L (16,250 F)"],cost:16250,sure:{money:-16250,fuel:25,t:["Le plein est fait.","Tank topped up."]}},
+   {l:["Ne rien acheter","Skip"],sure:{t:["Tu continues.","You keep going."]}}]};
+ },
+ crew:function(){
+  var c=GS.crew.slice().sort(function(a,b){return a.morale-b.morale;})[0];
+  return {t:["Équipage fatigué","Tired crew"],tx:[c.n+" est à bout : fatigue et moral au plus bas.",c.n+" is worn out: fatigue and low morale."],
+   o:[{l:["Une pause repas (4 000 F)","A meal break (4,000 F)"],cost:4000,sure:{money:-4000,morale:12,days:.2,t:["Un repas chaud remonte le moral.","A hot meal lifts morale."]}},
+   {l:["Une prime (10 000 F)","A bonus (10,000 F)"],cost:10000,sure:{money:-10000,morale:22,t:["La prime fait plaisir.","The bonus is welcome."]}},
+   {l:["Continuer sans pause","Carry on"],sure:{morale:-12,t:["L'ambiance se tend dans le véhicule.","Tension builds in the vehicle."]}}]};
+ }
+};
+function pickEvent(D){
+ var pool=[],V=GS.veh,h=D.h,ratio=cargoWeight()/VEH[V.t].cap;
+ pool.push(["breakdown",.5+(100-hpPct())/40]);pool.push(["flat",.6+(100-V.tires)/50]);
+ if(ratio>.8)pool.push(["weigh",1.1]);
+ pool.push(["stranded",.8]);pool.push(["village",.6,"b"]);pool.push(["merchant",1,"b"]);
+ if(h>.5)pool.push(["storm",2.2]);
+ pool.push(["river",D.e.t==="piste"?1.6:.25]);
+ if(D.e.t==="piste")pool.push(["toll",.9]);
+ if(V.fuel<VEH[V.t].tank*.4)pool.push(["pump",1,"b"]);
+ var low=false;GS.crew.forEach(function(c){if(c.morale<45)low=true;});if(low)pool.push(["crew",1.6,"b"]);
+ pool=pool.filter(function(p){return D.used.indexOf(p[0])<0;});
+ var tot=0;pool.forEach(function(p){tot+=p[1];});var r=Math.random()*tot,ch=pool[0];
+ for(var i=0;i<pool.length;i++){r-=pool[i][1];if(r<=0){ch=pool[i];break;}}
+ D.used.push(ch[0]);
+ return ch[2]==="b"?EVBUILD[ch[0]]():EVS[ch[0]];
+}
+function hpPct(){return GS.veh.hp/VEH[GS.veh.t].hp*100;}
+function chanceOf(o){
+ if(!o.role)return null;
+ var c=o.base+.12*crewBest(o.role)+luck();return clamp(c,.1,.92);
+}
+function applyFx(fx,D){
+ var V=GS.veh,mx=VEH[V.t];
+ if(fx.money){GS.money=Math.max(0,GS.money+fx.money);}
+ if(fx.hp)V.hp=clamp(V.hp+fx.hp,1,mx.hp);
+ if(fx.tires)V.tires=clamp(V.tires+fx.tires,0,100);
+ if(fx.filter)V.filter=clamp(V.filter+fx.filter,0,100);
+ if(fx.fuel)V.fuel=clamp(V.fuel+fx.fuel,0,mx.tank);
+ if(fx.days&&D)D.delay+=fx.days;
+ if(fx.temp&&D)D.temp=clamp(D.temp+fx.temp,60,125);
+ if(fx.morale)GS.crew.forEach(function(c){c.morale=clamp(c.morale+fx.morale,0,100);});
+ if(fx.rep){for(var k in fx.rep)GS.rep[k]=clamp(GS.rep[k]+fx.rep[k],0,100);}
+ if(fx.cargo){for(var g in GS.cargo){var l=Math.floor(GS.cargo[g].q*fx.cargo);GS.cargo[g].q-=l;if(GS.cargo[g].q<=0)delete GS.cargo[g];}}
+ if(fx.units&&fx.units.q>0){var u=fx.units,h=GS.cargo[u.g]||(GS.cargo[u.g]={q:0,avg:0});h.avg=(h.avg*h.q+u.c)/(h.q+u.q);h.q+=u.q;}
+ if(fx.donate){var h2=GS.cargo[fx.donate];if(h2){h2.q-=4;if(h2.q<=0)delete GS.cargo[fx.donate];}}
+}
+
+/* ================= Conduite ================= */
+var KEYS={left:false,right:false};
+function legInfo(a,b){
+ for(var i=0;i<EDGES.length;i++){var e=EDGES[i];if((e.a===a&&e.b===b)||(e.a===b&&e.b===a))return e;}return null;
+}
+function neighbors(c){var o=[];EDGES.forEach(function(e){if(e.a===c)o.push({to:e.b,e:e});else if(e.b===c)o.push({to:e.a,e:e});});return o;}
+function legLen(e){return Math.round(400+e.km*10);}
+function legDays(e){return Math.max(1,Math.round(e.km/170));}
+function fuelNeed(e){return VEH[GS.veh.t].cons*e.km;}
+function startLeg(to){
+ var e=legInfo(GS.city,to);if(!e)return;
+ var len=legLen(e),V=GS.veh,Vd=VEH[V.t];
+ var h0=harm(GS.day,CITIES[GS.city].lat),h1=harm(GS.day+legDays(e),CITIES[to].lat);
+ D={e:e,from:GS.city,to:to,len:len,z:0,x:2.5,spd:0,gear:2,temp:78,stopped:false,stopT:0,delay:0,h0:h0,h1:h1,h:h0,
+  nextObs:90,evs:[],used:[],msg:"",msgT:0,t:0,paused:true,hp0:V.hp,fuel0:V.fuel,dmg:0,nEv:0,shake:0,hud:0,forced:{},tut:GS.tut<1};
+ var n=e.km<60?1:e.km<200?2:3;
+ for(var i=0;i<n;i++)D.evs.push(len*(i+1)/(n+1)+rnd(-.06,.06)*len);
+ if(e.t==="frontier")D.fr=len*.93;
+ clearObs();refreshVehicle();
+ R.veh.position.set(D.x,0,0);R.veh.rotation.set(0,0,0);
+ $("#ui").classList.remove("on");$("#hud").classList.add("on");buildHud();
+ document.body.dataset.mode="drive";
+ D.paused=false;engineSound(true,0);
+ if(D.tut){D.paused=true;showTutorial();}
+}
+function showTutorial(){
+ openModal('<h2>'+L(["Conduite","Driving"])+'</h2><p>'+L(["Tu conduis à droite. Appuie sur ◀ ▶ pour te déplacer. Évite les nids-de-poule, les animaux et les rochers. Dépasse les véhicules lents par la voie de gauche, mais attention à ceux qui arrivent en face !","You drive on the right. Hold ◀ ▶ to steer. Avoid potholes, animals and rocks. Overtake slow vehicles using the left lane, but watch for oncoming traffic!"])+'</p><p>'+L(["🐢 Lent : moins de chaleur et de risques. 🏎️ Vite : plus de vitesse mais le moteur chauffe. ⏹ Arrêt : le moteur refroidit et le mécanicien nettoie le filtre.","🐢 Slow: cooler and safer. 🏎️ Fast: quicker but the engine heats up. ⏹ Stop: the engine cools and the mechanic cleans the filter."])+'</p><button class="btn full" onclick="closeModal();GS.tut=1;if(D)D.paused=false;">'+L(["C'est parti","Let's go"])+'</button>');
+}
+function buildHud(){
+ $("#hud").innerHTML=
+ '<div class="hudtop"><div class="hudbox gauges" id="g1"></div><div class="hudbox" id="g2" style="margin-left:auto;margin-right:96px"></div></div>'+
+ '<div class="spd" id="spd">0<small>km/h</small></div>'+
+ '<div class="prog"><i id="pg"></i></div>'+
+ '<div class="msg" id="msg"></div>'+
+ '<button class="steer" id="sl" style="left:10px">◀</button><button class="steer" id="sr" style="right:10px">▶</button>'+
+ '<div class="gears"><div class="gear" id="g3" data-g="3">🏎️ '+L(["Vite","Fast"])+'</div><div class="gear on" id="g2b" data-g="2">🚗 '+L(["Normal","Normal"])+'</div><div class="gear" id="g1b" data-g="1">🐢 '+L(["Lent","Slow"])+'</div><div class="gear" id="gs" data-g="0">⏹ '+L(["Arrêt","Stop"])+'</div></div>';
+ function hold(id,k){var b=$(id);b.addEventListener("pointerdown",function(e){KEYS[k]=true;b.classList.add("on");e.preventDefault();});["pointerup","pointerleave","pointercancel"].forEach(function(ev_){b.addEventListener(ev_,function(){KEYS[k]=false;b.classList.remove("on");});});}
+ hold("#sl","left");hold("#sr","right");
+ ["#g3","#g2b","#g1b","#gs"].forEach(function(id){$(id).addEventListener("pointerdown",function(e){if(!D)return;var g=+this.dataset.g;if(g===0){D.stopped=!D.stopped;}else{D.stopped=false;D.gear=g;}e.preventDefault();});});
+}
+function hudUpdate(){
+ if(!D)return;var V=GS.veh,Vd=VEH[V.t];
+ var bar=function(v,col){return '<div class="bar"><i style="width:'+clamp(v,0,100)+'%;background:'+col+'"></i></div>';};
+ var tcol=D.temp>105?"#ff4a3a":D.temp>92?"#f2b23a":"#59b36f";
+ $("#g1").innerHTML='<span>🚚</span>'+bar(hpPct(),"#59b36f")+'<span>⛽</span>'+bar(V.fuel/Vd.tank*100,"#5fb0e6")+'<span>🌡️</span>'+bar((D.temp-60)/65*100,tcol)+'<span>🌫️</span>'+bar(V.filter,"#c9a46a")+'<span>🛞</span>'+bar(V.tires,"#aaa");
+ var days=GS.deadline-GS.day;
+ $("#g2").innerHTML=wxIcon(D.h)+" "+L(wxName(D.h))+"<br>"+L(CITIES[D.from].n)+" → "+L(CITIES[D.to].n)+"<br>💰 "+F(GS.money)+" F · "+L(["J","D"])+GS.day+"/"+GS.deadline;
+ $("#spd").innerHTML=Math.round(D.spd*3.6)+'<small>km/h</small>';
+ $("#pg").style.width=clamp(D.z/D.len*100,0,100)+"%";
+ ["3","2b","1b"].forEach(function(k){var g=k==="3"?3:k==="2b"?2:1;$("#g"+k).classList.toggle("on",!D.stopped&&D.gear===g);});
+ $("#gs").classList.toggle("on",D.stopped);
+ var m=$("#msg");if(D.msgT>0){m.textContent=D.msg;m.style.opacity=clamp(D.msgT,0,1);}else m.textContent="";
+}
+function dmg(n,msg,sound){
+ var V=GS.veh;var red=1-.07*crewBest("driver")-.06*V.up.cha;GS.crew.forEach(function(c){if(c.trait==="prudent")red-=.05;});
+ n=Math.max(1,Math.round(n*clamp(red,.4,1)));
+ V.hp=Math.max(0,V.hp-n);D.dmg+=n;D.shake=.35;R.shake=.5;
+ D.msg=msg+" -"+n;D.msgT=1.6;sfx("hit");try{if(SND&&navigator.vibrate)navigator.vibrate(60);}catch(e){}
+ GS.crew.forEach(function(c){c.morale=clamp(c.morale-1.5,0,100);});
+}
+function stepDrive(dt){
+ if(!D||D.paused)return;
+ var V=GS.veh,Vd=VEH[V.t];D.t+=dt;R.t+=dt;
+ // météo variable
+ D.h=clamp(lerp(D.h0,D.h1,D.z/D.len)+.18*Math.sin(D.z/260+D.e.km),0,1);
+ // vitesse cible
+ var base=22*Vd.spd*(1+.06*V.up.eng),gm=D.gear===1?.62:D.gear===3?1.32:1;
+ var tgt=D.stopped?0:base*gm;
+ var onSh=Math.abs(D.x)>5.1,rough=D.e.t==="piste"?.88:1;
+ tgt*=rough*(onSh?.6:1)*(V.filter<35?.75:1)*(D.temp>105?.7:1)*(V.tires<20?.8:1);
+ if(V.fuel<=0)tgt=0;
+ var acc=D.spd<tgt?7:(D.stopped?30:20);
+ D.spd+=clamp(tgt-D.spd,-acc*dt,acc*dt);
+ // direction
+ var st=(KEYS.left?-1:0)+(KEYS.right?1:0);
+ var lat=(5.5+.5*crewBest("driver"))*(.7+.3*clamp(D.spd/20,0,1))*(V.tires<30?.8:1)*(.9+.06*V.up.tir);
+ var wind=Math.sin(D.t*.9+D.z*.03)*D.h*1.4*(D.spd/22);
+ D.x=clamp(D.x+(st*lat+wind)*dt,-6.3,6.3);
+ // progression
+ var dz=D.spd*dt;D.z+=dz;
+ // carburant
+ V.fuel=Math.max(0,V.fuel-Vd.cons*(D.e.km/D.len)*dz*(1+.22*(D.gear-2))-(D.stopped?.0006*dt*Vd.tank:0));
+ // chaleur
+ var heatIn=(D.stopped?.15:.55+.55*(D.gear-1))*(1+1.3*D.h)*(1+(100-V.filter)/160)*(1-.07*V.up.eng)*1.8;
+ D.temp=clamp(D.temp+(heatIn-(D.temp-60)*(.05+D.spd*.002+(D.stopped?.15:0)))*dt,60,125);
+ if(D.temp>106){V.hp=Math.max(0,V.hp-.35*dt);D.msg=L(["Moteur en surchauffe !","Engine overheating!"]);D.msgT=.5;}
+ // filtre / pneus
+ V.filter=Math.max(0,V.filter-(.14+D.h*.55)*(1-.2*V.up.fil)*dt*(D.spd/22));
+ if(D.stopped&&D.spd<1){
+  D.stopT+=dt;
+  if(crewBest("mech")>0){V.filter=Math.min(100,V.filter+1.6*crewBest("mech")*dt);if(hpPct()<85)V.hp=Math.min(Vd.hp*.85,V.hp+.12*crewBest("mech")*dt);}
+  GS.crew.forEach(function(c){c.fat=Math.max(0,c.fat-.8*dt);});
+  if(D.stopT>=40){D.stopT-=40;D.delay+=.25;}
+ }
+ // apparition d'obstacles
+ while(D.nextObs<D.z+230&&D.nextObs<D.len-40){spawnObs();}
+ // obstacles
+ updateObs(dt);
+ // rencontres
+ if(D.evIdx===undefined)D.evIdx=0;
+ if(D.fr&&D.z>=D.fr&&!D.forced.fr){D.forced.fr=true;openEvent(EVS.frontier);return;}
+ if(D.evIdx<D.evs.length&&D.z>=D.evs[D.evIdx]){D.evIdx++;openEvent(pickEvent(D));return;}
+ if(D.temp>=118&&!D.forced.heat){D.forced.heat=true;openEvent(EVS.overheat);return;}
+ if(V.fuel<=0&&!D.forced.fuel){D.forced.fuel=true;openEvent(EVS.fuelout);return;}
+ if(V.hp<=0){wreck();return;}
+ if(D.z>=D.len){arrive();return;}
+ // caméra et véhicule
+ updateRender(dt);
+ D.hud-=dt;if(D.hud<=0){D.hud=.1;hudUpdate();}
+ if(D.msgT>0)D.msgT-=dt;
+ engineSound(true,D.spd);
+}
+function spawnObs(){
+ var e=D.e,road=e.t!=="piste",tab=road?[["pothole",3],["goat",1.2],["slow",2.4],["oncoming",3]]:[["pothole",4],["rock",3],["goat",2],["slow",1.2],["oncoming",1]];
+ var tot=0;tab.forEach(function(t){tot+=t[1];});var r=Math.random()*tot,k="pothole";
+ for(var i=0;i<tab.length;i++){r-=tab[i][1];if(r<=0){k=tab[i][0];break;}}
+ var z=D.nextObs;
+ var near=R.obs;
+ if(k==="oncoming"){for(var a=0;a<near.length;a++)if(near[a].k==="slow"&&Math.abs(near[a].z-z)<170)k="pothole";}
+ if(k==="slow"){for(var b=0;b<near.length;b++)if(near[b].k==="oncoming"&&Math.abs(near[b].z-z)<210)k="pothole";}
+ var x=k==="oncoming"?-2.5:k==="slow"?2.5:k==="goat"?(Math.random()<.5?-6.2:6.2):rnd(-4.1,4.1);
+ if(k==="pothole")x=pick([-2.6,2.6,rnd(-4,4)]);
+ var o=makeObstacle(k,x,z);R.obs.push(o);
+ D.nextObs+=(road?rnd(60,110):rnd(42,75))*(1+Math.random()*.2);
+}
+function updateObs(dt){
+ var V=GS.veh,Vd=VEH[V.t],hwP=Vd.hw,hlP=Vd.hl;
+ for(var i=R.obs.length-1;i>=0;i--){
+  var o=R.obs[i];
+  if(o.k==="slow")o.z+=o.vs*dt;
+  else if(o.k==="oncoming")o.z+=o.vs*dt;
+  else if(o.k==="goat"){
+   if(!o.moving&&o.z-D.z<75)o.moving=true;
+   if(o.moving){o.x+=o.dir*1.9*dt;if(Math.abs(o.x)>7)o.moving=false;}
+  }
+  o.m.position.set(o.x,0,-o.z);
+  if(o.m.userData.wheels)o.m.userData.wheels.forEach(function(w){w.rotation.x-=(o.vs||0)*dt*2;});
+  var dzz=o.z-D.z,dxx=o.x-D.x;
+  if(dzz<-30||dzz>260){R.sc.remove(o.m);R.obs.splice(i,1);continue;}
+  // klaxon automatique pour la voiture lente
+  if(!o.hit&&Math.abs(dxx)<hwP+o.hw&&Math.abs(dzz)<hlP+o.hl){
+   if(o.k==="slow"){
+    if(dzz>0){D.spd=Math.min(D.spd,o.vs);if(dzz<hlP+o.hl-.3){o.hit=true;dmg(10,L(["Collision !","Crash!"]));D.spd=Math.min(D.spd,o.vs*.6);}}
+   }else{
+    o.hit=true;
+    if(o.k==="pothole"){dmg(2+D.spd*.16,L(["Nid-de-poule !","Pothole!"]));V.tires=Math.max(0,V.tires-(5+D.spd*.3)*(1-.12*V.up.tir));D.spd*=.7;}
+    else if(o.k==="rock"){dmg(9,L(["Rocher !","Rock!"]));V.tires=Math.max(0,V.tires-12*(1-.12*V.up.tir));D.spd*=.5;}
+    else if(o.k==="goat"){dmg(3,L(["Une chèvre !","A goat!"]));GS.rep.v=Math.max(0,GS.rep.v-1);D.spd*=.5;}
+    else if(o.k==="oncoming"){dmg(38,L(["Choc frontal !","Head-on crash!"]));D.spd*=.2;R.sc.remove(o.m);R.obs.splice(i,1);}
+   }
+  }
+  // klaxon : voiture lente devant
+  if(o.k==="slow"&&!o.honk&&dzz>0&&dzz<24&&Math.abs(dxx)<2){o.honk=true;sfx("horn");}
+ }
+}
+D=null;
+function updateRender(dt){
+ var V=GS.veh;
+ setScene(D.h,D.e.t,D.z,D.spd);updateDecor(D.z);updateDustFlow(dt,D.spd);
+ R.veh.position.set(D.x,0,-D.z);
+ var st=(KEYS.left?-1:0)+(KEYS.right?1:0);
+ R.veh.rotation.y=-st*.12;R.veh.rotation.z=-st*.04;
+ var bob=Math.sin(D.t*18)*.015*clamp(D.spd/20,0,1)+(D.e.t==="piste"?Math.sin(D.t*30)*.02*clamp(D.spd/20,0,1):0);
+ R.vb.position.y=bob;
+ R.vb.userData.wheels.forEach(function(w){w.rotation.x-=D.spd*dt*2;});
+ var sh=R.shake>0?(R.shake-=dt)*rnd(-.3,.3):0;
+ var cx=R.cam.position.x+((D.x*.55+sh)-R.cam.position.x)*Math.min(1,dt*6);
+ R.cam.position.set(cx,3.9+bob*3,-D.z+9.2);
+ R.cam.lookAt(D.x*.7,1.5,-D.z-13);
+ R.cam.fov=62+clamp(D.spd/30,0,1)*8;R.cam.updateProjectionMatrix();
+}
+function wreck(){
+ engineSound(false);
+ var cost=Math.min(GS.money,60000);GS.money-=cost;GS.veh.hp=Math.round(VEH[GS.veh.t].hp*.15);
+ for(var g in GS.cargo){var l=Math.floor(GS.cargo[g].q*.25);GS.cargo[g].q-=l;if(GS.cargo[g].q<=0)delete GS.cargo[g];}
+ for(var d=0;d<2;d++)advanceDay();
+ GS.city=D.from;GS.stats.events++;
+ var from=D.from;D=null;clearObs();backToCity();
+ addLog(["Le véhicule est tombé en panne définitive : remorqué à "+CITIES[from].n+" (60 000 F, 2 jours, 25 % du chargement perdu).","The vehicle was wrecked: towed back to "+CITIES[from].n+" (60,000 F, 2 days, 25% of cargo lost)."]);
+ openModal('<h2>🚨 '+L(["Épave !","Wreck!"])+'</h2><p>'+L(["Le véhicule n'en peut plus. Il est remorqué jusqu'à "+CITIES[from].n+": 60 000 F, 2 jours perdus, un quart du chargement abîmé.","The vehicle gave up. It was towed back to "+CITIES[from].n+": 60,000 F, 2 days lost, a quarter of the cargo damaged."])+'</p><button class="btn full" onclick="closeModal();checkEnd()">OK</button>');
+}
+function arrive(){
+ engineSound(false);
+ var e=D.e,days=legDays(e)+Math.floor(D.delay+ .0001)+(D.delay%1>.55?1:0);
+ var fuelUsed=D.fuel0-GS.veh.fuel,dmgT=D.dmg;
+ for(var d=0;d<days;d++)advanceDay();
+ GS.crew.forEach(function(c){c.fat=clamp(c.fat+14+e.km/18,0,100);});
+ GS.city=D.to;GS.stats.legs++;GS.stats.km+=e.km;genCands();
+ var to=D.to,from=D.from;
+ D=null;clearObs();
+ addLog(["Trajet "+CITIES[from].n+" → "+CITIES[to].n+" : "+days+" j, "+Math.round(fuelUsed)+" L, "+dmgT+" de dégâts.","Trip "+CITIES[from].n+" → "+CITIES[to].n+": "+days+" d, "+Math.round(fuelUsed)+" L, "+dmgT+" damage."]);
+ backToCity();
+ openModal('<h2>📍 '+L(["Arrivée à ","Arrived in "])+CITIES[to].n+'</h2><div class="card">'+
+  '<div>'+L(["Durée","Duration"])+' : <b>'+days+' '+L(["jour(s)","day(s)"])+'</b></div><div>'+L(["Carburant utilisé","Fuel used"])+' : <b>'+Math.round(fuelUsed)+' L</b></div><div>'+L(["Dégâts subis","Damage taken"])+' : <b>'+dmgT+'</b></div><div>'+L(["Salaires","Wages"])+' : <b>'+F(wages()*days)+' F</b></div></div>'+
+  '<button class="btn full" onclick="closeModal();checkEnd()">'+L(["Aller au marché","Go to market"])+'</button>');
+ sfx("ok");saveGame();
+}
+function openEvent(evd){
+ D.paused=true;engineSound(false);GS.stats.events++;
+ var h='<h2>'+L(evd.t)+'</h2><p>'+L(evd.tx)+'</p>';
+ evd.o.forEach(function(o,i){
+  var ch=chanceOf(o),dis=(o.cost&&GS.money<o.cost)||o.dis;
+  h+='<button class="opt" '+(dis?'disabled':'')+' onclick="pickOpt('+i+')">'+L(o.l)+(ch!==null?' <span style="color:var(--gold)">('+Math.round(ch*100)+'% — '+L(ROLES[o.role])[0]+')</span>':'')+(o.cost?'<small>'+F(o.cost)+' F</small>':'')+'</button>';
+ });
+ D.ev=evd;openModal(h);
+}
+function pickOpt(i){
+ var evd=D.ev,o=evd.o[i],fx,ok=true,txt;
+ var ch=chanceOf(o);
+ if(ch!==null){ok=Math.random()<ch;fx=ok?o.ok:o.ko;}else fx=o.sure;
+ if(!fx)fx={t:["...","..."]};
+ applyFx(fx,D);
+ if(ch!==null&&ok&&Math.random()<.18){var cb=GS.crew.filter(function(c){return c.role===o.role;})[0];if(cb&&cb.skill<5){cb.skill++;fx={t:[L(fx.t)+" ★ "+cb.n+" progresse !",L(fx.t)+" ★ "+cb.n+" improves!"]};}}
+ sfx(ok?"ok":"bad");
+ openModal('<h2>'+(ch!==null?(ok?"✅ ":"❌ "):"")+L(evd.t)+'</h2><p>'+L(fx.t)+'</p><button class="btn full" onclick="closeModal();D.paused=false;engineSound(true,D?D.spd:0)">'+L(["Continuer","Continue"])+'</button>');
+}
+function openModal(h){var m=$("#modal");m.innerHTML='<div class="sheet">'+h+'</div>';m.classList.add("on");}
+function closeModal(){$("#modal").classList.remove("on");}
+
+/* ================= Écrans ================= */
+function show(h){var u=$("#ui");u.innerHTML='<div class="wrap">'+h+'</div>';u.classList.add("on");$("#hud").classList.remove("on");}
+function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove();},1700);}
+function menuScreen(){
+ document.body.dataset.mode="menu";
+ show('<div style="height:7vh"></div><h1>HARMATTAN</h1><div class="sub">'+L(["Mène ton convoi de Lomé jusqu'au Sahel","Lead your convoy from Lomé to the Sahel"])+'</div>'+
+  '<button class="btn full" onclick="startNew()" style="font-size:19px;padding:16px">▶ '+L(["Nouvelle expédition","New expedition"])+'</button>'+
+  (hasSave()?'<button class="btn g full" onclick="continueGame()">'+L(["Continuer","Continue"])+'</button>':'')+
+  '<button class="btn g full" onclick="howTo()">'+L(["Comment jouer","How to play"])+'</button>'+
+  '<div class="row" style="margin-top:6px"><button class="btn g grow" onclick="setLang(\'fr\')">Français'+(LANG==="fr"?" ✓":"")+'</button><button class="btn g grow" onclick="setLang(\'en\')">English'+(LANG==="en"?" ✓":"")+'</button><button class="btn g" onclick="toggleSnd()">'+(SND?"🔊":"🔇")+'</button></div>');
+ if(R){R.veh.visible=true;}
+}
+function setLang(l){LANG=l;try{localStorage.setItem("harm_lang",l);}catch(e){}if(GS&&!D&&$("#hud").className!=="on"&&TABSHOWN)cityScreen();else menuScreen();}
+function toggleSnd(){SND=!SND;try{localStorage.setItem("harm_snd",SND?"1":"0");}catch(e){}menuScreen();}
+var TABSHOWN=false;
+function howTo(){
+ show('<h2>'+L(["Comment jouer","How to play"])+'</h2>'+
+ '<div class="card">'+L(["<b>Objectif :</b> rembourser ta dette de 1 000 000 F en 60 jours.","<b>Goal:</b> repay your 1,000,000 F debt within 60 days."])+'</div>'+
+ '<div class="card">'+L(["<b>Commerce.</b> Achète là où c'est bon marché, vends là où ça manque. Les prix changent avec la distance, les saisons, les pénuries… et avec tes ventes : si tu inondes une ville, le prix baisse.","<b>Trade.</b> Buy where it's cheap, sell where it's scarce. Prices change with distance, news and shortages… and with your own sales: flood a town and the price falls."])+'</div>'+
+ '<div class="card">'+L(["<b>Convoi.</b> Garage : répare, fais le plein, améliore ou change de véhicule. Plus il est gros, plus il porte, mais plus il consomme.","<b>Convoy.</b> Garage: repair, refuel, upgrade or change vehicle. Bigger carries more but drinks more."])+'</div>'+
+ '<div class="card">'+L(["<b>Équipage.</b> Chauffeur (moins de dégâts), navigateur (prévisions et papiers), négociant (meilleurs prix), mécanicien (pannes et réparations). Ils coûtent un salaire par jour et se fatiguent.","<b>Crew.</b> Driver (less damage), navigator (forecasts, papers), trader (better prices), mechanic (breakdowns and repairs). They cost a daily wage and tire."])+'</div>'+
+ '<div class="card">'+L(["<b>Harmattan.</b> Le vent de poussière réduit la visibilité, fait chauffer le moteur et encrasse le filtre. Regarde les prévisions avant de partir.","<b>Harmattan.</b> The dust wind cuts visibility, overheats the engine and clogs the filter. Check the forecast before leaving."])+'</div>'+
+ '<div class="card">'+L(["<b>Route.</b> Tu conduis en 3D : esquive les nids-de-poule, dépasse les véhicules lents, gère la chaleur. Des rencontres te forcent à choisir.","<b>Road.</b> You drive in 3D: dodge potholes, overtake slow vehicles, manage heat. Encounters force choices."])+'</div>'+
+ '<button class="btn full" onclick="menuScreen()">'+L(["Retour","Back"])+'</button>');
+}
+function startNew(){newGame();TAB="market";GS.city="lome";refreshVehicle();cityScreen();saveGame();}
+function continueGame(){var s=loadGame();if(!s){startNew();return;}GS=s;GAMEOVER=false;refreshVehicle();cityScreen();}
+function backToCity(){
+ $("#hud").classList.remove("on");document.body.dataset.mode="city";
+ refreshVehicle();R.veh.position.set(2.5,0,0);R.veh.rotation.set(0,0,0);cityScreen();
+}
+function checkEnd(){
+ if(GS.debt<=0){return victory();}
+ if(GS.day>GS.deadline){return defeat(L(["Le délai est dépassé et la dette n'est pas payée.","The deadline has passed and the debt is unpaid."]));}
+ saveGame();
+}
+function victory(){
+ GAMEOVER=true;try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+ var left=GS.deadline-GS.day,score=Math.round(GS.money/1000+left*400+(GS.rep.m+GS.rep.t+GS.rep.v)*40+GS.stats.km);
+ var st=left>=20?3:left>=8?2:1;
+ show('<div style="height:6vh"></div><h1>'+L(["VICTOIRE","VICTORY"])+'</h1><div class="sub">'+L(["Dette remboursée !","Debt repaid!"])+'</div><div class="card" style="text-align:center"><div style="font-size:42px">'+"⭐".repeat(st)+'</div><p>'+L(["Il te restait ","You had "])+left+L([" jour(s) et "," day(s) and "])+F(GS.money)+' F.</p><p>'+L(["Score","Score"])+' : <b style="color:var(--gold);font-size:24px">'+F(score)+'</b></p></div>'+
+ '<button class="btn full" onclick="startNew()">'+L(["Nouvelle expédition","New expedition"])+'</button><button class="btn g full" onclick="menuScreen()">'+L(["Menu","Menu"])+'</button>');
+}
+function defeat(t){
+ GAMEOVER=true;try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+ show('<div style="height:6vh"></div><h1 style="color:#d9503a">'+L(["ÉCHEC","FAILED"])+'</h1><div class="sub">'+t+'</div><div class="card"><p>'+L(["Il te restait ","You still owed "])+F(GS.debt)+' F.</p><p class="mut">'+L(["Astuce : diversifie ta cargaison, vise les villes du nord et ne laisse pas ton véhicule s'user.","Tip: diversify cargo, aim for northern towns and don't let the vehicle wear out."])+'</p></div><button class="btn full" onclick="startNew()">'+L(["Réessayer","Try again"])+'</button><button class="btn g full" onclick="menuScreen()">Menu</button>');
+}
+function header(){
+ var days=GS.deadline-GS.day;
+ return '<div class="top"><div class="pill">'+L(["Jour","Day"])+' <b>'+GS.day+'</b>/'+GS.deadline+'</div><div class="pill">💰 <b>'+F(GS.money)+'</b> F</div><div class="pill" style="color:'+(days<8?'#ff8a70':'inherit')+'">'+L(["Dette","Debt"])+' <b>'+F(GS.debt)+'</b></div><button class="btn g s" onclick="menuScreen()">☰</button></div>';
+}
+function cityScreen(){
+ TABSHOWN=true;document.body.dataset.mode="city";
+ var C=CITIES[GS.city],fh=forecast(GS.day,C.lat),fh2=forecast(GS.day+1,C.lat);
+ var tabs=[["market",L(["Marché","Market"])],["garage",L(["Garage","Garage"])],["crew",L(["Équipe","Crew"])],["travel",L(["Voyage","Travel"])],["log",L(["Infos","Info"])]];
+ var h=header()+'<h2>'+C.n+'</h2><div class="mut" style="font-size:13px;margin:-4px 0 6px">'+L(C.d)+'</div>'+
+  '<div class="row" style="margin-bottom:6px"><div class="pill">'+wxIcon(harm(GS.day,C.lat))+' '+L(wxName(harm(GS.day,C.lat)))+'</div><div class="pill">'+L(["Demain","Tomorrow"])+' : '+wxIcon(fh2)+' '+L(wxName(fh2))+'</div></div>'+
+  '<div class="tabs">'+tabs.map(function(t){return '<div class="tab'+(TAB===t[0]?' on':'')+'" onclick="TAB=\''+t[0]+'\';cityScreen()">'+t[1]+'</div>';}).join("")+'</div>';
+ if(TAB==="market")h+=tabMarket();else if(TAB==="garage")h+=tabGarage();else if(TAB==="crew")h+=tabCrew();else if(TAB==="travel")h+=tabTravel();else h+=tabLog();
+ var ui=$("#ui"),sc=ui.scrollTop;show(h);ui.scrollTop=sc;
+ saveGame();
+}
+function tabMarket(){
+ var c=GS.city,V=VEH[GS.veh.t],h='';
+ var used=cargoWeight();
+ h+='<div class="card"><div class="row"><div class="grow"><b>'+L(["Chargement","Cargo"])+'</b> '+used.toFixed(1)+' / '+V.cap+'<div class="bar"><i style="width:'+Math.min(100,used/V.cap*100)+'%;background:var(--gold)"></i></div></div></div></div>';
+ var news=GS.ev.filter(function(e){return e.until>=GS.day;});
+ if(news.length){h+='<div class="card" style="font-size:13px">📰 <b>'+L(["Nouvelles","News"])+'</b><br>'+news.slice(0,4).map(function(e){return (e.k>1?"📈 ":"📉 ")+L(GOODS[e.g].n)+" — "+CITIES[e.c].n+" ("+(e.k>1?L(["pénurie","shortage"]):L(["surplus","glut"]))+")";}).join("<br>")+'</div>';}
+ h+='<div class="card">';
+ GIDS.forEach(function(g){
+  var G=GOODS[g],p=mid(c,g),ref=G.base,r=p/ref,own=GS.cargo[g]?GS.cargo[g].q:0,avg=GS.cargo[g]?GS.cargo[g].avg:0;
+  var buy1=quote(c,g,1,"buy"),sell1=own?quote(c,g,1,"sell"):0;
+  h+='<div class="good"><div class="ic">'+G.ic+'</div><div class="grow"><b>'+L(G.n)+'</b><br><small>'+L(["Achat","Buy"])+' <b>'+F(buy1)+'</b> F'+' <span class="'+(r<.95?'up':r>1.2?'dn':'')+'">'+(r<.95?'▼':r>1.2?'▲':'')+' '+Math.round(r*100)+'%</span>'+(own?' · '+L(["tu as","you have"])+' <b>'+own+'</b> ('+L(["moy.","avg"])+' '+F(avg)+')':'')+'</small></div>'+
+  '<div class="qty"><button class="btn g s" onclick="doTrade(\''+g+'\',1)">+1</button><button class="btn g s" onclick="doTrade(\''+g+'\',5)">+5</button><button class="btn g s" onclick="doTrade(\''+g+'\',999)">'+L(["Max","Max"])+'</button></div>'+
+  '</div>'+(own?'<div class="row" style="padding:6px 0 4px 42px;border-bottom:1px solid var(--line)"><small class="grow">'+L(["Vente","Sell"])+' <b>'+F(sell1)+'</b> F <span class="'+(sell1>avg?'up':'dn')+'">'+(sell1>avg?'+':'')+Math.round((sell1/avg-1)*100)+'%</span></small><div class="qty"><button class="btn s" onclick="doSell(\''+g+'\',1)">−1</button><button class="btn s" onclick="doSell(\''+g+'\',5)">−5</button><button class="btn s" onclick="doSell(\''+g+'\',999)">'+L(["Tout","All"])+'</button></div></div>':'');
+ });
+ h+='</div>';
+ return h;
+}
+function doTrade(g,n){var k=buyGood(g,n);if(k>0){sfx("click");refreshVehicle();}else toast(L(["Impossible : place ou argent insuffisants.","Not possible: not enough room or money."]));cityScreen();}
+function doSell(g,n){var r=sellGood(g,n);if(r>0){sfx("coin");refreshVehicle();}cityScreen();}
+function mechDisc(){return 1-.06*crewBest("mech");}
+function tabGarage(){
+ var V=GS.veh,Vd=VEH[V.t],h='';
+ var bar=function(v,col){return '<div class="bar"><i style="width:'+clamp(v,0,100)+'%;background:'+col+'"></i></div>';};
+ var repCost=Math.round(550*mechDisc()),missing=Math.ceil(Vd.hp-V.hp),fuelM=Math.ceil(Vd.tank-V.fuel),fp=Math.round(FUEL_PRICE*(1.02-.06*CITIES[GS.city].lat));
+ h+='<div class="card"><div class="row"><div style="font-size:34px">'+Vd.i+'</div><div class="grow"><b>'+L(Vd.n)+'</b><br><small>'+L(["Charge","Capacity"])+' '+Vd.cap+' · '+L(["Conso","Use"])+' '+Vd.cons+' L/km</small></div></div>'+
+  '<div class="row" style="margin-top:8px"><div class="grow"><small>🚚 '+L(["Coque","Body"])+' '+Math.round(V.hp)+'/'+Vd.hp+'</small>'+bar(hpPct(),"#59b36f")+'</div><button class="btn s" '+(missing<1?'disabled':'')+' onclick="garage(\'rep\')">'+L(["Réparer","Repair"])+' · '+F(missing*repCost)+'</button></div>'+
+  '<div class="row" style="margin-top:8px"><div class="grow"><small>⛽ '+Math.round(V.fuel)+'/'+Vd.tank+' L ('+fp+' F/L)</small>'+bar(V.fuel/Vd.tank*100,"#5fb0e6")+'</div><button class="btn s" '+(fuelM<1?'disabled':'')+' onclick="garage(\'fuel\')">'+L(["Plein","Fill"])+' · '+F(fuelM*fp)+'</button></div>'+
+  '<div class="row" style="margin-top:8px"><div class="grow"><small>🛞 '+L(["Pneus","Tyres"])+' '+Math.round(V.tires)+'%</small>'+bar(V.tires,"#aaa")+'</div><button class="btn s" '+(V.tires>94?'disabled':'')+' onclick="garage(\'tir\')">'+L(["Changer","Replace"])+' · '+F(Math.round(18000*mechDisc()))+'</button></div>'+
+  '<div class="row" style="margin-top:8px"><div class="grow"><small>🌫️ '+L(["Filtre","Filter"])+' '+Math.round(V.filter)+'%</small>'+bar(V.filter,"#c9a46a")+'</div><button class="btn s" '+(V.filter>94?'disabled':'')+' onclick="garage(\'fil\')">'+L(["Nettoyer","Clean"])+' · '+F(Math.round(6000*mechDisc()))+'</button></div></div>';
+ h+='<h2 style="margin-top:12px">'+L(["Améliorations","Upgrades"])+'</h2>';
+ Object.keys(UPG).forEach(function(k){
+  var u=UPG[k],lv=V.up[k],cost=Math.round(60000*Math.pow(lv+1,1.7));
+  h+='<div class="card row"><div style="font-size:26px">'+u.ic+'</div><div class="grow"><b>'+L(u.n)+'</b> <small>'+L(["niv.","lvl"])+' '+lv+'/3</small><br><small>'+L(u.d)+'</small></div><button class="btn s" '+(lv>=3||GS.money<cost?'disabled':'')+' onclick="garage(\'up_'+k+'\')">'+(lv>=3?'MAX':F(cost)+' F')+'</button></div>';
+ });
+ h+='<h2 style="margin-top:12px">'+L(["Concession","Dealership"])+'</h2>';
+ Object.keys(VEH).forEach(function(k){
+  var v=VEH[k],cur=k===V.t,trade=Math.round(VEH[V.t].cost*.55*(.4+.6*hpPct()/100)),price=v.cost-trade;
+  h+='<div class="card row"><div style="font-size:30px">'+v.i+'</div><div class="grow"><b>'+L(v.n)+'</b><br><small>'+L(["Charge","Cap."])+' '+v.cap+' · '+L(["Vitesse","Speed"])+' ×'+v.spd+' · '+L(["Coque","Body"])+' '+v.hp+'</small></div>'+(cur?'<span class="pill">'+L(["Actuel","Current"])+'</span>':'<button class="btn s" '+(GS.money<price||cargoWeight()>v.cap?'disabled':'')+' onclick="garage(\'buy_'+k+'\')">'+F(Math.max(0,price))+' F</button>')+'</div>';
+ });
+ h+='<small class="mut">'+L(["Changer de véhicule reprend l'actuel à 55 % de sa valeur (selon son état). Les améliorations sont perdues.","Switching vehicle trades in the current one at 55% of its value (by condition). Upgrades are lost."])+'</small>';
+ return h;
+}
+function garage(a){
+ var V=GS.veh,Vd=VEH[V.t],mdisc=mechDisc(),fp=Math.round(FUEL_PRICE*(1.02-.06*CITIES[GS.city].lat));
+ function pay(c){if(GS.money<c){toast(L(["Pas assez d'argent.","Not enough money."]));return false;}GS.money-=c;sfx("coin");return true;}
+ if(a==="rep"){var m=Math.ceil(Vd.hp-V.hp),c=m*Math.round(550*mdisc);if(pay(c))V.hp=Vd.hp;}
+ else if(a==="fuel"){var f=Math.ceil(Vd.tank-V.fuel);var c2=f*fp;if(GS.money<c2){f=Math.floor(GS.money/fp);c2=f*fp;}if(f>0&&pay(c2))V.fuel=Math.min(Vd.tank,V.fuel+f);}
+ else if(a==="tir"){if(pay(Math.round(18000*mdisc)))V.tires=100;}
+ else if(a==="fil"){if(pay(Math.round(6000*mdisc)))V.filter=100;}
+ else if(a.indexOf("up_")===0){var k=a.slice(3),lv=V.up[k],cost=Math.round(60000*Math.pow(lv+1,1.7));if(lv<3&&pay(cost))V.up[k]++;}
+ else if(a.indexOf("buy_")===0){var t=a.slice(4),v=VEH[t],trade=Math.round(VEH[V.t].cost*.55*(.4+.6*hpPct()/100)),price=v.cost-trade;
+  if(cargoWeight()>v.cap){toast(L(["Trop de marchandises pour ce véhicule.","Too much cargo for that vehicle."]));}
+  else if(pay(Math.max(0,price))){if(price<0)GS.money-=price;GS.veh={t:t,hp:v.hp,fuel:v.tank*.4,tires:100,filter:100,up:{eng:0,tir:0,fil:0,cha:0}};refreshVehicle();addLog(["Nouveau véhicule : "+v.n[0]+".","New vehicle: "+v.n[1]+"."]);}}
+ cityScreen();
+}
+function tabCrew(){
+ var h='<div class="mut" style="font-size:13px;margin-bottom:6px">'+L(["Équipe","Crew"])+' '+GS.crew.length+'/'+maxCrew()+' · '+L(["Salaires","Wages"])+' <b>'+F(wages())+'</b> F/'+L(["jour","day"])+'</div>';
+ if(!GS.crew.length)h+='<div class="card">'+L(["Tu voyages seul : aucune compétence de bord.","You travel alone: no skills aboard."])+'</div>';
+ GS.crew.forEach(function(c){
+  h+='<div class="card"><div class="row"><div style="font-size:28px">'+ROLES[c.role][2]+'</div><div class="grow"><b>'+c.n+'</b> · '+L(ROLES[c.role])+' '+"★".repeat(c.skill)+'<br><small>'+L(TRAITS[c.trait])+' · '+F(c.wage)+' F/'+L(["j","d"])+'</small></div><button class="btn g s" onclick="fire(\''+c.id+'\')">'+L(["Renvoyer","Dismiss"])+'</button></div>'+
+  '<div class="row" style="margin-top:6px"><small class="grow">'+L(["Moral","Morale"])+'<div class="bar"><i style="width:'+c.morale+'%;background:'+(c.morale<40?'#d9503a':'#59b36f')+'"></i></div></small><small class="grow">'+L(["Fatigue","Fatigue"])+'<div class="bar"><i style="width:'+c.fat+'%;background:'+(c.fat>70?'#d9503a':'#f2b23a')+'"></i></div></small></div></div>';
+ });
+ h+='<h2 style="margin-top:12px">'+L(["À embaucher ici","Available here"])+'</h2>';
+ GS.cand.forEach(function(c){
+  h+='<div class="card row"><div style="font-size:26px">'+ROLES[c.role][2]+'</div><div class="grow"><b>'+c.n+'</b> · '+L(ROLES[c.role])+' '+"★".repeat(c.skill)+'<br><small>'+L(TRAITS[c.trait])+' · '+F(c.wage)+' F/'+L(["j","d"])+'</small></div><button class="btn s" '+(GS.crew.length>=maxCrew()?'disabled':'')+' onclick="hire(\''+c.id+'\')">'+L(["Embaucher","Hire"])+'</button></div>';
+ });
+ h+='<div class="card" style="font-size:13px">🚦 '+L(["Chauffeur : moins de dégâts, meilleure direction.","Driver: less damage, better steering."])+'<br>🧭 '+L(["Navigateur : prévisions fiables, papiers, tempêtes.","Navigator: reliable forecasts, paperwork, storms."])+'<br>🤝 '+L(["Négociant : meilleurs prix d'achat et de vente.","Trader: better buy and sell prices."])+'<br>🔧 '+L(["Mécanicien : pannes, réparations moins chères, entretien en route.","Mechanic: breakdowns, cheaper repairs, roadside upkeep."])+'</div>';
+ h+='<button class="btn g full" onclick="restDay()">🛏️ '+L(["Se reposer un jour (équipage reposé, prix qui bougent)","Rest a day (crew recovers, prices move)"])+'</button>';
+ return h;
+}
+function hire(id){var c=null,i;for(i=0;i<GS.cand.length;i++)if(GS.cand[i].id===id)c=GS.cand[i];if(!c||GS.crew.length>=maxCrew())return;GS.crew.push(c);GS.cand.splice(GS.cand.indexOf(c),1);sfx("ok");cityScreen();}
+function fire(id){GS.crew=GS.crew.filter(function(c){return c.id!==id;});cityScreen();}
+function restDay(){advanceDay();GS.crew.forEach(function(c){c.fat=Math.max(0,c.fat-20);c.morale=clamp(c.morale+6,0,100);});addLog(["Une journée de repos à "+CITIES[GS.city].n+".","A day of rest in "+CITIES[GS.city].n+"."]);cityScreen();checkEnd();}
+function tabTravel(){
+ var h='',V=GS.veh,Vd=VEH[V.t];
+ h+='<div class="card" style="padding:6px"><svg viewBox="0 0 100 100" style="width:100%;height:auto;display:block;background:#2a1c12;border-radius:10px">';
+ EDGES.forEach(function(e){var a=CITIES[e.a],b=CITIES[e.b];h+='<line x1="'+a.mx+'" y1="'+a.my+'" x2="'+b.mx+'" y2="'+b.my+'" stroke="'+(e.t==="piste"?"#c9a46a":e.t==="frontier"?"#d9503a":"#e6d2b0")+'" stroke-width="'+(e.t==="road"?1.6:1.2)+'" '+(e.t==="piste"?'stroke-dasharray="2 1.6"':'')+'/>';});
+ CIDS.forEach(function(c){var C=CITIES[c],here=c===GS.city,reach=!!legInfo(GS.city,c);h+='<circle cx="'+C.mx+'" cy="'+C.my+'" r="'+(here?3.2:2.4)+'" fill="'+(here?"#f2b23a":reach?"#59b36f":"#7a6652")+'" stroke="#1d130d" stroke-width=".7"/><text x="'+C.mx+'" y="'+(C.my-4)+'" font-size="3.6" fill="#fbeedd" text-anchor="middle" font-weight="700">'+C.n+'</text>';});
+ h+='</svg></div>';
+ h+='<div class="mut" style="font-size:12px;margin:4px 0">'+L(["Trait plein : route · pointillé : piste · rouge : frontière","Solid: road · dashed: track · red: border"])+'</div>';
+ neighbors(GS.city).forEach(function(n){
+  var e=n.e,C=CITIES[n.to],need=fuelNeed(e),ok=V.fuel>=need*.9,fh=forecast(GS.day+Math.round(legDays(e)/2),C.lat);
+  var ttype=e.t==="road"?L(["Route goudronnée","Paved road"]):e.t==="piste"?L(["Piste difficile","Rough track"]):L(["Route + frontière","Road + border"]);
+  h+='<div class="card"><div class="row"><div class="grow"><b>→ '+C.n+'</b> <span class="mut">'+e.km+' km</span><br><small>'+ttype+' · ~'+legDays(e)+' '+L(["j","d"])+' · '+L(["carburant","fuel"])+' ~'+Math.round(need)+' L</small><br><small>'+L(["Prévision","Forecast"])+' : '+wxIcon(fh)+' '+L(wxName(fh))+'</small></div><button class="btn" onclick="depart(\''+n.to+'\')">'+L(["Partir","Go"])+'</button></div>'+(!ok?'<small class="dn">⚠ '+L(["Carburant probablement insuffisant","Fuel probably not enough"])+'</small>':'')+'</div>';
+ });
+ return h;
+}
+function depart(to){
+ var e=legInfo(GS.city,to),V=GS.veh;
+ if(hpPct()<25||V.fuel<fuelNeed(e)*.5){
+  openModal('<h2>⚠️ '+L(["Départ risqué","Risky departure"])+'</h2><p>'+L(["Ton véhicule est abîmé ou ton réservoir est bas. Partir quand même ?","Your vehicle is damaged or the tank is low. Leave anyway?"])+'</p><button class="btn full" onclick="closeModal();go(\''+to+'\')">'+L(["Partir quand même","Leave anyway"])+'</button><button class="btn g full" onclick="closeModal()">'+L(["Annuler","Cancel"])+'</button>');
+ }else go(to);
+}
+function go(to){saveGame();startLeg(to);}
+function payDebt(a){var p=Math.min(GS.money,a>0?a:GS.debt,GS.debt);if(p<=0)return;GS.money-=p;GS.debt-=p;sfx("coin");addLog(["Tu rembourses "+F(p)+" F de ta dette.","You repay "+F(p)+" F of your debt."]);cityScreen();checkEnd();}
+function tabLog(){
+ var h='<div class="card"><b>'+L(["Dette","Debt"])+' : '+F(GS.debt)+' F</b> · '+L(["Il reste","Left"])+' '+Math.max(0,GS.deadline-GS.day)+' '+L(["jours","days"])+'<div class="row" style="margin-top:8px"><button class="btn s grow" '+(GS.money<100000?'disabled':'')+' onclick="payDebt(100000)">'+L(["Payer 100 000","Pay 100,000"])+'</button><button class="btn s grow" '+(GS.money<=0?'disabled':'')+' onclick="payDebt(0)">'+L(["Tout ce que je peux","All I can"])+'</button></div></div>';
+ h+='<div class="card"><b>'+L(["Réputation","Reputation"])+'</b><br><small>'+L(["Marchés","Markets"])+' '+GS.rep.m+' · '+L(["Transporteurs","Hauliers"])+' '+GS.rep.t+' · '+L(["Villages","Villages"])+' '+GS.rep.v+'</small><br><small class="mut">'+L(["Une bonne réputation augmente un peu tes prix de vente et débloque un 4e équipier.","A good reputation slightly raises sale prices and unlocks a 4th crew member."])+'</small></div>';
+ h+='<div class="card"><small>'+L(["Trajets","Trips"])+' '+GS.stats.legs+' · km '+GS.stats.km+' · '+L(["Profit commerce","Trading profit"])+' '+F(GS.stats.profit)+' F</small></div>';
+ h+='<h2>'+L(["Journal","Log"])+'</h2>'+GS.log.map(function(l){return '<div class="card" style="padding:8px;font-size:13px"><span class="mut">J'+l.d+'</span> '+L(l.t)+'</div>';}).join("");
+ return h;
+}
+
+/* ================= Boucle ================= */
+var last=0,acc=0,idleT=0;
+function frame(ts){
+ var dt=Math.min(.1,(ts-last)/1000||0);last=ts;
+ if(R){
+  if(D&&!D.paused){acc+=dt;var n=0;while(acc>=1/60&&n<5){stepDrive(1/60);acc-=1/60;n++;if(!D)break;}if(n===5)acc=0;}
+  else if(D&&D.paused){/* gelé */}
+  else idleRender(dt);
+  R.r.render(R.sc,R.cam);
+ }
+ requestAnimationFrame(frame);
+}
+function idleRender(dt){
+ idleT+=dt;R.t+=dt;
+ var h=GS?harm(GS.day,CITIES[GS.city].lat):.3,travel=0;
+ setScene(h,"road",0,0);updateDecor(0);updateDustFlow(dt,0);
+ R.veh.position.set(2.5,0,0);
+ var a=idleT*.12;R.cam.position.set(2.5+Math.sin(a)*10,3.2+Math.sin(a*.7)*.6,Math.cos(a)*10);R.cam.lookAt(2.5,1.2,0);
+ R.cam.fov=55;R.cam.updateProjectionMatrix();
+}
+window.addEventListener("keydown",function(e){if(e.key==="ArrowLeft"||e.key==="a"||e.key==="q")KEYS.left=true;if(e.key==="ArrowRight"||e.key==="d")KEYS.right=true;
+ if(D&&!D.paused){if(e.key==="ArrowUp"||e.key==="w"){D.stopped=false;D.gear=Math.min(3,D.gear+1);}if(e.key==="ArrowDown"||e.key==="s"){D.gear=Math.max(1,D.gear-1);}if(e.key===" "){D.stopped=!D.stopped;}}});
+window.addEventListener("keyup",function(e){if(e.key==="ArrowLeft"||e.key==="a"||e.key==="q")KEYS.left=false;if(e.key==="ArrowRight"||e.key==="d")KEYS.right=false;});
+document.addEventListener("visibilitychange",function(){if(document.hidden)engineSound(false);});
+D=null;
+window.__GS=function(){return GS;};window.__D=function(){return D;};
+window.__newGame=startNew;window.__step=stepDrive;window.__go=startLeg;
+try{
+ init3D();menuScreen();
+}catch(err){
+ document.body.innerHTML='<div style="padding:30px;color:#fff;font-family:sans-serif"><h2>Harmattan</h2><p>3D (WebGL) indisponible sur cet appareil / WebGL not available.</p><pre>'+String(err)+'</pre></div>';
+}
+requestAnimationFrame(frame);
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
+</script></body></html>
