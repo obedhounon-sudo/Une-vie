@@ -19,7 +19,7 @@ Vous êtes le trésorier d'une tontine de 8 personnes. Chaque semaine, tout le m
 Gardez la confiance du groupe pendant 24 semaines, protégez la caisse de solidarité et devenez un trésorier respecté.
 
 • 8 personnages avec leur métier et leur caractère
-• 12 événements, des dizaines de choix et de conséquences
+• 20 événements, des dizaines de choix et de conséquences
 • Chaque partie est différente
 • Gratuit, sans inscription, fonctionne hors ligne
 • Partagez votre score sur WhatsApp
@@ -39,7 +39,7 @@ You are the treasurer of an 8-person tontine. Every week everyone pays in and on
 Keep the group's trust for 24 weeks, protect the solidarity fund and become a respected treasurer.
 
 • 8 characters with jobs and personalities
-• 12 events, dozens of choices and consequences
+• 20 events, dozens of choices and consequences
 • Every game is different
 • Free, no sign-up, works offline
 • Share your score on WhatsApp

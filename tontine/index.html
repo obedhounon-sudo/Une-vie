@@ -173,6 +173,45 @@ var EVENTS=[
  {l:{fr:"Prêt de 5 000 F de la caisse",en:"Lend 5,000 F from the fund"},c:5000,s:{fr:"Remboursable",en:"Repayable"},f:function(a){C(-5000);T(a,8);if(chance(.8))C(5000);return {fr:"Un prêt pas toujours simple à récupérer.",en:"Not always easy to recover a loan."};}},
  {l:{fr:"Lui dire de se débrouiller",en:"Tell them to manage"},s:{fr:"Dur",en:"Tough"},f:function(a){T(a,-12);HARD(a,3);return {fr:"{a} se sent seul.",en:"{a} feels alone."};}}
  ]}
+,{id:"sick",who:1,tx:{fr:"🤒 {a} est tombé malade et ne peut plus travailler cette semaine.",en:"🤒 {a} fell ill and can't work this week."},
+ ch:[
+ {l:{fr:"Payer le médicament (3 000 F)",en:"Pay for medicine (3,000 F)"},c:3000,s:{fr:"Il se remet vite",en:"A quick recovery"},f:function(a){C(-3000);T(a,10);HARD(a,0);return {fr:"{a} est sur pied dès lundi.",en:"{a} is back on his feet by Monday."};}},
+ {l:{fr:"Organiser une visite du groupe",en:"Organise a group visit"},s:{fr:"Gratuit, ça fait chaud au cœur",en:"Free, heartwarming"},f:function(a){T(a,7);ALL(1,a);HARD(a,1);return {fr:"Le groupe passe le voir. Ça fait du bien.",en:"The group visits. It means a lot."};}},
+ {l:{fr:"Ne rien faire",en:"Do nothing"},s:{fr:"Il sera serré",en:"They'll be stretched"},f:function(a){T(a,-8);HARD(a,3);return {fr:"{a} se sent abandonné.",en:"{a} feels abandoned."};}}
+ ]},
+{id:"bank",who:0,tx:{fr:"🏦 Un agent de microfinance te propose de placer la caisse : 20 % de gain, mais risque.",en:"🏦 A microfinance agent offers to invest the fund: 20% gain, but risky."},
+ ch:[
+ {l:{fr:"Placer 10 000 F",en:"Invest 10,000 F"},c:10000,s:{fr:"70 % de gagner 2 000 F",en:"70% to win 2,000 F"},f:function(){C(-10000);if(chance(.7)){C(12000);return {fr:"Bien joué : +2 000 F.",en:"Well played: +2,000 F."};}ALL(-5);return {fr:"Le placement échoue : les 10 000 F sont perdus. Les membres le savent.",en:"The investment fails: 10,000 F lost. Members find out."};}},
+ {l:{fr:"Refuser, trop risqué",en:"Refuse, too risky"},s:{fr:"Prudence",en:"Caution"},f:function(){ALL(1);return {fr:"Tu gardes ta caisse intacte.",en:"You keep the fund intact."};}}
+ ]},
+{id:"thief",who:0,tx:{fr:"🚨 Un vol a lieu au marché : 5 000 F de la caisse ont disparu de ta boîte.",en:"🚨 A theft at the market: 5,000 F vanished from the fund box."},
+ ch:[
+ {l:{fr:"Avouer devant tout le monde",en:"Own up in front of everyone"},s:{fr:"Honnête, mais gênant",en:"Honest but awkward"},f:function(){C(-Math.min(5000,S.caisse));ALL(-2);return {fr:"La franchise est appréciée malgré la perte.",en:"Honesty is appreciated despite the loss."};}},
+ {l:{fr:"Combler le manque de ta poche",en:"Cover it yourself"},s:{fr:"Personne ne le saura",en:"Nobody will know"},f:function(){ALL(1);return {fr:"Tu comptes les francs en silence. Personne ne sait.",en:"You quietly cover it. Nobody knows."};}},
+ {l:{fr:"Accuser {a}",en:"Accuse {a}"},s:{fr:"Sans preuve…",en:"Without proof…"},f:function(a){T(a,-18);ALL(-3,a);C(-Math.min(5000,S.caisse));return {fr:"Mauvaise idée : tout le monde est mal à l'aise.",en:"Bad idea: everyone is uneasy."};}}
+ ]},
+{id:"harvest",who:1,tx:{fr:"🌽 {a} revient du village avec de bonnes nouvelles : récolte excellente, il propose de cotiser un supplément.",en:"🌽 {a} returns from the village with great news: a great harvest, offering extra."},
+ ch:[
+ {l:{fr:"Accepter le supplément",en:"Accept the extra"},s:{fr:"+4 000 F pour la caisse",en:"+4,000 F to the fund"},f:function(a){C(4000);T(a,8);return {fr:"Généreux ! La caisse en profite.",en:"Generous! The fund benefits."};}},
+ {l:{fr:"Le lui rendre, par fierté",en:"Decline out of pride"},s:{fr:"Il apprécie ?",en:"Will he mind?"},f:function(a){T(a,4);return {fr:"{a} est touché par ton geste.",en:"{a} is touched by your gesture."};}}
+ ]},
+{id:"quit",who:1,tx:{fr:"🚪 {a} parle de quitter la tontine : il dit qu'il n'y trouve plus son compte.",en:"🚪 {a} talks of leaving the tontine: it no longer pays off for them."},
+ ch:[
+ {l:{fr:"Discuter longuement avec lui",en:"Talk it through"},s:{fr:"Il reste peut-être",en:"They might stay"},f:function(a){if(chance(.6)){T(a,12);return {fr:"Il reste, rassuré.",en:"They stay, reassured."};}T(a,-6);return {fr:"Il reste, mais n'est pas convaincu.",en:"They stay, unconvinced."};}},
+ {l:{fr:"Lui offrir le prochain tour",en:"Offer the next round"},s:{fr:"{r} attend",en:"{r} waits"},f:function(a,b,r){NEXT(a);T(a,16);if(r!==a)T(r,-10);return {fr:"Il reste, content.",en:"They stay, happy."};}},
+ {l:{fr:"Le laisser partir",en:"Let them go"},s:{fr:"Dur",en:"Hard"},f:function(a){T(a,-25);ALL(-2,a);return {fr:"Les autres trouvent ça froid.",en:"Others find it cold."};}}
+ ]},
+{id:"trust",who:0,tx:{fr:"👏 Le groupe te félicite pour ta gestion. Les membres proposent de te laisser une commission.",en:"👏 The group praises your handling. Members offer you a commission."},
+ ch:[
+ {l:{fr:"Accepter 3 000 F pour la caisse",en:"Accept 3,000 F for the fund"},s:{fr:"Transparence",en:"Transparency"},f:function(){C(3000);ALL(2);return {fr:"Les comptes sont clairs. Tout le monde applaudit.",en:"The books are clear. Everyone applauds."};}},
+ {l:{fr:"Refuser, c'est ton devoir",en:"Refuse, it's your duty"},s:{fr:"Humilité",en:"Humility"},f:function(){ALL(4);return {fr:"Ton humilité fait grande impression.",en:"Your humility makes an impression."};}}
+ ]},
+{id:"rain",who:0,tx:{fr:"🌧️ Grosses pluies à Lomé : le marché est inondé et plusieurs membres perdent des ventes.",en:"🌧️ Heavy rain in Lomé: the market floods and several members lose sales."},
+ ch:[
+ {l:{fr:"Réduire la cotisation de cette semaine",en:"Lower this week's contribution"},s:{fr:"La cagnotte sera plus petite",en:"A smaller pot"},f:function(){P(-Math.round(S.pot*0.25));ALL(4);return {fr:"Les membres respirent, mais la cagnotte est plus petite.",en:"Members breathe easier, but the pot is smaller."};}},
+ {l:{fr:"Tenir bon",en:"Hold firm"},s:{fr:"Certains vont souffrir",en:"Some will suffer"},f:function(){var k=0;S.mem.forEach(function(m,i){if(!m.left&&k<3&&chance(.5)){HARD(i,2);T(i,-3);k++;}});return {fr:"Plusieurs membres auront du mal à payer.",en:"Several members will struggle to pay."};}}
+ ]}
+
 ];
 
 /* ============ État ============ */
@@ -291,7 +330,7 @@ function choose(idx){
  var ev=evById(S.ev),ch=ev.ch[idx];
  if(ch.c&&S.caisse<ch.c)return;
  res=ch.f(S.a,S.b,S.rcv);
- S.lastRes=res;S.fxl=diffs(before);S.phase="eres";save();render();
+ S.lastRes=res;S.fxl=diffs(before);S.phase="eres";var up=S.fxl.filter(function(f){return f.c==='up';}).length>=S.fxl.filter(function(f){return f.c==='dn';}).length;beep(up?660:220,.25);vib(up?20:[30,40,30]);save();render();
 }
 function toEvent(){S.phase="event";save();render();}
 function toPayout(){
@@ -308,7 +347,7 @@ function toPayout(){
  S.mem.forEach(function(x,i){if(!x.left&&x.trust<=10){x.left=true;gone.push(i);}});
  gone.forEach(function(i){text+="\n"+fill(U("left"),i,i,i);ALL(-4);});
  S.lastRes={fr:text,en:text};S.fxl=diffs(before);
- S.phase="pay";save();render();
+ S.phase="pay";beep(880,.3);vib(40);save();render();
 }
 function nextWeek(){
  if(active().length<5){S.phase="over";save();render();return;}
@@ -380,6 +419,8 @@ function btn(i,l,s,cost){
  var dis=cost&&S.caisse<cost;
  return '<button class="btn" '+(dis?'disabled':'')+' onclick="choose('+i+')">'+l+'<small>'+(dis?U("fund")+" ("+fmt(cost)+" F)":s)+'</small></button>';
 }
+var SND=true;function beep(f,d){if(!SND)return;try{var A=window.__A||(window.__A=new (window.AudioContext||window.webkitAudioContext)());var o=A.createOscillator(),g=A.createGain();o.frequency.value=f;o.type='sine';g.gain.value=.06;o.connect(g);g.connect(A.destination);o.start();g.gain.exponentialRampToValueAtTime(.0001,A.currentTime+d);o.stop(A.currentTime+d);}catch(e){}}
+function vib(n){try{if(SND&&navigator.vibrate)navigator.vibrate(n);}catch(e){}}
 function begin(){startWeek();render();}
 function again(){var l=S.lang;S=fresh(l);S.phase="intro";save();render();}
 function share(){
