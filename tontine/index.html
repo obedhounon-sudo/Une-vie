@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7a2e1d">
+<title>La Tontine</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#fbf1e1;--card:#fff;--ink:#2a1a12;--mut:#7d6a5c;--brand:#7a2e1d;--gold:#e8a427;--green:#2e8f63;--red:#c8432b;--line:#ecdcc4}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{min-height:100vh;padding-bottom:40px}
+#app{max-width:520px;margin:0 auto;padding:0 14px}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;margin:0 -14px;padding:calc(10px + env(safe-area-inset-top)) 14px 10px}
+.hrow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ttl{font-weight:900;font-size:19px}
+.sub{font-size:12px;opacity:.85}
+.chips{display:flex;gap:8px;margin-top:8px}
+.chip{flex:1;background:rgba(255,255,255,.14);border-radius:12px;padding:6px 8px;text-align:center;font-size:11px}
+.chip b{display:block;font-size:16px}
+.prog{height:5px;background:rgba(255,255,255,.2);border-radius:3px;margin-top:8px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--gold)}
+.gear{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:10px;padding:6px 10px;font-size:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin-top:12px;box-shadow:0 2px 0 rgba(0,0,0,.03)}
+.card h2{margin:0 0 6px;font-size:18px}
+.card p{margin:6px 0;line-height:1.45}
+.tag{display:inline-block;font-size:12px;font-weight:700;padding:3px 9px;border-radius:99px;background:#f6e3c4;color:#6a4a10;margin-bottom:8px}
+.big{font-size:44px;line-height:1}
+.btn{display:block;width:100%;margin-top:10px;padding:14px 14px;border:0;border-radius:14px;font-size:16px;font-weight:700;text-align:left;background:#f4e6cf;color:var(--ink);cursor:pointer}
+.btn small{display:block;font-weight:500;color:var(--mut);margin-top:2px;font-size:12.5px}
+.btn:active{transform:scale(.99)}
+.btn.main{background:var(--gold);text-align:center;color:#2b1a00}
+.btn:disabled{opacity:.45}
+.fx{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.fx span{font-size:13px;font-weight:700;padding:4px 9px;border-radius:99px}
+.up{background:#dcf1e6;color:#1d6b46}.dn{background:#f8dcd5;color:#a8321d}.ne{background:#efe6d6;color:#6a5a48}
+.mem{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.m{background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 10px;position:relative}
+.m.rcv{border:2px solid var(--gold);background:#fff8e6}
+.m.out{opacity:.35}
+.m .nm{font-weight:800;font-size:14px}
+.m .jb{font-size:11.5px;color:var(--mut)}
+.m .e{font-size:26px;float:right}
+.bar{height:7px;border-radius:4px;background:#efe3d0;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%}
+.bd{font-size:11px;margin-top:5px;display:flex;gap:4px;flex-wrap:wrap}
+.bd span{padding:2px 6px;border-radius:99px;background:#efe6d6}
+.bd .w{background:#f8dcd5;color:#a8321d}.bd .g{background:#fbe9b6;color:#6a4a10}.bd .k{background:#dcf1e6;color:#1d6b46}
+.sec{margin:16px 2px 0;font-weight:800;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.row2{display:flex;gap:8px}.row2 .btn{text-align:center}
+.score{font-size:64px;font-weight:900;color:var(--brand);text-align:center;line-height:1}
+.center{text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:20}
+.sheet{background:var(--bg);width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:18px;max-height:85vh;overflow:auto}
+.lang{display:flex;gap:8px}.lang .btn{text-align:center}
+.on{outline:3px solid var(--gold)}
+</style></head><body>
+<div id="app"></div>
+<script>
+"use strict";
+/* ============ Données ============ */
+var TRAITS={
+ rel:{fr:"Fiable",en:"Reliable",p:.95},
+ imp:{fr:"Impulsif",en:"Impulsive",p:.8},
+ gen:{fr:"Généreux",en:"Generous",p:.9},
+ rus:{fr:"Rusé",en:"Sly",p:.78},
+ fie:{fr:"Fier",en:"Proud",p:.88},
+ anx:{fr:"Anxieux",en:"Anxious",p:.9}
+};
+var MEM=[
+ {n:"Ama",e:"👩🏾",j:{fr:"Couturière",en:"Seamstress"},t:"rel"},
+ {n:"Kossi",e:"👨🏿",j:{fr:"Zémidjan",en:"Moto-taxi driver"},t:"imp"},
+ {n:"Akouvi",e:"👩🏿",j:{fr:"Vendeuse de tissus",en:"Fabric seller"},t:"gen"},
+ {n:"Yao",e:"👨🏾",j:{fr:"Mécanicien",en:"Mechanic"},t:"rus"},
+ {n:"Efoé",e:"💇🏾‍♀️",j:{fr:"Coiffeuse",en:"Hairdresser"},t:"fie"},
+ {n:"Mawuli",e:"🧑🏾‍🏫",j:{fr:"Enseignant",en:"Teacher"},t:"anx"},
+ {n:"Dela",e:"👩🏾‍🎓",j:{fr:"Étudiante",en:"Student"},t:"anx"},
+ {n:"Koffi",e:"👷🏾‍♂️",j:{fr:"Maçon",en:"Bricklayer"},t:"fie"}
+];
+var WEEKS=24, FEE=300;
+
+/* Effets: T(i,d) confiance, C(d) caisse, P(d) cagnotte, ALL(d), NEXT(i) */
+function clamp(v){return Math.max(0,Math.min(100,v));}
+function T(i,d){var m=S.mem[i];if(m&&!m.left)m.trust=clamp(m.trust+d);}
+function ALL(d,except){S.mem.forEach(function(m,i){if(!m.left&&i!==except)m.trust=clamp(m.trust+d);});}
+function C(d){S.caisse+=d;}
+function P(d){S.pot+=d;}
+function NEXT(i){S.rcv=i;}
+function HARD(i,n){if(S.mem[i])S.mem[i].hard=n;}
+function chance(p){return Math.random()<p;}
+
+/* Événements. a = membre principal, b = second membre, r = destinataire prévu */
+var EVENTS=[
+{id:"urg",who:2,tx:{fr:"🚑 {a} a un proche à l'hôpital. Il demande la cagnotte tout de suite.",en:"🚑 {a} has a relative in hospital and asks for the pot right now."},
+ ch:[
+ {l:{fr:"Lui donner la cagnotte cette semaine",en:"Give them the pot this week"},s:{fr:"{r} devra attendre",en:"{r} will have to wait"},
+  f:function(a,b,r){NEXT(a);T(a,15);if(r!==a)T(r,-12);return {fr:"Tu changes l'ordre. {a} est soulagé, {r} grince des dents.",en:"You change the order. {a} is relieved, {r} grumbles."};}},
+ {l:{fr:"Aider avec la caisse (8 000 F)",en:"Help from the fund (8,000 F)"},c:8000,s:{fr:"L'ordre ne change pas",en:"The order stays"},
+  f:function(a){C(-8000);T(a,9);return {fr:"La caisse de solidarité règle les frais. Tout le monde respecte ça.",en:"The solidarity fund pays. Everyone respects that."};}},
+ {l:{fr:"Refuser : on respecte l'ordre",en:"Refuse: we keep the order"},s:{fr:"Règle = règle",en:"A rule is a rule"},
+  f:function(a){T(a,-15);ALL(1,a);return {fr:"{a} est blessé, mais les autres apprécient ta fermeté.",en:"{a} is hurt, but the others value your firmness."};}}
+ ]},
+{id:"biz",who:2,tx:{fr:"📦 {a} a trouvé un stock à bas prix. Il veut la cagnotte pour investir.",en:"📦 {a} found cheap stock and wants the pot to invest."},
+ ch:[
+ {l:{fr:"Lui donner la cagnotte",en:"Give them the pot"},s:{fr:"Risqué, mais tentant",en:"Risky but tempting"},
+  f:function(a,b,r){NEXT(a);if(r!==a)T(r,-8);if(chance(.6)){T(a,14);C(3000);return {fr:"L'affaire marche ! {a} reverse un petit merci à la caisse (+3 000 F).",en:"It works! {a} gives a thank-you to the fund (+3,000 F)."};}
+   T(a,-4);ALL(-3);return {fr:"L'affaire tourne mal. Les autres s'inquiètent pour leurs sous.",en:"The deal goes wrong. The others worry about their money."};}},
+ {l:{fr:"Prêter 6 000 F de la caisse",en:"Lend 6,000 F from the fund"},c:6000,s:{fr:"À rembourser avec un bonus",en:"To be repaid with a bonus"},
+  f:function(a){C(-6000);if(chance(.7)){C(9000);T(a,8);return {fr:"Remboursé avec intérêt : +3 000 F net.",en:"Repaid with interest: +3,000 F net."};}T(a,-3);return {fr:"Il ne peut pas rembourser. Tu perds les 6 000 F.",en:"They cannot repay. You lose the 6,000 F."};}},
+ {l:{fr:"Refuser poliment",en:"Politely refuse"},s:{fr:"Prudent",en:"Safe"},f:function(a){T(a,-8);return {fr:"{a} boude un peu.",en:"{a} sulks a little."};}}
+ ]},
+{id:"fight",who:2,tx:{fr:"🔥 {a} et {b} se disputent devant tout le monde pour une vieille dette.",en:"🔥 {a} and {b} argue in front of everyone over an old debt."},
+ ch:[
+ {l:{fr:"Essayer de les réconcilier",en:"Try to reconcile them"},s:{fr:"50 % de réussite",en:"50% chance"},
+  f:function(a,b){if(chance(.5)){T(a,7);T(b,7);return {fr:"Ça marche ! Ils se serrent la main.",en:"It works! They shake hands."};}T(a,-4);T(b,-4);return {fr:"Ça s'envenime. Tu as fait de ton mieux.",en:"It gets worse. You did your best."};}},
+ {l:{fr:"Prendre le parti de {a}",en:"Side with {a}"},s:{fr:"Rapide, mais injuste ?",en:"Quick, but fair?"},f:function(a,b){T(a,8);T(b,-12);return {fr:"{b} se sent trahi.",en:"{b} feels betrayed."};}},
+ {l:{fr:"Les laisser régler ça",en:"Let them sort it out"},s:{fr:"Ne rien faire",en:"Do nothing"},f:function(a,b){T(a,-5);T(b,-5);return {fr:"L'ambiance est lourde toute la semaine.",en:"The mood is heavy all week."};}}
+ ]},
+{id:"funeral",who:1,tx:{fr:"🕯️ {a} vient de perdre un parent. Les funérailles coûtent cher.",en:"🕯️ {a} has just lost a parent. The funeral is expensive."},
+ ch:[
+ {l:{fr:"Organiser une collecte spéciale",en:"Organise a special collection"},s:{fr:"Chacun donne un peu",en:"Everyone chips in"},f:function(a){C(2500);T(a,14);ALL(-3,a);return {fr:"La collecte rapporte à la caisse (+2 500 F) mais chacun doit payer de plus.",en:"The collection adds to the fund (+2,500 F), though everyone has to pay more."};}},
+ {l:{fr:"Payer avec la caisse (10 000 F)",en:"Pay from the fund (10,000 F)"},c:10000,s:{fr:"Solidarité totale",en:"Full solidarity"},f:function(a){C(-10000);T(a,12);ALL(2,a);return {fr:"Un geste qui rassure tout le monde.",en:"A gesture that reassures everyone."};}},
+ {l:{fr:"Présenter tes condoléances",en:"Offer condolences only"},s:{fr:"Gratuit",en:"Free"},f:function(a){T(a,-8);return {fr:"{a} comprend, mais il aurait aimé plus.",en:"{a} understands, but hoped for more."};}}
+ ]},
+{id:"newbie",who:1,tx:{fr:"🤝 Le cousin de {a} veut entrer dans la tontine avec un droit d'entrée de 5 000 F.",en:"🤝 {a}'s cousin wants to join the tontine with a 5,000 F entry fee."},
+ ch:[
+ {l:{fr:"Accepter",en:"Accept"},s:{fr:"+5 000 F, mais les autres doutent",en:"+5,000 F, others hesitate"},f:function(a){C(5000);T(a,8);ALL(-2,a);return {fr:"Le droit d'entrée rejoint la caisse. Certains font la moue.",en:"The fee goes to the fund. Some pull faces."};}},
+ {l:{fr:"Refuser",en:"Refuse"},s:{fr:"On reste entre nous",en:"We stay as we are"},f:function(a){T(a,-8);ALL(1,a);return {fr:"Le groupe reste soudé.",en:"The group stays tight."};}}
+ ]},
+{id:"rumor",who:0,tx:{fr:"🗣️ Une rumeur circule : « Le trésorier garde de l'argent pour lui ! »",en:"🗣️ A rumour spreads: \"The treasurer keeps money for himself!\""},
+ ch:[
+ {l:{fr:"Montrer les comptes à tous",en:"Show the books to all"},s:{fr:"Il faut que la caisse soit solide",en:"The fund must be solid"},f:function(){if(S.caisse>=5000){ALL(5);return {fr:"Les comptes sont clairs. La confiance remonte.",en:"The books are clean. Trust rises."};}ALL(-6);return {fr:"La caisse est presque vide : ça ne rassure personne.",en:"The fund is almost empty: nobody is reassured."};}},
+ {l:{fr:"Nier fermement",en:"Deny firmly"},s:{fr:"Pile ou face",en:"Coin flip"},f:function(){if(chance(.5)){ALL(2);return {fr:"On te croit sur parole.",en:"They take your word."};}ALL(-6);return {fr:"Ça sonne faux. Les doutes grandissent.",en:"It rings false. Doubts grow."};}},
+ {l:{fr:"Ignorer",en:"Ignore it"},s:{fr:"Les rumeurs passent… parfois",en:"Rumours fade… sometimes"},f:function(){ALL(-4);return {fr:"Le silence est mal pris.",en:"Silence is taken badly."};}}
+ ]},
+{id:"price",who:0,tx:{fr:"🍚 Le prix du riz explose. Tout le monde est à l'étroit ce mois-ci.",en:"🍚 Rice prices soar. Everyone is stretched this month."},
+ ch:[
+ {l:{fr:"Augmenter la cotisation de 1 000 F",en:"Raise the contribution by 1,000 F"},s:{fr:"Pots plus gros, mais tendu",en:"Bigger pots, but tense"},f:function(){S.contrib+=1000;ALL(-5);return {fr:"La cotisation passe à {c} F. Ça grince.",en:"Contribution is now {c} F. People grumble."};}},
+ {l:{fr:"Garder la même cotisation",en:"Keep the same amount"},s:{fr:"Deux membres seront serrés",en:"Two members will struggle"},f:function(){var k=0;S.mem.forEach(function(m,i){if(!m.left&&k<2&&chance(.4)){HARD(i,2);k++;}});return {fr:"Certains auront du mal à payer ces prochaines semaines.",en:"Some will struggle to pay in the coming weeks."};}},
+ {l:{fr:"Fonds d'entraide (5 000 F)",en:"Relief fund (5,000 F)"},c:5000,s:{fr:"Tout le monde respire",en:"Everyone breathes"},f:function(){C(-5000);ALL(3);return {fr:"Un coup de pouce apprécié.",en:"A much-appreciated boost."};}}
+ ]},
+{id:"gift",who:0,tx:{fr:"🎁 Un commerçant du quartier offre 8 000 F à la tontine, en échange de ta recommandation.",en:"🎁 A local trader offers 8,000 F to the tontine in exchange for your endorsement."},
+ ch:[
+ {l:{fr:"Accepter l'argent",en:"Accept the money"},s:{fr:"+8 000 F",en:"+8,000 F"},f:function(){C(8000);if(chance(.4)){ALL(-4);return {fr:"Certains trouvent ça louche.",en:"Some find it suspicious."};}return {fr:"Personne ne s'en plaint.",en:"Nobody complains."};}},
+ {l:{fr:"Refuser, par principe",en:"Refuse on principle"},s:{fr:"Réputation d'abord",en:"Reputation first"},f:function(){ALL(4);return {fr:"Ton intégrité fait parler en bien.",en:"Your integrity earns praise."};}}
+ ]},
+{id:"moto",who:2,tx:{fr:"🛵 La moto de {a} est en panne. Sans elle, il ne travaille pas.",en:"🛵 {a}'s motorbike broke down. Without it, no work."},
+ ch:[
+ {l:{fr:"Prêter 4 000 F de la caisse",en:"Lend 4,000 F from the fund"},c:4000,s:{fr:"Un vrai coup de main",en:"A real helping hand"},f:function(a){C(-4000);T(a,11);HARD(a,0);return {fr:"{a} repart sur la route dès demain.",en:"{a} is back on the road tomorrow."};}},
+ {l:{fr:"Lui conseiller d'être patient",en:"Advise patience"},s:{fr:"Pas cher, pas utile",en:"Cheap, not helpful"},f:function(a){T(a,-4);HARD(a,2);return {fr:"Sans moto, {a} aura du mal à cotiser.",en:"Without the bike, {a} will struggle to pay in."};}},
+ {l:{fr:"Lui donner la cagnotte",en:"Give them the pot"},s:{fr:"{r} attend",en:"{r} waits"},f:function(a,b,r){NEXT(a);T(a,14);if(r!==a)T(r,-10);return {fr:"{a} remercie tout le monde.",en:"{a} thanks everyone."};}}
+ ]},
+{id:"party",who:0,tx:{fr:"🍲 Les membres proposent un repas ensemble pour célébrer la tontine.",en:"🍲 Members suggest a shared meal to celebrate the tontine."},
+ ch:[
+ {l:{fr:"Oui, on offre le repas (4 000 F)",en:"Yes, we host it (4,000 F)"},c:4000,s:{fr:"Bonne ambiance",en:"Good mood"},f:function(){C(-4000);ALL(6);return {fr:"Rires, musique, riz sauce. Excellent moral !",en:"Laughs, music, good food. Great morale!"};}},
+ {l:{fr:"Non, on économise",en:"No, we save"},s:{fr:"Raisonnable",en:"Sensible"},f:function(){ALL(-1);return {fr:"On fera ça une autre fois.",en:"We'll do it another time."};}}
+ ]},
+{id:"fraud",who:1,tx:{fr:"🕵️ Tu apprends que {a} a présenté un faux justificatif pour obtenir plus tôt la cagnotte.",en:"🕵️ You learn that {a} used a fake document to get the pot early."},
+ ch:[
+ {l:{fr:"Le confronter devant tout le monde",en:"Confront them publicly"},s:{fr:"Sévère",en:"Harsh"},f:function(a){T(a,-20);ALL(4,a);return {fr:"Le groupe est impressionné, {a} est humilié.",en:"The group is impressed, {a} is humiliated."}}},
+ {l:{fr:"Lui parler en privé",en:"Speak to them in private"},s:{fr:"Discret",en:"Discreet"},f:function(a){if(chance(.6)){T(a,5);return {fr:"{a} avoue et s'excuse.",en:"{a} admits it and apologises."};}T(a,-8);return {fr:"{a} nie tout en bloc.",en:"{a} denies everything."};}},
+ {l:{fr:"Fermer les yeux",en:"Look away"},s:{fr:"Éviter le conflit",en:"Avoid conflict"},f:function(a){T(a,4);ALL(-6,a);return {fr:"Des témoins l'ont su. Ta crédibilité en souffre.",en:"Witnesses knew. Your credibility suffers."};}}
+ ]},
+{id:"wedding",who:1,tx:{fr:"💍 {a} se marie ce week-end et invite toute la tontine.",en:"💍 {a} is getting married this weekend and invites the whole tontine."},
+ ch:[
+ {l:{fr:"Offrir un cadeau (6 000 F)",en:"Give a gift (6,000 F)"},c:6000,s:{fr:"Bon geste",en:"Nice gesture"},f:function(a){C(-6000);T(a,12);ALL(2,a);return {fr:"Un beau moment pour le groupe.",en:"A lovely moment for the group."};}},
+ {l:{fr:"Y aller les mains vides",en:"Go empty-handed"},s:{fr:"Gratuit",en:"Free"},f:function(a){T(a,-6);return {fr:"{a} le remarque.",en:"{a} notices."};}}
+ ]},
+{id:"school",who:1,tx:{fr:"📚 {a} doit payer la rentrée scolaire de ses enfants et manque d'argent.",en:"📚 {a} must pay school fees and is short of money."},
+ ch:[
+ {l:{fr:"Avance sur la cagnotte",en:"Advance on the pot"},s:{fr:"{r} attend",en:"{r} waits"},f:function(a,b,r){NEXT(a);T(a,13);if(r!==a)T(r,-9);return {fr:"Les enfants pourront aller à l'école.",en:"The children can go to school."};}},
+ {l:{fr:"Prêt de 5 000 F de la caisse",en:"Lend 5,000 F from the fund"},c:5000,s:{fr:"Remboursable",en:"Repayable"},f:function(a){C(-5000);T(a,8);if(chance(.8))C(5000);return {fr:"Un prêt pas toujours simple à récupérer.",en:"Not always easy to recover a loan."};}},
+ {l:{fr:"Lui dire de se débrouiller",en:"Tell them to manage"},s:{fr:"Dur",en:"Tough"},f:function(a){T(a,-12);HARD(a,3);return {fr:"{a} se sent seul.",en:"{a} feels alone."};}}
+ ]}
+];
+
+/* ============ État ============ */
+var KEY="tontine_v1", SK="tontine_best";
+var S=null;
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function dLang(){var l=(navigator.language||"fr").slice(0,2);return l==="fr"?"fr":"en";}
+function fresh(lang){
+ return {lang:lang||dLang(),week:0,contrib:5000,caisse:6000,pot:0,
+  mem:MEM.map(function(m){return {trust:58+Math.floor(Math.random()*18),got:false,left:false,hard:0,owe:0,paid:true};}),
+  order:shuffle([0,1,2,3,4,5,6,7]),tour:1,rcv:0,phase:"intro",ev:null,a:0,b:1,dfl:-1,unp:[],last:[],lastRes:null,fxl:[],log:[]};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY));if(s&&s.mem&&s.mem.length===8)return s;}catch(e){}return null;}
+function best(){try{return +localStorage.getItem(SK)||0;}catch(e){return 0;}}
+function setBest(v){try{localStorage.setItem(SK,String(v));}catch(e){}}
+
+/* ============ Texte ============ */
+var UI={
+ fr:{week:"Semaine",pot:"Cagnotte",caisse:"Caisse",trust:"Confiance",rcv:"reçoit",got:"a reçu",unp:"n'a pas payé",hard:"en difficulté",
+  start:"Commencer",cont:"Continuer",next:"Semaine suivante ▶",again:"Rejouer",share:"Partager mon score",
+  intro1:"Tu es le trésorier d'une tontine de 8 personnes à Lomé.",
+  intro2:"Chaque semaine, tout le monde cotise. Une personne reçoit la cagnotte, chacun son tour.",
+  intro3:"Mais la vie complique tout : urgences, disputes, retards… À toi de décider. Garde la confiance du groupe pendant 24 semaines !",
+  intro4:"💰 Caisse = fonds de solidarité (300 F par membre et par semaine).",
+  fund:"Caisse insuffisante",
+  dfltTx:"💸 {a} n'a pas cotisé cette semaine.",
+  cover:"Couvrir avec la caisse",delay:"Lui laisser un délai",press:"Le relancer fermement",
+  coverS:"Coûte {c} F à la caisse",delayS:"Il paiera double la semaine prochaine (peut-être)",pressS:"Il peut mal le prendre",
+  payout:"Distribution",payTx:"{r} reçoit {p} F.",short:"La cagnotte est incomplète : {r} est déçu.",
+  left:"{a} quitte la tontine, déçu.",
+  end:"Fin de la tontine",avg:"Confiance moyenne",members:"Membres restants",fundEnd:"Caisse finale",
+  best:"Meilleur score",over:"La tontine est dissoute…",overTx:"Trop de membres sont partis. Il n'y a plus de tontine.",
+  settings:"Réglages",lang:"Langue",reset:"Recommencer la partie",close:"Fermer",
+  ranks:["Tontine fragile","Trésorier correct","Trésorier respecté","Gardien de la confiance"],
+  shareTx:"J'ai tenu la tontine 24 semaines : {s}/100 ({r}) ! Et toi, tu ferais mieux ? 🤝",
+  cap:"Capacité",order:"Ordre",tour:"Tour"
+ },
+ en:{week:"Week",pot:"Pot",caisse:"Fund",trust:"Trust",rcv:"gets paid",got:"was paid",unp:"did not pay",hard:"struggling",
+  start:"Start",cont:"Continue",next:"Next week ▶",again:"Play again",share:"Share my score",
+  intro1:"You are the treasurer of an 8-person tontine in Lomé.",
+  intro2:"Every week everyone pays in. One person receives the pot, each in turn.",
+  intro3:"But life gets in the way: emergencies, fights, late payments… You decide. Keep the group's trust for 24 weeks!",
+  intro4:"💰 Fund = solidarity money (300 F per member per week).",
+  fund:"Not enough in the fund",
+  dfltTx:"💸 {a} did not pay this week.",
+  cover:"Cover from the fund",delay:"Give them time",press:"Press them firmly",
+  coverS:"Costs {c} F from the fund",delayS:"They'll pay double next week (maybe)",pressS:"They may take it badly",
+  payout:"Payout",payTx:"{r} receives {p} F.",short:"The pot is incomplete: {r} is disappointed.",
+  left:"{a} leaves the tontine, disappointed.",
+  end:"End of the tontine",avg:"Average trust",members:"Members left",fundEnd:"Final fund",
+  best:"Best score",over:"The tontine has collapsed…",overTx:"Too many members left. There is no tontine anymore.",
+  settings:"Settings",lang:"Language",reset:"Restart the game",close:"Close",
+  ranks:["Shaky tontine","Decent treasurer","Respected treasurer","Guardian of trust"],
+  shareTx:"I kept the tontine going for 24 weeks: {s}/100 ({r})! Think you can do better? 🤝",
+  cap:"Capacity",order:"Order",tour:"Round"
+ }
+};
+function U(k){return (UI[S.lang]||UI.fr)[k];}
+function L(o){return typeof o==="string"?o:(o[S.lang]||o.fr);}
+function nm(i){return MEM[i].n;}
+function fill(t,a,b,r){return t.replace(/\{a\}/g,nm(a)).replace(/\{b\}/g,nm(b)).replace(/\{r\}/g,nm(r)).replace(/\{c\}/g,String(S.contrib)).replace(/\{p\}/g,fmt(S.pot)).replace(/\{s\}/g,"");}
+function fmt(n){return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g," ");}
+
+/* ============ Moteur ============ */
+function active(){var r=[];S.mem.forEach(function(m,i){if(!m.left)r.push(i);});return r;}
+function receiver(){
+ for(var pass=0;pass<2;pass++){
+  for(var k=0;k<S.order.length;k++){var i=S.order[k];var m=S.mem[i];if(!m.left&&!m.got)return i;}
+  S.mem.forEach(function(m){m.got=false;});S.tour++;
+ }
+ return active()[0];
+}
+function snap(){return S.mem.map(function(m){return m.trust;}).concat([S.caisse]);}
+function diffs(before){
+ var out=[];
+ for(var i=0;i<8;i++){var d=S.mem[i].trust-before[i];if(d&&!S.mem[i].left||(d&&before[i]>0))out.push({t:nm(i)+" "+(d>0?"+":"")+d,c:d>0?"up":"dn"});}
+ var dc=S.caisse-before[8];if(dc)out.push({t:"💰 "+(dc>0?"+":"−")+fmt(Math.abs(dc))+" F",c:dc>0?"up":"dn"});
+ return out;
+}
+var lastEv=[];
+function startWeek(){
+ S.week++;
+ var act=active();
+ S.rcv=receiver();S.r0=S.rcv;
+ S.pot=0;S.unp=[];
+ act.forEach(function(i){
+  var m=S.mem[i],tr=TRAITS[MEM[i].t];
+  var p=tr.p-(m.hard>0?.35:0);
+  if(chance(p)){S.pot+=S.contrib+m.owe;m.owe=0;}else S.unp.push(i);
+  if(m.hard>0)m.hard--;
+ });
+ S.dfl=S.unp.length?S.unp[0]:-1;
+ // les autres retardataires: délai automatique
+ S.unp.slice(1).forEach(function(i){S.mem[i].owe+=S.contrib;});
+ // choisir événement
+ var pool=EVENTS.filter(function(e){return lastEv.indexOf(e.id)<0;});
+ var ev=pool[Math.floor(Math.random()*pool.length)];
+ lastEv.push(ev.id);if(lastEv.length>5)lastEv.shift();
+ var rest=shuffle(act.slice());
+ S.a=rest[0];S.b=rest[1]!==undefined?rest[1]:rest[0];
+ S.ev=ev.id;S.fxl=[];S.lastRes=null;
+ S.phase=S.dfl>=0?"default":"event";
+ save();
+}
+function evById(id){for(var i=0;i<EVENTS.length;i++)if(EVENTS[i].id===id)return EVENTS[i];}
+function choose(idx){
+ var before=snap(),res;
+ if(S.phase==="default"){
+  var d=S.dfl;
+  if(idx===0){C(-S.contrib);P(S.contrib);T(d,6);res={fr:"La caisse avance la cotisation de "+nm(d)+".",en:"The fund covers "+nm(d)+"'s contribution."};}
+  else if(idx===1){T(d,2);S.mem[d].owe+=S.contrib;res={fr:nm(d)+" te remercie et promet de payer double.",en:nm(d)+" thanks you and promises to pay double."};}
+  else{T(d,-8);if(chance(.65)){P(S.contrib);res={fr:nm(d)+" paie, un peu vexé.",en:nm(d)+" pays, a little offended."};}else{S.mem[d].owe+=S.contrib;res={fr:nm(d)+" ne paie pas et claque la porte.",en:nm(d)+" does not pay and storms off."};}}
+  S.lastRes=res;S.fxl=diffs(before);S.phase="dres";save();render();return;
+ }
+ var ev=evById(S.ev),ch=ev.ch[idx];
+ if(ch.c&&S.caisse<ch.c)return;
+ res=ch.f(S.a,S.b,S.rcv);
+ S.lastRes=res;S.fxl=diffs(before);S.phase="eres";save();render();
+}
+function toEvent(){S.phase="event";save();render();}
+function toPayout(){
+ var before=snap(),r=S.rcv;
+ if(S.mem[r].left)r=S.rcv=receiver();
+ var full=active().length*S.contrib;
+ var m=S.mem[r];m.got=true;
+ var text=fill(U("payTx"),r,r,r);
+ if(S.pot<full*0.85){T(r,-8);text+=" "+fill(U("short"),r,r,r);}else T(r,12);
+ active().forEach(function(i){if(i!==r)T(i,S.mem[i].got?-1:-2);});
+ var fee=FEE*active().length;C(fee);
+ // départs
+ var gone=[];
+ S.mem.forEach(function(x,i){if(!x.left&&x.trust<=10){x.left=true;gone.push(i);}});
+ gone.forEach(function(i){text+="\n"+fill(U("left"),i,i,i);ALL(-4);});
+ S.lastRes={fr:text,en:text};S.fxl=diffs(before);
+ S.phase="pay";save();render();
+}
+function nextWeek(){
+ if(active().length<5){S.phase="over";save();render();return;}
+ if(S.week>=WEEKS){S.phase="end";var sc=score();if(sc>best())setBest(sc);save();render();return;}
+ startWeek();render();
+}
+function avg(){var a=active();if(!a.length)return 0;var s=0;a.forEach(function(i){s+=S.mem[i].trust;});return s/a.length;}
+function score(){
+ var a=active().length;
+ return Math.round(avg()*0.6+Math.min(100,S.caisse/(S.contrib*8)*100)*0.2+(a/8*100)*0.2);
+}
+function rankOf(sc){return sc>=85?3:sc>=70?2:sc>=50?1:0;}
+
+/* ============ Affichage ============ */
+var $=function(s){return document.querySelector(s);};
+function bar(t){var c=t>=60?"#2e8f63":t>=35?"#e8a427":"#c8432b";return '<div class="bar"><i style="width:'+t+'%;background:'+c+'"></i></div>';}
+function members(){
+ var h='<div class="mem">';
+ for(var i=0;i<8;i++){var m=S.mem[i],d=MEM[i],b="";
+  if(!m.left){
+   if(S.phase!=="intro"&&S.phase!=="end"&&i===S.rcv)b+='<span class="g">💰 '+U("rcv")+'</span>';
+   else if(m.got)b+='<span class="k">✓ '+U("got")+'</span>';
+   if(S.unp.indexOf(i)>=0&&S.phase!=="pay")b+='<span class="w">⚠ '+U("unp")+'</span>';
+   if(m.hard>0)b+='<span class="w">😓 '+U("hard")+'</span>';
+  }
+  h+='<div class="m'+(i===S.rcv&&!m.left&&S.phase!=="intro"?" rcv":"")+(m.left?" out":"")+'"><span class="e">'+d.e+'</span><div class="nm">'+d.n+'</div><div class="jb">'+L(d.j)+' · '+L(TRAITS[d.t])+'</div>'+bar(m.trust)+'<div class="bd">'+b+'</div></div>';
+ }
+ return h+'</div>';
+}
+function fxHtml(){return S.fxl&&S.fxl.length?'<div class="fx">'+S.fxl.map(function(f){return '<span class="'+f.c+'">'+f.t+'</span>';}).join("")+'</div>':"";}
+function header(){
+ var w=Math.max(S.week,0);
+ return '<header><div class="hrow"><div><div class="ttl">🤝 La Tontine</div><div class="sub">'+U("week")+' '+w+'/'+WEEKS+' · '+U("tour")+' '+S.tour+'</div></div><button class="gear" onclick="settings()">⚙️</button></div>'+
+ '<div class="chips"><div class="chip">'+U("pot")+'<b>'+fmt(S.pot)+' F</b></div><div class="chip">'+U("caisse")+'<b>'+fmt(S.caisse)+' F</b></div><div class="chip">'+U("trust")+'<b>'+Math.round(avg())+'%</b></div></div><div class="prog"><i style="width:'+(w/WEEKS*100)+'%"></i></div></header>';
+}
+function render(){
+ var h=header(),p=S.phase,a=S.a,b=S.b,r=(S.r0===undefined?S.rcv:S.r0);
+ if(p==="intro"){
+  h+='<div class="card center"><div class="big">🤝</div><h2>La Tontine</h2><p>'+U("intro1")+'</p><p>'+U("intro2")+'</p><p>'+U("intro3")+'</p><p style="color:var(--mut);font-size:13px">'+U("intro4")+'</p><button class="btn main" onclick="begin()">'+U("start")+'</button>';
+  var bs=best();if(bs)h+='<p style="color:var(--mut);font-size:13px">'+U("best")+' : '+bs+'/100</p>';
+  h+='</div>'+members();
+ }else if(p==="default"){
+  h+='<div class="card"><span class="tag">'+U("week")+' '+S.week+'</span><h2>'+fill(U("dfltTx"),S.dfl,S.dfl,r)+'</h2>'+
+  btn(0,U("cover"),fill(U("coverS"),0,0,0),S.contrib)+btn(1,U("delay"),U("delayS"))+btn(2,U("press"),U("pressS"))+'</div>'+members();
+ }else if(p==="dres"){
+  h+='<div class="card"><p>'+fill(L(S.lastRes),S.dfl,S.dfl,r)+'</p>'+fxHtml()+'<button class="btn main" onclick="toEvent()">'+U("cont")+'</button></div>'+members();
+ }else if(p==="event"){
+  var ev=evById(S.ev);
+  h+='<div class="card"><span class="tag">'+U("week")+' '+S.week+'</span><h2>'+fill(L(ev.tx),a,b,r)+'</h2>';
+  ev.ch.forEach(function(c,i){h+=btn(i,fill(L(c.l),a,b,r),fill(L(c.s),a,b,r),c.c);});
+  h+='</div>'+members();
+ }else if(p==="eres"){
+  h+='<div class="card"><p>'+fill(L(S.lastRes),a,b,r)+'</p>'+fxHtml()+'<button class="btn main" onclick="toPayout()">'+U("cont")+'</button></div>'+members();
+ }else if(p==="pay"){
+  h+='<div class="card"><span class="tag">💰 '+U("payout")+'</span><p style="white-space:pre-line">'+L(S.lastRes)+'</p>'+fxHtml()+'<button class="btn main" onclick="nextWeek()">'+U("next")+'</button></div>'+members();
+ }else if(p==="end"||p==="over"){
+  var sc=score(),rk=rankOf(sc);
+  if(p==="over"){h+='<div class="card center"><div class="big">💔</div><h2>'+U("over")+'</h2><p>'+U("overTx")+'</p><button class="btn main" onclick="again()">'+U("again")+'</button></div>'+members();}
+  else{
+   h+='<div class="card center"><div class="big">'+["😬","👍","🤝","🏆"][rk]+'</div><h2>'+U("end")+'</h2><div class="score">'+sc+'<small style="font-size:22px">/100</small></div><p><b>'+U("ranks")[rk]+'</b></p>'+
+   '<p>'+U("avg")+' : '+Math.round(avg())+'% · '+U("members")+' : '+active().length+'/8 · '+U("fundEnd")+' : '+fmt(S.caisse)+' F</p><p style="color:var(--mut)">'+U("best")+' : '+Math.max(best(),sc)+'/100</p>'+
+   '<button class="btn main" onclick="share()">'+U("share")+' 📲</button><button class="btn" style="text-align:center" onclick="again()">'+U("again")+'</button></div>'+members();
+  }
+ }
+ $("#app").innerHTML=h;
+ document.documentElement.lang=S.lang;
+}
+function btn(i,l,s,cost){
+ var dis=cost&&S.caisse<cost;
+ return '<button class="btn" '+(dis?'disabled':'')+' onclick="choose('+i+')">'+l+'<small>'+(dis?U("fund")+" ("+fmt(cost)+" F)":s)+'</small></button>';
+}
+function begin(){startWeek();render();}
+function again(){var l=S.lang;S=fresh(l);S.phase="intro";save();render();}
+function share(){
+ var sc=score(),t=U("shareTx").replace("{s}",sc).replace("{r}",U("ranks")[rankOf(sc)])+" "+location.href.split("#")[0];
+ var u="https://wa.me/?text="+encodeURIComponent(t);
+ if(navigator.share){navigator.share({text:t}).catch(function(){window.open(u,"_blank");});}else window.open(u,"_blank");
+}
+function settings(){
+ var d=document.createElement("div");d.className="modal";d.id="mod";
+ d.innerHTML='<div class="sheet"><h2>'+U("settings")+'</h2><div class="sec">'+U("lang")+'</div><div class="lang"><button class="btn'+(S.lang==="fr"?" on":"")+'" onclick="setLang(\'fr\')">Français</button><button class="btn'+(S.lang==="en"?" on":"")+'" onclick="setLang(\'en\')">English</button></div><button class="btn" style="text-align:center;margin-top:16px" onclick="if(confirm(\'?\')){closeM();again();}">'+U("reset")+'</button><button class="btn main" onclick="closeM()">'+U("close")+'</button></div>';
+ d.addEventListener("click",function(e){if(e.target===d)closeM();});
+ document.body.appendChild(d);
+}
+function closeM(){var m=$("#mod");if(m)m.remove();}
+function setLang(l){S.lang=l;save();closeM();render();}
+
+/* ============ Démarrage ============ */
+S=load()||fresh();
+if(!S.phase)S.phase="intro";
+window.__S=function(){return S;};
+render();
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
+</script></body></html>

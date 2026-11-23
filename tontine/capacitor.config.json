@@ -1,0 +1,8 @@
+{
+  "appId": "com.tontine.jeu",
+  "appName": "La Tontine",
+  "webDir": "www",
+  "backgroundColor": "#fbf1e1",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
