@@ -8,8 +8,10 @@ on:
       - '.github/workflows/build-recus.yml'
       - 'boutique/**'
       - 'tontine/**'
+      - 'marche/**'
       - '.github/workflows/build-boutique.yml'
       - '.github/workflows/build-tontine.yml'
+      - '.github/workflows/build-marche.yml'
       - 'traduction/**'
       - '*.md'
 

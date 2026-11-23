@@ -1,0 +1,8 @@
+{
+  "appId": "com.marchemaudit.jeu",
+  "appName": "Marché Maudit",
+  "webDir": "www",
+  "backgroundColor": "#14102a",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
