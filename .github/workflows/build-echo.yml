@@ -77,4 +77,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "echo-${{ github.run_number }}" echo-9-1.0.${{ github.run_number }}.apk --title "ECHO-9 1.0.${{ github.run_number }}" --notes "Installez echo-9-1.0.${{ github.run_number }}.apk sur votre téléphone Android." --target "${{ github.sha }}"
+          cp android/app/build/outputs/apk/debug/app-debug.apk echo-9-test-${{ github.run_number }}.apk
+          gh release create "echo-${{ github.run_number }}" echo-9-1.0.${{ github.run_number }}.apk echo-9-test-${{ github.run_number }}.apk --title "ECHO-9 1.0.${{ github.run_number }}" --notes "Installez echo-9-1.0.${{ github.run_number }}.apk sur votre téléphone Android." --target "${{ github.sha }}"
