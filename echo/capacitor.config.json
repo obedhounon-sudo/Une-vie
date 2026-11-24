@@ -1,0 +1,8 @@
+{
+  "appId": "com.echo9.jeu",
+  "appName": "ECHO-9",
+  "webDir": "www",
+  "backgroundColor": "#070b1a",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
