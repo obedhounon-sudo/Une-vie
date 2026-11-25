@@ -52,7 +52,7 @@ jobs:
 
       - name: Pubs Unity Ads (module Android)
         run: |
-          D=android/app/src/main/java/com/uneviejeu/simulation
+          D=android/app/src/main/java/com/obedklein/uneviejeu
           ls $D
           cp android-plugin/UnityAdsPlugin.java android-plugin/AdmobPlugin.java android-plugin/MainActivity.java $D/
           python3 - <<'PY'

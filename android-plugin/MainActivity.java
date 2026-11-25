@@ -1,4 +1,4 @@
-package com.uneviejeu.simulation;
+package com.obedklein.uneviejeu;
 
 import android.os.Bundle;
 
