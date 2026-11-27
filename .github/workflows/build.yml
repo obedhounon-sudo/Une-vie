@@ -11,11 +11,13 @@ on:
       - 'marche/**'
       - 'harmattan/**'
       - 'echo/**'
+      - 'cv/**'
       - '.github/workflows/build-boutique.yml'
       - '.github/workflows/build-tontine.yml'
       - '.github/workflows/build-marche.yml'
       - '.github/workflows/build-harmattan.yml'
       - '.github/workflows/build-echo.yml'
+      - '.github/workflows/build-cv.yml'
       - 'traduction/**'
       - '*.md'
 

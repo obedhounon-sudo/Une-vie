@@ -1,0 +1,8 @@
+{
+  "appId": "com.obedklein.cvexpress",
+  "appName": "CV Express",
+  "webDir": "www",
+  "backgroundColor": "#0f766e",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}
