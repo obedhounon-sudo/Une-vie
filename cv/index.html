@@ -94,33 +94,34 @@ var COLORS=["#0f766e","#1f6feb","#b91c1c","#7c3aed","#c2410c","#15803d","#111827
 
 /* ================== Moteur de rendu (canvas A4 150 dpi) ================== */
 var PW=1240,PH=1754,SANS='Roboto,"Helvetica Neue",Arial,sans-serif',SERIF='Georgia,"Times New Roman",serif';
-function newPage(){var c=document.createElement("canvas");c.width=PW;c.height=PH;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.textBaseline="alphabetic";return {c:c,x:x};}
+var K=1;
+function newPage(){var c=document.createElement("canvas");c.width=PW;c.height=PH;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.textBaseline="alphabetic";return {c:c,x:x,t:[]};}
 function fnt(sz,w,fam,it){return (it?"italic ":"")+(w||400)+" "+sz+"px "+fam;}
 function wrapText(x,text,maxW){var out=[];String(text==null?"":text).split("\n").forEach(function(par){if(!par.trim()){out.push("");return;}var words=par.trim().split(/\s+/),line="";words.forEach(function(w){var t=line?line+" "+w:w;if(x.measureText(t).width>maxW&&line){out.push(line);line=w;}else line=t;});out.push(line);});return out;}
 function Flow(page,o){this.p=page;this.x0=o.x;this.w=o.w;this.y=o.y;this.top=o.top||o.y;this.bottom=o.bottom;this.onPage=o.onPage||null;}
 Flow.prototype.brk=function(){if(!this.onPage)return false;this.p=this.onPage();this.y=this.top;return true;};
-Flow.prototype.need=function(h){if(this.y+h>this.bottom)return this.brk();return true;};
-Flow.prototype.gap=function(n){this.y+=n;};
-Flow.prototype.text=function(s,o){o=o||{};var sz=o.size||27,fam=o.fam||SANS,col=o.color||"#26332f",ctx=this.p.x,indent=o.indent||0,w=this.w-indent-(o.padR||0);
+Flow.prototype.need=function(h){if(this.y+h*K>this.bottom)return this.brk();return true;};
+Flow.prototype.gap=function(n){this.y+=n*K;};
+Flow.prototype.text=function(s,o){o=o||{};var sz=Math.round((o.size||27)*(o.raw?1:K)),fam=o.fam||SANS,col=o.color||"#26332f",ctx=this.p.x,indent=o.indent||0,w=this.w-indent-(o.padR||0);
  ctx.font=fnt(sz,o.weight,fam,o.italic);var lines=wrapText(ctx,s,w),lh=Math.round(sz*(o.lh||1.38));
  for(var i=0;i<lines.length;i++){if(this.y+lh>this.bottom){if(!this.brk())return;ctx=this.p.x;}
   ctx.font=fnt(sz,o.weight,fam,o.italic);ctx.fillStyle=col;var tx=this.x0+indent;
   if(o.align==="center"){ctx.textAlign="center";tx=this.x0+this.w/2;}else if(o.align==="right"){ctx.textAlign="right";tx=this.x0+this.w;}else ctx.textAlign="left";
   var t=lines[i];if(o.upper)t=t.toUpperCase();
   if(o.spacing&&ctx.letterSpacing!==undefined)ctx.letterSpacing=o.spacing+"px";
-  ctx.fillText(t,tx,this.y+sz);if(ctx.letterSpacing!==undefined)ctx.letterSpacing="0px";ctx.textAlign="left";this.y+=lh;}
- this.y+=o.after||0;};
-Flow.prototype.rich=function(s,o){o=o||{};var self=this,sz=o.size||26;String(s||"").split("\n").forEach(function(par){
+  var tw=ctx.measureText(t).width;this.p.t.push({x:o.align==="center"?tx-tw/2:o.align==="right"?tx-tw:tx,y:this.y+sz,s:t,sz:sz});ctx.fillText(t,tx,this.y+sz);if(ctx.letterSpacing!==undefined)ctx.letterSpacing="0px";ctx.textAlign="left";this.y+=lh;}
+ this.y+=(o.after||0)*(o.raw?1:K);};
+Flow.prototype.rich=function(s,o){o=o||{};var self=this,sz=Math.round((o.size||26)*K);String(s||"").split("\n").forEach(function(par){
   var m=par.match(/^\s*[-•*]\s+(.*)$/);
-  if(m){if(self.y+Math.round(sz*1.38)>self.bottom&&!self.brk())return;var ctx=self.p.x;ctx.fillStyle=o.bullet||o.color||"#26332f";ctx.beginPath();ctx.arc(self.x0+8,self.y+sz*.62,4,0,7);ctx.fill();self.text(m[1],{size:sz,fam:o.fam,color:o.color,indent:26,lh:o.lh});}
-  else if(par.trim())self.text(par,o);else self.y+=Math.round(sz*.5);});
- this.y+=o.after||0;};
-Flow.prototype.row=function(left,right,o){o=o||{};var sz=o.size||28,fam=o.fam||SANS,ctx=this.p.x;
+  if(m){if(self.y+Math.round(sz*1.38)>self.bottom&&!self.brk())return;var ctx=self.p.x;ctx.fillStyle=o.bullet||o.color||"#26332f";ctx.beginPath();ctx.arc(self.x0+8,self.y+sz*.62,4,0,7);ctx.fill();self.text(m[1],{size:sz,raw:true,fam:o.fam,color:o.color,indent:26,lh:o.lh});}
+  else if(par.trim())self.text(par,Object.assign({},o,{size:sz,raw:true}));else self.y+=Math.round(sz*.5);});
+ this.y+=(o.after||0)*K;};
+Flow.prototype.row=function(left,right,o){o=o||{};var sz=Math.round((o.size||28)*K),fam=o.fam||SANS,ctx=this.p.x;
  ctx.font=fnt(sz,o.weight||700,fam);var rw=right?ctx.measureText(right).width:0;
  var lh=Math.round(sz*1.38);if(this.y+lh*2>this.bottom)this.brk();ctx=this.p.x;
- if(right){ctx.font=fnt(Math.round(sz*.9),400,fam);ctx.fillStyle=o.rcolor||"#5d7069";ctx.textAlign="right";ctx.fillText(right,this.x0+this.w,this.y+sz);ctx.textAlign="left";ctx.font=fnt(Math.round(sz*.9),400,fam);rw=ctx.measureText(right).width;}
- this.text(left,{size:sz,weight:o.weight||700,fam:fam,color:o.color||"#14231f",padR:rw?rw+24:0,lh:1.3});};
-Flow.prototype.rule=function(col,th,gapTop,gapAfter){this.y+=gapTop||0;var ctx=this.p.x;ctx.fillStyle=col;ctx.fillRect(this.x0,this.y,this.w,th||2);this.y+=(th||2)+(gapAfter||0);};
+ if(right){ctx.font=fnt(Math.round(sz*.9),400,fam);ctx.fillStyle=o.rcolor||"#5d7069";ctx.textAlign="right";this.p.t.push({x:this.x0+this.w-ctx.measureText(right).width,y:this.y+sz,s:right,sz:Math.round(sz*.9)});ctx.fillText(right,this.x0+this.w,this.y+sz);ctx.textAlign="left";ctx.font=fnt(Math.round(sz*.9),400,fam);rw=ctx.measureText(right).width;}
+ this.text(left,{size:sz,raw:true,weight:o.weight||700,fam:fam,color:o.color||"#14231f",padR:rw?rw+24:0,lh:1.3});};
+Flow.prototype.rule=function(col,th,gapTop,gapAfter){this.y+=(gapTop||0)*K;var ctx=this.p.x;ctx.fillStyle=col;ctx.fillRect(this.x0,this.y,this.w,th||2);this.y+=(th||2)+(gapAfter||0)*K;};
 
 function skillList(s){return String(s||"").split("\n").map(function(v){return v.trim();}).filter(Boolean);}
 function drawPhoto(ctx,img,cx,cy,r){ctx.save();ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.closePath();ctx.clip();ctx.drawImage(img,cx-r,cy-r,r*2,r*2);ctx.restore();ctx.lineWidth=6;ctx.strokeStyle="#ffffff";ctx.beginPath();ctx.arc(cx,cy,r,0,7);ctx.stroke();}
@@ -196,27 +197,34 @@ function renderCV(d,photoImg){
   var it2=skillList(d.interests);if(it2.length){sec(S(d,"interests"));main.text(it2.join("  •  "),{size:26,fam:fam,after:6});}
   if(d.refs.length){sec(S(d,"refs"));d.refs.forEach(function(r){if(!r.n)return;main.need(90);main.text(r.n,{size:27,weight:700,fam:fam});main.text([r.role,r.contact].filter(Boolean).join(" · "),{size:25,fam:fam,color:"#555",after:8});});}
  }
- return pgs.map(function(p){return p.c;});
+ return pgs.map(function(p){p.c.__t=p.t;return p.c;});
 }
 
+function renderFit(d,img){K=1;var p=renderCV(d,img);if(d.fit&&p.length>1){var ks=[.94,.89,.84,.79,.74];for(var i=0;i<ks.length;i++){K=ks[i];p=renderCV(d,img);if(p.length===1)break;}}K=1;return p;}
+function pageTexts(c){return c.__t||[];}
 /* ================== PDF ================== */
 function canvasJpeg(c){return new Promise(function(res){c.toBlob(function(b){var fr=new FileReader();fr.onload=function(){res(new Uint8Array(fr.result));};fr.readAsArrayBuffer(b);},"image/jpeg",0.92);});}
 function strBytes(s){var a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i)&255;return a;}
-function buildPDF(jpegs,w,h){
+var WIN={8226:149,8211:150,8212:151,8217:146,8216:145,8220:147,8221:148,8364:128,8230:133};
+function winAnsi(t){var o="";for(var i=0;i<t.length;i++){var c=t.charCodeAt(i);if(WIN[c])c=WIN[c];if(c===40||c===41||c===92){o+="\\"+String.fromCharCode(c);}else if(c>=32&&c<127||c>=160&&c<256||c>=128&&c<160&&WIN[t.charCodeAt(i)]){o+=String.fromCharCode(c);}else if(c===32){o+=" ";}}return o;}
+function buildPDF(jpegs,w,h,texts){
  var parts=[],off=0,xref=[];function add(b){parts.push(b);off+=b.length;}
  function obj(n,body){xref[n]=off;add(strBytes(n+" 0 obj\n"));add(typeof body==="string"?strBytes(body):body);add(strBytes("\nendobj\n"));}
  add(strBytes("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"));
- var np=jpegs.length,kids=[];for(var i=0;i<np;i++)kids.push((4+i*3)+" 0 R");
+ var np=jpegs.length,kids=[],pw=595.28,ph=841.89,sc=ph/h;for(var i=0;i<np;i++)kids.push((5+i*3)+" 0 R");
  obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
  obj(2,"<< /Type /Pages /Kids ["+kids.join(" ")+"] /Count "+np+" >>");
- obj(3,"<< /Producer (CV Express) >>");
- for(var k=0;k<np;k++){var base=4+k*3,pw=595.28,ph=841.89;
-  obj(base,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+pw+" "+ph+"] /Resources << /XObject << /Im0 "+(base+2)+" 0 R >> >> /Contents "+(base+1)+" 0 R >>");
-  var cs="q "+pw+" 0 0 "+ph+" 0 0 cm /Im0 Do Q";obj(base+1,"<< /Length "+cs.length+" >>\nstream\n"+cs+"\nendstream");
+ obj(3,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+ obj(4,"<< /Producer (CV Express) >>");
+ for(var k=0;k<np;k++){var base=5+k*3;
+  obj(base,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+pw+" "+ph+"] /Resources << /XObject << /Im0 "+(base+2)+" 0 R >> /Font << /F1 3 0 R >> >> /Contents "+(base+1)+" 0 R >>");
+  var cs="q "+pw+" 0 0 "+ph+" 0 0 cm /Im0 Do Q\nBT 3 Tr\n";
+  (texts&&texts[k]||[]).forEach(function(t){var s2=winAnsi(t.s);if(!s2.trim())return;cs+="/F1 "+(t.sz*sc).toFixed(2)+" Tf 1 0 0 1 "+(t.x*sc).toFixed(2)+" "+((h-t.y)*sc).toFixed(2)+" Tm ("+s2+") Tj\n";});
+  cs+="ET";obj(base+1,"<< /Length "+cs.length+" >>\nstream\n"+cs+"\nendstream");
   var img=jpegs[k],head=strBytes("<< /Type /XObject /Subtype /Image /Width "+w+" /Height "+h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+img.length+" >>\nstream\n"),tail=strBytes("\nendstream"),b=new Uint8Array(head.length+img.length+tail.length);b.set(head,0);b.set(img,head.length);b.set(tail,head.length+img.length);obj(base+2,b);}
- var xo=off,n=4+np*3;add(strBytes("xref\n0 "+n+"\n0000000000 65535 f \n"));
+ var xo=off,n=5+np*3;add(strBytes("xref\n0 "+n+"\n0000000000 65535 f \n"));
  for(var j=1;j<n;j++){var s=String(xref[j]);add(strBytes("0000000000".slice(s.length)+s+" 00000 n \n"));}
- add(strBytes("trailer\n<< /Size "+n+" /Root 1 0 R /Info 3 0 R >>\nstartxref\n"+xo+"\n%%EOF"));
+ add(strBytes("trailer\n<< /Size "+n+" /Root 1 0 R /Info 4 0 R >>\nstartxref\n"+xo+"\n%%EOF"));
  return new Blob(parts,{type:"application/pdf"});
 }
 function cap(){var C=window.Capacitor;return C&&C.isNativePlatform&&C.isNativePlatform()?C:null;}
@@ -232,10 +240,10 @@ function fileName(d,ext){return ("CV-"+(d.name||"mon-cv")).replace(/[^\wÀ-ÿ-]+
 function exportPDF(){
  if(!(CV.name||"").trim()){toast(X("Ajoute au moins ton nom","Add at least your name"));return;}
  toast(X("Création du PDF…","Creating the PDF…"));
- loadPhoto(CV.photo).then(function(img){var pages=renderCV(CV,img);return Promise.all(pages.map(canvasJpeg));}).then(function(j){saveBlob(fileName(CV,"pdf"),buildPDF(j,PW,PH));}).catch(function(){toast(X("Impossible de créer le PDF","Cannot create the PDF"));});
+ loadPhoto(CV.photo).then(function(img){var pages=renderFit(CV,img);window.__lastPages=pages;return Promise.all(pages.map(canvasJpeg));}).then(function(j){saveBlob(fileName(CV,"pdf"),buildPDF(j,PW,PH,window.__lastPages.map(pageTexts)));}).catch(function(){toast(X("Impossible de créer le PDF","Cannot create the PDF"));});
 }
 function exportImg(){
- loadPhoto(CV.photo).then(function(img){var pages=renderCV(CV,img);pages[0].toBlob(function(b){saveBlob(fileName(CV,"jpg"),b);},"image/jpeg",0.92);});
+ loadPhoto(CV.photo).then(function(img){var pages=renderFit(CV,img);pages[0].toBlob(function(b){saveBlob(fileName(CV,"jpg"),b);},"image/jpeg",0.92);});
 }
 function loadPhoto(src){return new Promise(function(res){if(!src){res(null);return;}var i=new Image();i.onload=function(){res(i);};i.onerror=function(){res(null);};i.src=src;});}
 
@@ -266,8 +274,24 @@ function editor(){
  shell(CV.name||X("Mon CV","My résumé"),'<button class="ib" onclick="home()">←</button>',tabs+'<main><div class="wrap">'+body+'</div></main><button class="fab" onclick="preview()">👁 '+X("Aperçu et PDF","Preview & PDF")+'</button>');
 }
 function fld(label,path,val,o){o=o||{};return '<label>'+label+'</label>'+(o.area?'<textarea data-p="'+path+'" placeholder="'+esc(o.ph||"")+'">'+esc(val)+'</textarea>':'<input data-p="'+path+'" value="'+esc(val)+'" placeholder="'+esc(o.ph||"")+'" '+(o.type?'type="'+o.type+'"':'')+'>');}
+function score(d){
+ var tips=[],pts=0,tot=9;
+ function ck(ok,tip){if(ok)pts++;else tips.push(tip);}
+ ck((d.name||"").trim().length>2,X("Ajoute ton nom complet","Add your full name"));
+ ck((d.title||"").trim().length>2,X("Indique le poste visé : les recruteurs le cherchent en premier","Add the job you want: recruiters look for it first"));
+ ck((d.phone||"").trim()&&(d.email||"").indexOf("@")>0,X("Mets un téléphone ET un e-mail","Add both a phone and an e-mail"));
+ ck((d.summary||"").length>=80,X("Écris un profil de 2 à 3 phrases (onglet Profil)","Write a 2–3 sentence profile (Profile tab)"));
+ ck(d.exp.length>0,X("Ajoute une expérience, même un stage ou du bénévolat","Add an experience, even an internship or volunteering"));
+ ck(d.exp.some(function(e){return /^\s*[-•*]/m.test(e.desc||"");}),X("Décris tes missions avec des tirets et des résultats chiffrés","Describe tasks with dashes and numbers"));
+ ck(d.edu.length>0,X("Ajoute ta formation","Add your education"));
+ ck(skillList(d.skills).length>=4,X("Liste au moins 4 compétences","List at least 4 skills"));
+ ck(d.langs.length>0,X("Ajoute tes langues","Add your languages"));
+ return {pct:Math.round(pts/tot*100),tips:tips};
+}
 function tabInfo(){
- return '<div class="card"><div class="cvrow"><img class="photo" id="ph" src="'+(CV.photo||"icon-192.png")+'" style="'+(CV.photo?'':'opacity:.25')+'"><div class="grow"><button class="btn s" onclick="$(\'#pf\').click()">📷 '+X("Photo (facultatif)","Photo (optional)")+'</button>'+(CV.photo?'<button class="btn s r" onclick="rmPhoto()">✕</button>':'')+'<input id="pf" type="file" accept="image/*" style="display:none" onchange="pickPhoto(this)"><div class="mut">'+X("Beaucoup d'employeurs étrangers préfèrent un CV sans photo.","Many foreign employers prefer a résumé without a photo.")+'</div></div></div></div>'+
+ var sc=score(CV);
+ return '<div class="card"><div class="cvrow"><b class="grow">'+X("CV complet à ","Résumé complete: ")+sc.pct+' %</b></div><div style="height:9px;background:var(--pl);border-radius:6px;overflow:hidden;margin:6px 0"><div style="height:100%;width:'+sc.pct+'%;background:var(--p)"></div></div>'+(sc.tips.length?'<div class="mut">💡 '+esc(sc.tips[0])+'</div>':'<div class="mut">✅ '+X("Bravo, ton CV est complet !","Great, your résumé is complete!")+'</div>')+'</div>'+
+ '<div class="card"><div class="cvrow"><img class="photo" id="ph" src="'+(CV.photo||"icon-192.png")+'" style="'+(CV.photo?'':'opacity:.25')+'"><div class="grow"><button class="btn s" onclick="$(\'#pf\').click()">📷 '+X("Photo (facultatif)","Photo (optional)")+'</button>'+(CV.photo?'<button class="btn s r" onclick="rmPhoto()">✕</button>':'')+'<input id="pf" type="file" accept="image/*" style="display:none" onchange="pickPhoto(this)"><div class="mut">'+X("Beaucoup d'employeurs étrangers préfèrent un CV sans photo.","Many foreign employers prefer a résumé without a photo.")+'</div></div></div></div>'+
  '<div class="card">'+fld(X("Nom et prénom *","Full name *"),"name",CV.name,{ph:"Afi Mensah"})+fld(X("Métier ou poste visé","Job title"),"title",CV.title,{ph:X("Assistante commerciale","Sales assistant")})+
  fld("Email","email",CV.email,{type:"email"})+fld(X("Téléphone","Phone"),"phone",CV.phone,{type:"tel",ph:"+228 90 00 00 00"})+fld(X("Ville, pays","City, country"),"city",CV.city,{ph:"Lomé, Togo"})+
  fld(X("Lien (LinkedIn, portfolio…)","Link (LinkedIn, portfolio…)"),"link",CV.link)+fld(X("Date de naissance (facultatif)","Date of birth (optional)"),"birth",CV.birth,{ph:"12/03/2000"})+'</div>';
@@ -303,6 +327,7 @@ function tabMore(){
  h+='<div class="card"><p class="h">'+X("Références","References")+'</p>';
  CV.refs.forEach(function(r,i){h+='<div class="item">'+fld(X("Nom","Name"),"refs."+i+".n",r.n)+fld(X("Poste / lien","Position"),"refs."+i+".role",r.role)+fld(X("Contact","Contact"),"refs."+i+".contact",r.contact)+'<button class="btn s r" onclick="del(\'refs\','+i+')">🗑</button></div>';});
  h+='<button class="btn g" onclick="add(\'refs\')">＋ '+X("Ajouter une référence","Add a reference")+'</button></div>';
+ h+='<button class="btn g" onclick="letter()">✉ '+X("Écrire la lettre de motivation","Write the cover letter")+'</button>';
  h+='<div class="card"><label>'+X("Langue du CV (titres des sections)","Résumé language (section titles)")+'</label><div class="row"><button class="btn g" onclick="CV.cl=\'fr\';persist();editor()">Français'+(CV.cl==="fr"?" ✓":"")+'</button><button class="btn g" onclick="CV.cl=\'en\';persist();editor()">English'+(CV.cl==="en"?" ✓":"")+'</button></div></div>';
  return h;
 }
@@ -317,18 +342,58 @@ document.addEventListener("input",function(e){var el=e.target,p=el.getAttribute&
 function pickPhoto(inp){var f=inp.files&&inp.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(im.width,im.height),c=document.createElement("canvas");c.width=c.height=420;c.getContext("2d").drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,420,420);CV.photo=c.toDataURL("image/jpeg",0.85);persist();editor();};im.onerror=function(){toast(X("Image illisible","Unreadable image"));};im.src=fr.result;};fr.readAsDataURL(f);}
 function rmPhoto(){CV.photo="";persist();editor();}
 
+/* ---- lettre de motivation ---- */
+function letterGen(){
+ var d=CV,L=d.letter||(d.letter={}),en=d.cl==="en",st=skillList(d.skills).slice(0,3),exp=d.exp[0];
+ var job=L.job||d.title||(en?"[position]":"[poste]"),co=L.co||(en?"your company":"votre entreprise");
+ var past=exp&&exp.to&&exp.to!==""&&exp.to.toLowerCase()!==S(d,"present").toLowerCase();
+ var who=exp&&exp.role?(en?(past?"I most recently worked as ":"I currently work as ")+exp.role+(exp.org?" at "+exp.org:"")+". ":(past?"J'ai récemment occupé le poste de ":"Actuellement en poste comme ")+exp.role+(exp.org?" chez "+exp.org:"")+". "):"";
+ var t;
+ if(en){t=(L.to||"Dear Sir or Madam")+",\n\n"+who+"I am writing to apply for the position of "+job+" at "+co+".\n\n"+(L.why||"Your company's reputation and projects motivate me, and I am convinced my skills and seriousness would be a real asset to your team.")+"\n\n"+(st.length?"My main strengths:\n"+st.map(function(x){return "- "+x;}).join("\n")+"\n\n":"")+"I would be glad to discuss my application in an interview at your convenience. Thank you for your time and consideration.\n\nYours faithfully,\n"+(d.name||"");}
+ else{t=(L.to||"Madame, Monsieur")+",\n\n"+who+"Je vous adresse ma candidature pour le poste de "+job+" au sein de "+co+".\n\n"+(L.why||"Votre entreprise et ses projets me motivent, et je suis convaincu(e) que mon sérieux et mes compétences seraient un véritable atout pour votre équipe.")+"\n\n"+(st.length?"Mes principaux atouts :\n"+st.map(function(x){return "- "+x;}).join("\n")+"\n\n":"")+"Disponible pour un entretien à votre convenance, je vous remercie de l'attention portée à ma candidature et vous prie d'agréer, Madame, Monsieur, mes salutations distinguées.\n\n"+(d.name||"");}
+ L.body=t;persist();letter();
+}
+function letter(){
+ VIEW="letter";var L=CV.letter||(CV.letter={co:"",job:"",to:"",why:"",body:"",place:CV.city||""});
+ var h='<main><div class="wrap"><div class="card"><p class="h">✉ '+X("Lettre de motivation","Cover letter")+'</p>'+
+ fld(X("Entreprise","Company"),"letter.co",L.co,{ph:"Société ABC"})+fld(X("Poste visé","Position"),"letter.job",L.job,{ph:CV.title||""})+fld(X("Formule d'appel (facultatif)","Greeting (optional)"),"letter.to",L.to,{ph:X("Madame, Monsieur","Dear Sir or Madam")})+
+ fld(X("Pourquoi cette entreprise ? (1 à 2 phrases)","Why this company? (1–2 sentences)"),"letter.why",L.why,{area:1})+
+ '<button class="btn g" onclick="letterGen()">✨ '+X("Générer le texte","Generate the text")+'</button></div>'+
+ '<div class="card"><label>'+X("Texte de la lettre (modifiable)","Letter text (editable)")+'</label><textarea data-p="letter.body" style="min-height:300px">'+esc(L.body||"")+'</textarea></div>'+
+ '<button class="btn" onclick="exportLetter()">📄 '+X("Partager la lettre en PDF","Share the letter as PDF")+'</button><button class="btn g" onclick="editor()">← '+X("Retour au CV","Back to résumé")+'</button></div></main>';
+ shell(X("Lettre","Letter"),'<button class="ib" onclick="editor()">←</button>',h);
+}
+function renderLetter(d){
+ var L=d.letter||{},pg=[];var p=newPage();pg.push(p);var M=120;
+ var fl=new Flow(p,{x:M,w:PW-2*M,y:110,top:110,bottom:PH-110,onPage:function(){var q=newPage();pg.push(q);return q;}});
+ fl.text(d.name||"",{size:34,weight:800,color:"#14231f",raw:true});
+ [d.phone,d.email,d.city].filter(Boolean).forEach(function(c){fl.text(c,{size:26,color:"#5d7069",raw:true});});
+ fl.gap(30);
+ var dt=new Date().toLocaleDateString(d.cl==="en"?"en-GB":"fr-FR",{day:"numeric",month:"long",year:"numeric"});
+ fl.text((d.city?d.city.split(",")[0]+", ":"")+dt,{size:26,align:"right",raw:true,after:30});
+ if(L.co)fl.text(L.co,{size:29,weight:700,raw:true,after:20});
+ fl.text((d.cl==="en"?"Subject: Application for ":"Objet : Candidature au poste de ")+(L.job||d.title||""),{size:28,weight:800,color:acc(d),raw:true,after:26});
+ fl.rich(L.body||"",{size:28,bullet:acc(d),raw:true});
+ return pg.map(function(x){x.c.__t=x.t;return x.c;});
+}
+function acc(d){return d.color||"#0f766e";}
+function exportLetter(){
+ if(!(CV.letter&&CV.letter.body)){toast(X("Génère d'abord le texte","Generate the text first"));return;}
+ toast(X("Création du PDF…","Creating the PDF…"));var pages=renderLetter(CV);
+ Promise.all(pages.map(canvasJpeg)).then(function(j){saveBlob(fileName({name:"Lettre-"+(CV.name||"")},"pdf"),buildPDF(j,PW,PH,pages.map(pageTexts)));});
+}
 /* ---- aperçu ---- */
 function preview(){
  VIEW="prev";
  var tp=[["modern",X("Moderne","Modern")],["classic",X("Classique","Classic")],["compact",X("Sobre","Plain")]];
  var h='<div class="tabs" style="gap:8px">'+tp.map(function(t){return '<div class="tpl'+(CV.tpl===t[0]?' on':'')+'" onclick="CV.tpl=\''+t[0]+'\';persist();preview()">'+t[1]+'</div>';}).join("")+'</div>'+
  '<div class="tabs">'+COLORS.map(function(c){return '<span class="sw'+(CV.color===c?' on':'')+'" style="background:'+c+'" onclick="CV.color=\''+c+'\';persist();preview()"></span>';}).join("")+'</div>'+
- '<main style="padding:0 0 96px"><div class="pv" id="pv"></div></main><div style="position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fffffff2;border-top:1px solid var(--line);display:flex;gap:8px"><button class="btn" style="margin:0;flex:2" onclick="exportPDF()">📄 '+X("Partager le PDF","Share PDF")+'</button><button class="btn g" style="margin:0;flex:1" onclick="exportImg()">🖼 JPG</button></div>';
+ '<div class="tabs"><div class="tpl'+(CV.fit?' on':'')+'" style="flex:none;padding:8px 14px" onclick="CV.fit=!CV.fit;persist();preview()">'+X('Tenir sur 1 page','Fit on 1 page')+(CV.fit?' ✓':'')+'</div></div><main style="padding:0 0 96px"><div class="pv" id="pv"></div></main><div style="position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fffffff2;border-top:1px solid var(--line);display:flex;gap:8px"><button class="btn" style="margin:0;flex:2" onclick="exportPDF()">📄 '+X("Partager le PDF","Share PDF")+'</button><button class="btn g" style="margin:0;flex:1" onclick="exportImg()">🖼 JPG</button></div>';
  shell(X("Aperçu","Preview"),'<button class="ib" onclick="editor()">←</button>',h);
- loadPhoto(CV.photo).then(function(img){var pages=renderCV(CV,img),pv=$("#pv");if(!pv)return;pages.forEach(function(c){pv.appendChild(c);});
+ loadPhoto(CV.photo).then(function(img){var pages=renderFit(CV,img),pv=$("#pv");if(!pv)return;pages.forEach(function(c){pv.appendChild(c);});
   if(pages.length>1){var n=document.createElement("div");n.className="mut";n.style.textAlign="center";n.textContent=pages.length+" "+X("pages. Astuce : un CV d'1 à 2 pages suffit.","pages. Tip: 1–2 pages is enough.");pv.appendChild(n);}});
 }
-window.__cv={get CV(){return CV;},renderCV:renderCV,buildPDF:buildPDF,example:example,blank:blank,canvasJpeg:canvasJpeg,PW:PW,PH:PH,loadPhoto:loadPhoto,newCV:newCV,preview:preview};
+window.__cv={renderFit:renderFit,renderLetter:renderLetter,letterGen:letterGen,score:score,get CV(){return CV;},renderCV:renderCV,buildPDF:buildPDF,example:example,blank:blank,canvasJpeg:canvasJpeg,PW:PW,PH:PH,loadPhoto:loadPhoto,newCV:newCV,preview:preview};
 home();
 if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
 </script></body></html>
