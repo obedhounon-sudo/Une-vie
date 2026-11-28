@@ -1,0 +1,8 @@
+{
+  "appId": "com.obedklein.stockexpress",
+  "appName": "Stock Express",
+  "webDir": "www",
+  "backgroundColor": "#ea580c",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

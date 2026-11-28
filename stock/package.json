@@ -1,0 +1,16 @@
+{
+  "name": "stock-express",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CV Express : générateur de CV en PDF",
+  "dependencies": {
+    "@capacitor/android": "latest",
+    "@capacitor/cli": "latest",
+    "@capacitor/core": "latest",
+    "@capacitor/filesystem": "latest",
+    "@capacitor/share": "latest"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "latest"
+  }
+}

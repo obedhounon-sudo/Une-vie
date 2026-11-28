@@ -1,0 +1,30 @@
+{
+  "name": "stock-express-bureau",
+  "productName": "Stock Express",
+  "version": "1.0.0",
+  "description": "Stock Express pour Windows : gestion de stock simple",
+  "author": "Obed Hounon (obedklein)",
+  "main": "main.js",
+  "scripts": { "start": "electron ." },
+  "build": {
+    "appId": "com.obedklein.stockexpress.bureau",
+    "productName": "Stock Express",
+    "files": ["main.js", "index.html"],
+    "directories": { "output": "dist" },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "Stock-Express-Installateur-${version}.${ext}"
+    },
+    "portable": { "artifactName": "Stock-Express-Portable-${version}.${ext}" }
+  },
+  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.0.0" }
+}
