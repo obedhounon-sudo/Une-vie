@@ -340,6 +340,20 @@ function exportImg(){
 function loadPhoto(src){return new Promise(function(res){if(!src){res(null);return;}var i=new Image();i.onload=function(){res(i);};i.onerror=function(){res(null);};i.src=src;});}
 
 /* ================== Interface ================== */
+/* ---------- pubs : 3 pubs regardées = modèles premium ---------- */
+var ADS={gameId:"800433454",rewarded:"Rewarded_Android",test:false,need:3},PREM={dark:1,band:1,timeline:1};
+var adsPlug=null,adsReady=false,adsBusy=false;
+function adCount(){try{return Math.min(ADS.need,+localStorage.getItem("cv_ads")||0);}catch(e){return 0;}}
+function adSet(n){try{localStorage.setItem("cv_ads",String(n));}catch(e){}}
+function isLocked(t){return !!PREM[t]&&adCount()<ADS.need;}
+function adsPlugin(){if(adsPlug)return adsPlug;try{var C=window.Capacitor;if(!C||!(C.isNativePlatform?C.isNativePlatform():false))return null;adsPlug=(C.Plugins&&C.Plugins.UnityAds)||(C.registerPlugin?C.registerPlugin("UnityAds"):null);}catch(e){adsPlug=null;}return adsPlug;}
+function adsShow(){var pl=adsPlugin();if(!pl)return Promise.resolve({completed:false,error:"web"});if(adsBusy)return Promise.resolve({completed:false,error:"busy"});adsBusy=true;
+ var ini=adsReady?Promise.resolve():pl.init({gameId:ADS.gameId,test:ADS.test}).then(function(){adsReady=true;});
+ return ini.then(function(){return pl.showAd({placement:ADS.rewarded});}).then(function(r){adsBusy=false;return r||{completed:false};}).catch(function(e){adsBusy=false;return {completed:false,error:String(e&&e.message||e)};});}
+function pickTpl(t){if(isLocked(t)){unlockBox(t);return;}CV.tpl=t;persist();preview();}
+function unlockBox(t){var n=adCount(),o=document.createElement("div");o.id="ulk";o.style.cssText="position:fixed;inset:0;background:#000a;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px";
+ o.innerHTML='<div style="background:#fff;border-radius:18px;padding:20px;max-width:340px;width:100%;text-align:center;color:#14231f"><div style="font-size:38px">🔒</div><h2 style="margin:6px 0">'+X("Modèles premium","Premium templates")+'</h2><p style="color:#5d7069;margin:6px 0 14px">'+X("Regarde "+ADS.need+" courtes pubs pour débloquer pour toujours les modèles Sombre, Élégant et Chronologie.","Watch "+ADS.need+" short ads to unlock the Dark, Elegant and Timeline templates forever.")+'</p><div style="font-size:26px;font-weight:800;margin-bottom:12px">'+n+' / '+ADS.need+'</div><button class="btn" id="ulkgo" style="margin:0 0 8px">▶ '+X("Regarder une pub","Watch an ad")+'</button><button class="btn g" style="margin:0" onclick="document.getElementById(\'ulk\').remove()">'+X("Plus tard","Later")+'</button></div>';
+ document.body.appendChild(o);document.getElementById("ulkgo").onclick=function(){var b=this;b.disabled=true;b.textContent="…";adsShow().then(function(r){o.remove();if(r.completed){var c=adCount()+1;adSet(c);if(c>=ADS.need){toast(X("🎉 Modèles débloqués !","🎉 Templates unlocked!"));CV.tpl=t;persist();preview();}else{toast(c+" / "+ADS.need);unlockBox(t);}}else if(r.error==="web"){toast(X("Disponible dans l'application Android","Available in the Android app"));}else{toast(X("Pub indisponible, réessaie dans un instant","Ad unavailable, try again shortly"));}});};}
 function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove();},1900);}
 function shell(title,left,body,extra){
  $("#app").innerHTML='<div class="top">'+(left||"")+'<h1>'+esc(title)+'</h1>'+(extra||"")+'</div>'+body;}
@@ -495,14 +509,14 @@ function exportLetter(){
 function preview(){
  VIEW="prev";
  var tp=[["modern",X("Moderne","Modern")],["dark",X("Sombre","Dark")],["band",X("Élégant","Elegant")],["timeline",X("Chronologie","Timeline")],["classic",X("Classique","Classic")],["compact",X("Sobre","Plain")]];
- var h='<div class="tabs" style="gap:8px">'+tp.map(function(t){return '<div class="tpl'+(CV.tpl===t[0]?' on':'')+'" onclick="CV.tpl=\''+t[0]+'\';persist();preview()">'+t[1]+'</div>';}).join("")+'</div>'+
+ var h='<div class="tabs" style="gap:8px">'+tp.map(function(t){return '<div class="tpl'+(CV.tpl===t[0]?' on':'')+'" onclick="pickTpl(\''+t[0]+'\')">'+(isLocked(t[0])?'🔒 ':'')+t[1]+'</div>';}).join("")+'</div>'+
  '<div class="tabs">'+COLORS.map(function(c){return '<span class="sw'+(CV.color===c?' on':'')+'" style="background:'+c+'" onclick="CV.color=\''+c+'\';persist();preview()"></span>';}).join("")+'</div>'+
  '<div class="tabs"><div class="tpl'+(CV.fit?' on':'')+'" style="flex:none;padding:8px 14px" onclick="CV.fit=!CV.fit;persist();preview()">'+X('Tenir sur 1 page','Fit on 1 page')+(CV.fit?' ✓':'')+'</div></div><main style="padding:0 0 96px"><div class="pv" id="pv"></div></main><div style="position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fffffff2;border-top:1px solid var(--line);display:flex;gap:8px"><button class="btn" style="margin:0;flex:2" onclick="exportPDF()">📄 PDF</button><button class="btn g" style="margin:0;flex:2" onclick="exportDocx()">📝 Word</button><button class="btn g" style="margin:0;flex:1" onclick="exportImg()">🖼</button></div>';
  shell(X("Aperçu","Preview"),'<button class="ib" onclick="editor()">←</button>',h);
  loadPhoto(CV.photo).then(function(img){var pages=renderFit(CV,img),pv=$("#pv");if(!pv)return;pages.forEach(function(c){pv.appendChild(c);});
   if(pages.length>1){var n=document.createElement("div");n.className="mut";n.style.textAlign="center";n.textContent=pages.length+" "+X("pages. Astuce : un CV d'1 à 2 pages suffit.","pages. Tip: 1–2 pages is enough.");pv.appendChild(n);}});
 }
-window.__cv={buildDocx:buildDocx,docxBody:docxBody,letterDocx:letterDocx,renderFit:renderFit,renderLetter:renderLetter,letterGen:letterGen,score:score,get CV(){return CV;},renderCV:renderCV,buildPDF:buildPDF,example:example,blank:blank,canvasJpeg:canvasJpeg,PW:PW,PH:PH,loadPhoto:loadPhoto,newCV:newCV,preview:preview};
+window.__cv={adSet:adSet,isLocked:isLocked,pickTpl:pickTpl,buildDocx:buildDocx,docxBody:docxBody,letterDocx:letterDocx,renderFit:renderFit,renderLetter:renderLetter,letterGen:letterGen,score:score,get CV(){return CV;},renderCV:renderCV,buildPDF:buildPDF,example:example,blank:blank,canvasJpeg:canvasJpeg,PW:PW,PH:PH,loadPhoto:loadPhoto,newCV:newCV,preview:preview};
 home();
 if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
 </script></body></html>
