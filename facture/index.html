@@ -181,7 +181,7 @@ function unlockBox(){var n=adCount(),o=document.createElement("div");o.id="ulk";
 /* ---------- écrans ---------- */
 function totalOf(d){return calc(d).total;}
 function home(){VIEW="home";D=null;
- var h='<main><div class="wrap"><div class="row" style="margin:6px 0"><button class="btn" onclick="newDoc(\'facture\')">＋ Facture</button><button class="btn" onclick="newDoc(\'devis\')">＋ Devis</button><button class="btn" onclick="newDoc(\'recu\')">＋ Reçu</button></div>';
+ var h='<main><div class="wrap"><div class="row" style="margin:6px 0"><button class="btn" style="font-size:15px;padding:14px 4px;white-space:nowrap" onclick="newDoc(\'facture\')">＋ Facture</button><button class="btn" style="font-size:15px;padding:14px 4px;white-space:nowrap" onclick="newDoc(\'devis\')">＋ Devis</button><button class="btn" style="font-size:15px;padding:14px 4px;white-space:nowrap" onclick="newDoc(\'recu\')">＋ Reçu</button></div>';
  if(!BIZ.name)h+='<div class="card" style="background:var(--pl)"><b>Commence par ton entreprise</b><div class="mut" style="margin:4px 0 8px">Ton nom, ton téléphone et ton numéro Mobile Money apparaîtront sur tes documents.</div><button class="btn" onclick="bizScreen()">Renseigner mon entreprise</button></div>';
  else h+='<button class="btn g" onclick="bizScreen()">🏢 '+esc(BIZ.name)+' — modifier</button>';
  h+='<div class="chips" style="margin:10px 0">'+[["all","Tous"],["facture","Factures"],["devis","Devis"],["recu","Reçus"]].map(function(f){return '<span class="chip" style="'+(FILTER===f[0]?'background:var(--p);color:#fff':'')+'" onclick="FILTER=\''+f[0]+'\';home()">'+f[1]+'</span>';}).join("")+'</div>';
