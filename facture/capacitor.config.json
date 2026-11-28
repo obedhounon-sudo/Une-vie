@@ -1,0 +1,8 @@
+{
+  "appId": "com.obedklein.factureexpress",
+  "appName": "Facture Express",
+  "webDir": "www",
+  "backgroundColor": "#1d4ed8",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

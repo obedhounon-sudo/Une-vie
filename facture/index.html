@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="fr"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#1d4ed8">
+<title>Facture Express</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bg:#f3f5fa;--card:#fff;--ink:#14231f;--mut:#5d7069;--line:#dbe1ee;--p:#1d4ed8;--p2:#1e3a8a;--pl:#e3ebfd;--red:#c0392b}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px}
+body{overflow:hidden}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+.top{background:var(--p);color:#fff;padding:calc(10px + env(safe-area-inset-top)) 14px 10px;display:flex;align-items:center;gap:10px;flex:none}
+.top h1{font-size:19px;margin:0;flex:1;font-weight:800;letter-spacing:.3px}
+.ib{background:#ffffff26;border:0;color:#fff;border-radius:10px;height:38px;min-width:38px;padding:0 10px;font-size:15px;font-weight:700}
+main{flex:1;overflow-y:auto;padding:12px 14px 96px;-webkit-overflow-scrolling:touch}
+.wrap{max-width:640px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:10px 0}
+.btn{display:block;width:100%;border:0;border-radius:12px;background:var(--p);color:#fff;font-weight:800;font-size:16px;padding:14px;margin:8px 0;text-align:center}
+.btn.g{background:var(--pl);color:var(--p2)}
+.btn.r{background:#fbe9e7;color:var(--red)}
+.btn.s{display:inline-block;width:auto;padding:8px 12px;font-size:14px;margin:4px 4px 4px 0}
+label{display:block;font-size:13px;font-weight:700;color:var(--mut);margin:10px 0 4px}
+input,textarea,select{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font-size:16px;font-family:inherit;background:#fff;color:var(--ink)}
+textarea{min-height:92px;resize:vertical}
+input:focus,textarea:focus{outline:2px solid var(--p);border-color:var(--p)}
+.row{display:flex;gap:8px}.row>*{flex:1;min-width:0}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:8px 14px;background:#fff;border-bottom:1px solid var(--line);flex:none}
+.tab{flex:none;padding:8px 13px;border-radius:20px;background:var(--bg);font-weight:700;font-size:14px;color:var(--mut);white-space:nowrap}
+.tab.on{background:var(--p);color:#fff}
+.fab{position:fixed;left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));max-width:612px;margin:0 auto;background:var(--p2);color:#fff;border:0;border-radius:14px;padding:15px;font-weight:800;font-size:17px;box-shadow:0 6px 18px #0003}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{background:var(--pl);color:var(--p2);border-radius:16px;padding:6px 11px;font-size:13px;font-weight:700}
+.h{font-weight:800;font-size:17px;margin:0 0 4px}
+.mut{color:var(--mut);font-size:13px}
+.item{border-left:4px solid var(--p);padding-left:10px;margin:10px 0}
+.pv{background:#cfd8d5;padding:10px 0}
+.pv canvas{display:block;width:100%;height:auto;margin:0 auto 12px;box-shadow:0 2px 10px #0003;background:#fff;max-width:640px}
+.sw{display:inline-block;width:34px;height:34px;border-radius:50%;margin:4px 6px 4px 0;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.sw.on{box-shadow:0 0 0 3px var(--ink)}
+.tpl{flex:1;white-space:nowrap;padding-left:10px!important;padding-right:10px!important;border:2px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center;font-weight:800;font-size:14px;background:#fff}
+.tpl.on{border-color:var(--p);background:var(--pl);color:var(--p2)}
+.photo{width:84px;height:84px;border-radius:50%;object-fit:cover;background:var(--pl);border:2px solid var(--line)}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#14231fe6;color:#fff;padding:10px 16px;border-radius:12px;z-index:30;font-size:14px;max-width:90%;text-align:center}
+.cvrow{display:flex;align-items:center;gap:10px}
+.cvrow .grow{flex:1;min-width:0}
+.cvrow b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.big{font-size:34px;font-weight:900;color:var(--p);text-align:center;margin:20px 0 4px}
+</style></head><body>
+<div id="app"></div>
+<script>
+"use strict";
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function $(s){return document.querySelector(s);}
+function uid(){return Math.random().toString(36).slice(2,9);}
+function canvasJpeg(c){return new Promise(function(res){c.toBlob(function(b){var fr=new FileReader();fr.onload=function(){res(new Uint8Array(fr.result));};fr.readAsArrayBuffer(b);},"image/jpeg",0.92);});}
+function strBytes(s){var a=new Uint8Array(s.length);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i)&255;return a;}
+var WIN={8226:149,8211:150,8212:151,8217:146,8216:145,8220:147,8221:148,8364:128,8230:133};
+function winAnsi(t){var o="";for(var i=0;i<t.length;i++){var c=t.charCodeAt(i);if(WIN[c])c=WIN[c];if(c===40||c===41||c===92){o+="\\"+String.fromCharCode(c);}else if(c>=32&&c<127||c>=160&&c<256||c>=128&&c<160&&WIN[t.charCodeAt(i)]){o+=String.fromCharCode(c);}else if(c===32){o+=" ";}}return o;}
+function buildPDF(jpegs,w,h,texts){
+ var parts=[],off=0,xref=[];function add(b){parts.push(b);off+=b.length;}
+ function obj(n,body){xref[n]=off;add(strBytes(n+" 0 obj\n"));add(typeof body==="string"?strBytes(body):body);add(strBytes("\nendobj\n"));}
+ add(strBytes("%PDF-1.4\n%\xE2\xE3\xCF\xD3\n"));
+ var np=jpegs.length,kids=[],pw=595.28,ph=841.89,sc=ph/h;for(var i=0;i<np;i++)kids.push((5+i*3)+" 0 R");
+ obj(1,"<< /Type /Catalog /Pages 2 0 R >>");
+ obj(2,"<< /Type /Pages /Kids ["+kids.join(" ")+"] /Count "+np+" >>");
+ obj(3,"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+ obj(4,"<< /Producer (Facture Express) >>");
+ for(var k=0;k<np;k++){var base=5+k*3;
+  obj(base,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+pw+" "+ph+"] /Resources << /XObject << /Im0 "+(base+2)+" 0 R >> /Font << /F1 3 0 R >> >> /Contents "+(base+1)+" 0 R >>");
+  var cs="q "+pw+" 0 0 "+ph+" 0 0 cm /Im0 Do Q\nBT 3 Tr\n";
+  (texts&&texts[k]||[]).forEach(function(t){var s2=winAnsi(t.s);if(!s2.trim())return;cs+="/F1 "+(t.sz*sc).toFixed(2)+" Tf 1 0 0 1 "+(t.x*sc).toFixed(2)+" "+((h-t.y)*sc).toFixed(2)+" Tm ("+s2+") Tj\n";});
+  cs+="ET";obj(base+1,"<< /Length "+cs.length+" >>\nstream\n"+cs+"\nendstream");
+  var img=jpegs[k],head=strBytes("<< /Type /XObject /Subtype /Image /Width "+w+" /Height "+h+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+img.length+" >>\nstream\n"),tail=strBytes("\nendstream"),b=new Uint8Array(head.length+img.length+tail.length);b.set(head,0);b.set(img,head.length);b.set(tail,head.length+img.length);obj(base+2,b);}
+ var xo=off,n=5+np*3;add(strBytes("xref\n0 "+n+"\n0000000000 65535 f \n"));
+ for(var j=1;j<n;j++){var s=String(xref[j]);add(strBytes("0000000000".slice(s.length)+s+" 00000 n \n"));}
+ add(strBytes("trailer\n<< /Size "+n+" /Root 1 0 R /Info 4 0 R >>\nstartxref\n"+xo+"\n%%EOF"));
+ return new Blob(parts,{type:"application/pdf"});
+}
+
+function cap(){var C=window.Capacitor;return C&&C.isNativePlatform&&C.isNativePlatform()?C:null;}
+function nativeShare(name,blob){var C=cap(),P=C.Plugins||{},FS=P.Filesystem,SH=P.Share;
+ return new Promise(function(res,rej){if(!FS||!SH){rej(new Error("plugin"));return;}var fr=new FileReader();fr.onload=function(){var b64=String(fr.result).split(",")[1];
+  FS.writeFile({path:name,data:b64,directory:"CACHE"}).then(function(r){return SH.share({title:name,files:[r.uri]});}).then(res,rej);};fr.readAsDataURL(blob);});}
+function saveBlob(name,blob){
+ if(cap()){nativeShare(name,blob).catch(function(){toast(X("Partage impossible sur cet appareil","Sharing not possible on this device"));});return;}
+ try{var f=new File([blob],name,{type:blob.type});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f],title:name}).catch(function(){});return;}}catch(x){}
+ try{var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();toast(X("Fichier prêt","File ready"));}catch(e){toast(X("Téléchargement impossible ici","Download not possible here"));}
+}
+
+function loadPhoto(src){return new Promise(function(res){if(!src){res(null);return;}var i=new Image();i.onload=function(){res(i);};i.onerror=function(){res(null);};i.src=src;});}
+
+
+/* ---------- pubs : 3 pubs regardées = modèles premium ---------- */
+var ADS={gameId:"800433454",rewarded:"Rewarded_Android",test:false,need:3},PREM={dark:1,band:1,timeline:1};
+var adsPlug=null,adsReady=false,adsBusy=false;
+function adCount(){try{return Math.min(ADS.need,+localStorage.getItem("cv_ads")||0);}catch(e){return 0;}}
+function adSet(n){try{localStorage.setItem("cv_ads",String(n));}catch(e){}}
+function isLocked(t){return !!PREM[t]&&adCount()<ADS.need;}
+function adsPlugin(){if(adsPlug)return adsPlug;try{var C=window.Capacitor;if(!C||!(C.isNativePlatform?C.isNativePlatform():false))return null;adsPlug=(C.Plugins&&C.Plugins.UnityAds)||(C.registerPlugin?C.registerPlugin("UnityAds"):null);}catch(e){adsPlug=null;}return adsPlug;}
+function adsShow(){var pl=adsPlugin();if(!pl)return Promise.resolve({completed:false,error:"web"});if(adsBusy)return Promise.resolve({completed:false,error:"busy"});adsBusy=true;
+ var ini=adsReady?Promise.resolve():pl.init({gameId:ADS.gameId,test:ADS.test}).then(function(){adsReady=true;});
+ return ini.then(function(){return pl.showAd({placement:ADS.rewarded});}).then(function(r){adsBusy=false;return r||{completed:false};}).catch(function(e){adsBusy=false;return {completed:false,error:String(e&&e.message||e)};});}
+
+function toast(t){var d=document.createElement("div");d.className="toast";d.textContent=t;document.body.appendChild(d);setTimeout(function(){d.remove();},1900);}
+function shell(title,left,body,extra){
+ $("#app").innerHTML='<div class="top">'+(left||"")+'<h1>'+esc(title)+'</h1>'+(extra||"")+'</div>'+body;}
+
+/* ================== Facture Express ================== */
+var LANG="fr";function X(fr){return fr;}
+var SAVE={biz:{name:"",addr:"",phone:"",email:"",nif:"",pay:"",cur:"FCFA",color:"#1d4ed8",logo:"",foot:true,cnt:{facture:0,devis:0,recu:0}},docs:[]};
+try{var _s=JSON.parse(localStorage.getItem("fa_v1"));if(_s&&_s.docs){SAVE=_s;SAVE.biz=Object.assign({cnt:{facture:0,devis:0,recu:0},foot:true,color:"#1d4ed8",cur:"FCFA"},SAVE.biz||{});}}catch(e){}
+var BIZ=SAVE.biz,D=null,VIEW="home",FILTER="all",saveT=null;
+function persist(){clearTimeout(saveT);saveT=setTimeout(function(){try{localStorage.setItem("fa_v1",JSON.stringify(SAVE));}catch(e){}},200);}
+var TYPES={facture:{n:"Facture",N:"FACTURE",pre:"FAC",to:"FACTURÉ À",w:"Arrêtée la présente facture à la somme de"},devis:{n:"Devis",N:"DEVIS",pre:"DEV",to:"DESTINATAIRE",w:"Arrêté le présent devis à la somme de"},recu:{n:"Reçu",N:"REÇU",pre:"REC",to:"REÇU DE",w:"Reçu la somme de"}};
+/* ---------- nombres ---------- */
+var U=["zéro","un","deux","trois","quatre","cinq","six","sept","huit","neuf","dix","onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"],TN=["","","vingt","trente","quarante","cinquante","soixante"];
+function b100(n,fin){if(n<20)return U[n];var t=Math.floor(n/10),u=n%10;if(t<=6)return TN[t]+(u===1?" et un":u?"-"+U[u]:"");if(t===7){var r=n-60;return "soixante"+(r===11?" et onze":"-"+U[r]);}if(t===8)return "quatre-vingt"+(u?"-"+U[u]:(fin?"s":""));return "quatre-vingt-"+U[n-80];}
+function b1000(n,fin){var c=Math.floor(n/100),r=n%100,s="";if(c){s=(c>1?U[c]+" ":"")+"cent"+(r===0&&c>1&&fin?"s":"");if(r)s+=" ";}if(r)s+=b100(r,fin);return s;}
+function nw(n){n=Math.floor(n);if(n<=0)return "zéro";var o=[],g=Math.floor(n/1e9),m=Math.floor(n%1e9/1e6),k=Math.floor(n%1e6/1e3),r=n%1e3;if(g)o.push(b1000(g,false)+" milliard"+(g>1?"s":""));if(m)o.push(b1000(m,false)+" million"+(m>1?"s":""));if(k)o.push((k===1?"":b1000(k,false)+" ")+"mille");if(r)o.push(b1000(r,true));return o.join(" ");}
+function dec(){return BIZ.cur==="FCFA"?0:2;}
+function money(n){n=+n||0;var d=dec(),neg=n<0;n=Math.abs(n);var s=n.toFixed(d),p=s.split("."),i=p[0].replace(/\B(?=(\d{3})+(?!\d))/g," ");return (neg?"-":"")+i+(p[1]?","+p[1]:"");}
+function cur(){return BIZ.cur==="FCFA"?"FCFA":BIZ.cur==="EUR"?"€":"$";}
+function words(n){var d=dec(),w=nw(Math.floor(n));if(d&&Math.round((n-Math.floor(n))*100)>0)w+=" et "+nw(Math.round((n-Math.floor(n))*100))+" centimes";var u=BIZ.cur==="FCFA"?"francs CFA":BIZ.cur==="EUR"?"euros":"dollars";return w+" "+u;}
+function calc(d){var sub=0;d.items.forEach(function(i){sub+=(+i.q||0)*(+i.p||0);});var disc=sub*(+d.disc||0)/100,base=sub-disc,tax=base*(+d.tax||0)/100,total=base+tax;return {sub:sub,disc:disc,tax:tax,total:total,paid:+d.paid||0,rest:total-(+d.paid||0)};}
+function iso(t){var x=new Date(t||Date.now());return x.getFullYear()+"-"+("0"+(x.getMonth()+1)).slice(-2)+"-"+("0"+x.getDate()).slice(-2);}
+function fd(s){if(!s)return "";var p=String(s).split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:s;}
+function nextNum(t){BIZ.cnt[t]=(BIZ.cnt[t]||0)+1;return TYPES[t].pre+"-"+new Date().getFullYear()+"-"+("00"+BIZ.cnt[t]).slice(-3);}
+/* ---------- rendu A4 ---------- */
+var PW=1240,PH=1754,M=80,SANS='Roboto,"Helvetica Neue",Arial,sans-serif';
+function newPage(){var c=document.createElement("canvas");c.width=PW;c.height=PH;var x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.textBaseline="alphabetic";c.__t=[];return {c:c,x:x};}
+function tx(pg,s,x,y,sz,w,col,al){s=String(s==null?"":s);if(!s)return 0;var x2=pg.x;x2.font=w+" "+sz+"px "+SANS;x2.fillStyle=col;var wd=x2.measureText(s).width,px=al==="r"?x-wd:al==="c"?x-wd/2:x;x2.textAlign="left";x2.fillText(s,px,y);pg.c.__t.push({s:s,x:px,y:y,sz:sz});return wd;}
+function wrap(pg,s,sz,w,maxW){pg.x.font=w+" "+sz+"px "+SANS;var out=[];String(s||"").split("\n").forEach(function(par){var ws=par.split(/\s+/).filter(Boolean),ln="";if(!ws.length){out.push("");return;}ws.forEach(function(t){var tt=ln?ln+" "+t:t;if(pg.x.measureText(tt).width>maxW&&ln){out.push(ln);ln=t;}else ln=tt;});out.push(ln);});return out;}
+function renderDoc(d,logo){
+ var T=TYPES[d.type],cc=calc(d),acc=(isPremium()?BIZ.color:"#1d4ed8"),pages=[],pg=newPage(),y;pages.push(pg);
+ var lx=M;
+ if(logo&&isPremium()){var lh=110,lw=Math.min(300,logo.width*lh/logo.height);lh=lw*logo.height/logo.width;pg.x.drawImage(logo,M,70,lw,lh);lx=M+lw+24;}
+ tx(pg,BIZ.name||"Mon entreprise",lx,112,44,"800","#14213d");
+ var ly=148;[BIZ.addr,BIZ.phone&&("Tél : "+BIZ.phone),BIZ.email,BIZ.nif&&("NIF / RCCM : "+BIZ.nif)].forEach(function(l){if(l){wrap(pg,l,24,"400",560).forEach(function(w){tx(pg,w,lx,ly,24,"400","#5b6478");ly+=32;});}});
+ tx(pg,T.N,PW-M,118,66,"900",acc,"r");tx(pg,"N° "+d.num,PW-M,168,28,"700","#14213d","r");tx(pg,"Date : "+fd(d.date),PW-M,204,26,"400","#5b6478","r");if(d.due&&d.type!=="recu")tx(pg,(d.type==="devis"?"Valable jusqu'au : ":"Échéance : ")+fd(d.due),PW-M,238,26,"400","#5b6478","r");
+ y=Math.max(ly,270)+20;pg.x.fillStyle=acc;pg.x.fillRect(M,y,PW-2*M,4);y+=50;
+ tx(pg,T.to,M,y,22,"800",acc);y+=40;tx(pg,d.cn||"—",M,y,34,"800","#14213d");y+=38;
+ [d.ca,d.cp&&("Tél : "+d.cp)].forEach(function(l){if(l)wrap(pg,l,26,"400",700).forEach(function(w){tx(pg,w,M,y,26,"400","#5b6478");y+=34;});});
+ y+=30;
+ var cQ=M+690,cP=M+880,cA=PW-M-16;
+ function thead(){pg.x.fillStyle=acc;pg.x.fillRect(M,y,PW-2*M,58);tx(pg,"DÉSIGNATION",M+16,y+38,22,"800","#fff");tx(pg,"QTÉ",cQ,y+38,22,"800","#fff","r");tx(pg,"PRIX UNIT.",cP,y+38,22,"800","#fff","r");tx(pg,"MONTANT",cA,y+38,22,"800","#fff","r");y+=58;}
+ function foot(){}
+ thead();
+ d.items.forEach(function(it,i){var ls=wrap(pg,it.d||"",26,"400",560),h=Math.max(ls.length*34,34)+26;
+  if(y+h>PH-200){pg=newPage();pages.push(pg);y=90;thead();}
+  if(i%2)  {pg.x.fillStyle="#f6f8fc";pg.x.fillRect(M,y,PW-2*M,h);}
+  var ty=y+38;ls.forEach(function(l){tx(pg,l,M+16,ty,26,"400","#14213d");ty+=34;});
+  tx(pg,String(+it.q||0),cQ,y+38,26,"400","#14213d","r");tx(pg,money(it.p),cP,y+38,26,"400","#14213d","r");tx(pg,money((+it.q||0)*(+it.p||0)),cA,y+38,26,"700","#14213d","r");
+  pg.x.fillStyle="#e3e7f0";pg.x.fillRect(M,y+h-1,PW-2*M,2);y+=h;});
+ if(y>PH-560){pg=newPage();pages.push(pg);y=90;}
+ y+=34;var ty=y,rx=M+600,rv=PW-M-16;
+ function row(l,v,b){tx(pg,l,rx,ty,b?30:26,b?"800":"400","#14213d");tx(pg,v,rv,ty,b?30:26,b?"800":"400","#14213d","r");ty+=b?52:42;}
+ if(d.type!=="recu"){row("Sous-total",money(cc.sub)+" "+cur());if(+d.disc)row("Remise ("+d.disc+" %)","- "+money(cc.disc)+" "+cur());if(+d.tax)row("TVA ("+d.tax+" %)",money(cc.tax)+" "+cur());}
+ ty+=10; pg.x.fillStyle=acc;pg.x.fillRect(rx-16,ty-38,PW-M-rx+16,60);tx(pg,d.type==="recu"?"MONTANT REÇU":"TOTAL",rx,ty,30,"900","#fff");tx(pg,money(cc.total)+" "+cur(),rv,ty,30,"900","#fff","r");ty+=64;
+ if(d.type!=="recu"&&cc.paid>0){row("Acompte versé","- "+money(cc.paid)+" "+cur());row(cc.rest<=0?"SOLDE":"RESTE À PAYER",money(Math.max(0,cc.rest))+" "+cur(),true);}
+ var wy=y;tx(pg,T.w+" :",M,wy,22,"700","#5b6478");wy+=38;wrap(pg,words(cc.total).replace(/^./,function(c){return c.toUpperCase();}),28,"800",520).forEach(function(l){tx(pg,l,M,wy,28,"800","#14213d");wy+=38;});
+ if(d.type==="facture"&&cc.total>0&&cc.rest<=0){pg.x.save();pg.x.translate(M+260,wy+90);pg.x.rotate(-0.18);pg.x.strokeStyle="#15803d";pg.x.lineWidth=8;pg.x.strokeRect(-130,-50,260,100);pg.x.fillStyle="#15803d";pg.x.font="900 66px "+SANS;pg.x.textAlign="center";pg.x.fillText("PAYÉ",0,24);pg.x.restore();pg.c.__t.push({s:"PAYÉ",x:M+170,y:wy+110,sz:66});wy+=170;}
+ y=Math.max(ty,wy)+30;
+ if(y>PH-420){pg=newPage();pages.push(pg);y=90;}
+ if(d.notes){tx(pg,"CONDITIONS / NOTES",M,y,22,"800",acc);y+=36;wrap(pg,d.notes,25,"400",PW-2*M).forEach(function(l){tx(pg,l,M,y,25,"400","#5b6478");y+=33;});y+=14;}
+ if(BIZ.pay){tx(pg,"PAIEMENT",M,y,22,"800",acc);y+=36;wrap(pg,BIZ.pay,25,"400",620).forEach(function(l){tx(pg,l,M,y,25,"700","#14213d");y+=33;});}
+ var sy=Math.max(y+40,PH-300);if(sy>PH-150)sy=PH-150;tx(pg,"Cachet et signature",PW-M-20,sy,24,"700","#5b6478","r");pg.x.fillStyle="#cfd6e4";pg.x.fillRect(PW-M-340,sy+110,340,2);
+ pages.forEach(function(p,i){if(pages.length>1)tx(p,"Page "+(i+1)+" / "+pages.length,PW-M,PH-50,20,"400","#8892a6","r");if(BIZ.foot||!isPremium())tx(p,"Créé avec Facture Express",PW/2,PH-50,20,"400","#a3acbd","c");});
+ return pages;}
+/* ---------- fichiers ---------- */
+function isPremium(){return adCount()>=ADS.need;}
+function fname(d,ext){return (TYPES[d.type].n+"-"+d.num+"-"+(d.cn||"")).replace(/[^\wÀ-ÿ-]+/g,"-").replace(/-+/g,"-").replace(/-$/,"")+"."+ext;}
+function exportPDF(){toast("Création du PDF…");loadPhoto(BIZ.logo).then(function(lg){var pages=renderDoc(D,lg);window.__lp=pages;return Promise.all(pages.map(function(p){return canvasJpeg(p.c);}));}).then(function(j){saveBlob(fname(D,"pdf"),buildPDF(j,PW,PH,window.__lp.map(function(p){return p.c.__t;})));}).catch(function(){toast("Impossible de créer le PDF");});}
+function exportImg(){loadPhoto(BIZ.logo).then(function(lg){var p=renderDoc(D,lg);p[0].c.toBlob(function(b){saveBlob(fname(D,"jpg"),b);},"image/jpeg",0.92);});}
+/* ---------- pubs / premium ---------- */
+function unlockBox(){var n=adCount(),o=document.createElement("div");o.id="ulk";o.style.cssText="position:fixed;inset:0;background:#000a;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px";
+ o.innerHTML='<div style="background:#fff;border-radius:18px;padding:20px;max-width:340px;width:100%;text-align:center;color:#14213d"><div style="font-size:38px">⭐</div><h2 style="margin:6px 0">Version Premium</h2><p style="color:#5b6478;margin:6px 0 14px">Regarde '+ADS.need+' courtes pubs pour débloquer pour toujours : ton logo, tes couleurs, et la suppression de la mention « Créé avec Facture Express ».</p><div style="font-size:26px;font-weight:800;margin-bottom:12px">'+n+' / '+ADS.need+'</div><button class="btn" id="ulkgo" style="margin:0 0 8px">▶ Regarder une pub</button><button class="btn g" style="margin:0" onclick="document.getElementById(\'ulk\').remove()">Plus tard</button></div>';
+ document.body.appendChild(o);document.getElementById("ulkgo").onclick=function(){var b=this;b.disabled=true;b.textContent="…";adsShow().then(function(r){o.remove();if(r.completed){var c=adCount()+1;adSet(c);if(c>=ADS.need){toast("🎉 Premium débloqué !");}else{toast(c+" / "+ADS.need);unlockBox();return;}if(VIEW==="biz")bizScreen();}else if(r.error==="web"){toast("Disponible dans l'application Android");}else{toast("Pub indisponible, réessaie dans un instant");}});};}
+/* ---------- écrans ---------- */
+function totalOf(d){return calc(d).total;}
+function home(){VIEW="home";D=null;
+ var h='<main><div class="wrap"><div class="row" style="margin:6px 0"><button class="btn" onclick="newDoc(\'facture\')">＋ Facture</button><button class="btn" onclick="newDoc(\'devis\')">＋ Devis</button><button class="btn" onclick="newDoc(\'recu\')">＋ Reçu</button></div>';
+ if(!BIZ.name)h+='<div class="card" style="background:var(--pl)"><b>Commence par ton entreprise</b><div class="mut" style="margin:4px 0 8px">Ton nom, ton téléphone et ton numéro Mobile Money apparaîtront sur tes documents.</div><button class="btn" onclick="bizScreen()">Renseigner mon entreprise</button></div>';
+ else h+='<button class="btn g" onclick="bizScreen()">🏢 '+esc(BIZ.name)+' — modifier</button>';
+ h+='<div class="chips" style="margin:10px 0">'+[["all","Tous"],["facture","Factures"],["devis","Devis"],["recu","Reçus"]].map(function(f){return '<span class="chip" style="'+(FILTER===f[0]?'background:var(--p);color:#fff':'')+'" onclick="FILTER=\''+f[0]+'\';home()">'+f[1]+'</span>';}).join("")+'</div>';
+ var L=SAVE.docs.filter(function(d){return FILTER==="all"||d.type===FILTER;}).sort(function(a,b){return b.upd-a.upd;});
+ if(!L.length)h+='<p class="mut" style="text-align:center;margin:30px 0">Aucun document pour le moment.<br>Crée ta première facture en 1 minute.</p>';
+ var tot=0;L.forEach(function(d){if(d.type==="facture")tot+=totalOf(d);h+='<div class="card cvrow"><div class="grow" onclick="openDoc(\''+d.id+'\')"><b>'+TYPES[d.type].n+' '+esc(d.num)+' · '+esc(d.cn||"Sans client")+'</b><span class="mut">'+fd(d.date)+' · '+money(totalOf(d))+' '+cur()+(d.type==="facture"&&calc(d).rest<=0&&totalOf(d)>0?' · ✅ payée':'')+'</span></div><button class="btn s g" onclick="dupDoc(\''+d.id+'\')">⧉</button><button class="btn s r" onclick="delDoc(\''+d.id+'\')">🗑</button></div>';});
+ if(L.length&&(FILTER==="all"||FILTER==="facture"))h+='<p class="mut" style="text-align:center">Total facturé : <b>'+money(tot)+' '+cur()+'</b></p>';
+ h+='</div></main>';shell("Facture Express","",h);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function newDoc(t){if(!BIZ.name){toast("Renseigne d'abord ton entreprise");bizScreen();return;}
+ var d={id:uid(),type:t,num:nextNum(t),date:iso(),due:"",cn:"",ca:"",cp:"",items:[{d:"",q:1,p:""}],tax:0,disc:0,paid:0,notes:"",upd:Date.now()};SAVE.docs.push(d);persist();openDoc(d.id);}
+function openDoc(id){D=SAVE.docs.filter(function(x){return x.id===id;})[0];if(D)editor();}
+function dupDoc(id){var s=SAVE.docs.filter(function(x){return x.id===id;})[0];if(!s)return;var c=JSON.parse(JSON.stringify(s));c.id=uid();c.num=nextNum(c.type);c.date=iso();c.paid=0;c.upd=Date.now();SAVE.docs.push(c);persist();home();}
+function delDoc(id){if(!confirm("Supprimer ce document ?"))return;SAVE.docs=SAVE.docs.filter(function(x){return x.id!==id;});persist();home();}
+function U1(k,v){D[k]=v;D.upd=Date.now();persist();upTot();}
+function UI(i,k,v){D.items[i][k]=v;D.upd=Date.now();if(k==="d"&&!D.items[i].p){var c=catalog()[v.toLowerCase()];if(c){D.items[i].p=c;var el=document.getElementById("ip"+i);if(el)el.value=c;}}persist();upTot();}
+function catalog(){var o={};SAVE.docs.forEach(function(d){d.items.forEach(function(i){if(i.d&&i.p)o[i.d.toLowerCase()]=i.p;});});return o;}
+function addItem(){D.items.push({d:"",q:1,p:""});persist();editor();setTimeout(function(){var e=document.getElementById("id"+(D.items.length-1));if(e)e.focus();},50);}
+function delItem(i){if(D.items.length>1)D.items.splice(i,1);else D.items[0]={d:"",q:1,p:""};persist();editor();}
+function upTot(){var c=calc(D),e=document.getElementById("tot");if(e)e.innerHTML='Total : <b>'+money(c.total)+' '+cur()+'</b>'+(D.type!=="recu"&&c.paid>0?'<br>Reste à payer : <b>'+money(Math.max(0,c.rest))+' '+cur()+'</b>':'');D.items.forEach(function(it,i){var m=document.getElementById("im"+i);if(m)m.textContent=money((+it.q||0)*(+it.p||0))+" "+cur();});}
+function toFacture(){D.type="facture";D.num=nextNum("facture");persist();editor();toast("Devis converti en facture");}
+function setPaid(){D.paid=calc(D).total;persist();editor();}
+function editor(){VIEW="edit";var T=TYPES[D.type],h='<main><div class="wrap">';
+ h+='<div class="card"><div class="h">'+T.n+'</div><div class="row"><div><label>Numéro</label><input value="'+esc(D.num)+'" oninput="U1(\'num\',this.value)"></div><div><label>Date</label><input type="date" value="'+D.date+'" oninput="U1(\'date\',this.value)"></div></div>'+(D.type==="recu"?'':'<label>'+(D.type==="devis"?"Valable jusqu'au":"Échéance")+' (facultatif)</label><input type="date" value="'+(D.due||"")+'" oninput="U1(\'due\',this.value)">')+'</div>';
+ h+='<div class="card"><div class="h">Client</div><label>Nom</label><input value="'+esc(D.cn)+'" placeholder="Nom du client" oninput="U1(\'cn\',this.value)"><label>Adresse (facultatif)</label><input value="'+esc(D.ca)+'" oninput="U1(\'ca\',this.value)"><label>Téléphone (facultatif)</label><input inputmode="tel" value="'+esc(D.cp)+'" oninput="U1(\'cp\',this.value)"></div>';
+ h+='<datalist id="dl">'+Object.keys(catalog()).slice(0,60).map(function(k){return '<option value="'+esc(k)+'">';}).join("")+'</datalist>';
+ D.items.forEach(function(it,i){h+='<div class="card"><div class="row" style="align-items:center"><b style="flex:none">Ligne '+(i+1)+'</b><span class="mut" style="text-align:right" id="im'+i+'">'+money((+it.q||0)*(+it.p||0))+' '+cur()+'</span></div><label>Désignation</label><input id="id'+i+'" list="dl" value="'+esc(it.d)+'" placeholder="Ex : Sac de riz 50 kg" oninput="UI('+i+',\'d\',this.value)"><div class="row"><div><label>Quantité</label><input inputmode="decimal" value="'+esc(it.q)+'" oninput="UI('+i+',\'q\',this.value)"></div><div><label>Prix unitaire ('+cur()+')</label><input id="ip'+i+'" inputmode="decimal" value="'+esc(it.p)+'" oninput="UI('+i+',\'p\',this.value)"></div></div><button class="btn s r" style="margin-top:8px" onclick="delItem('+i+')">✕ Retirer</button></div>';});
+ h+='<button class="btn g" onclick="addItem()">＋ Ajouter une ligne</button>';
+ h+='<div class="card"><div class="h">Montants</div>'+(D.type==="recu"?'':'<div class="row"><div><label>Remise (%)</label><input inputmode="decimal" value="'+esc(D.disc||"")+'" placeholder="0" oninput="U1(\'disc\',this.value)"></div><div><label>TVA (%)</label><input inputmode="decimal" value="'+esc(D.tax||"")+'" placeholder="0" oninput="U1(\'tax\',this.value)"></div></div><label>Acompte déjà versé ('+cur()+')</label><input inputmode="decimal" value="'+esc(D.paid||"")+'" placeholder="0" oninput="U1(\'paid\',this.value)">')+'<div id="tot" style="margin-top:12px;font-size:17px"></div>'+(D.type==="facture"?'<button class="btn s g" onclick="setPaid()">✅ Marquer payée</button>':'')+(D.type==="devis"?'<button class="btn s g" onclick="toFacture()">➜ Transformer en facture</button>':'')+'</div>';
+ h+='<div class="card"><label>Conditions / notes (facultatif)</label><textarea oninput="U1(\'notes\',this.value)" placeholder="Ex : Paiement à la livraison. Merci de votre confiance.">'+esc(D.notes)+'</textarea></div></div></main><button class="fab" onclick="preview()">👁 Aperçu et PDF</button>';
+ shell(T.n+" "+D.num,'<button class="ib" onclick="home()">←</button>',h);upTot();}
+function preview(){VIEW="prev";loadPhoto(BIZ.logo).then(function(lg){var pages=renderDoc(D,lg),h='<main style="padding:0 0 90px" class="pv">';pages.forEach(function(p,i){h+='<div id="pp'+i+'"></div>';});
+ h+='</main><div style="position:fixed;left:0;right:0;bottom:0;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);display:flex;gap:8px"><button class="btn" style="margin:0;flex:2" onclick="exportPDF()">📄 PDF</button><button class="btn g" style="margin:0;flex:1" onclick="exportImg()">🖼 JPG</button></div>';
+ shell("Aperçu",'<button class="ib" onclick="editor()">←</button>',h);pages.forEach(function(p,i){document.getElementById("pp"+i).appendChild(p.c);});});}
+var SW=["#1d4ed8","#0f766e","#b91c1c","#7e22ce","#c2410c","#15803d","#111827"];
+function bset(k,v){BIZ[k]=v;persist();}
+function bizScreen(){VIEW="biz";var pr=isPremium(),h='<main><div class="wrap"><div class="card"><div class="h">Mon entreprise</div>'+
+ '<label>Nom *</label><input value="'+esc(BIZ.name)+'" placeholder="Ex : Boutique Akossiwa" oninput="bset(\'name\',this.value)"><label>Adresse</label><input value="'+esc(BIZ.addr)+'" placeholder="Lomé, Togo" oninput="bset(\'addr\',this.value)"><label>Téléphone</label><input inputmode="tel" value="'+esc(BIZ.phone)+'" oninput="bset(\'phone\',this.value)"><label>E-mail (facultatif)</label><input value="'+esc(BIZ.email)+'" oninput="bset(\'email\',this.value)"><label>NIF / RCCM (facultatif)</label><input value="'+esc(BIZ.nif)+'" oninput="bset(\'nif\',this.value)"><label>Paiement (Mixx / Flooz / banque)</label><textarea oninput="bset(\'pay\',this.value)" placeholder="Ex : Mixx by Yas : 90 00 00 00 (Nom)\nFlooz : 99 00 00 00">'+esc(BIZ.pay)+'</textarea><label>Devise</label><select onchange="bset(\'cur\',this.value)">'+[["FCFA","FCFA (franc CFA)"],["EUR","Euro (€)"],["USD","Dollar ($)"]].map(function(c){return '<option value="'+c[0]+'"'+(BIZ.cur===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join("")+'</select></div>'+
+ '<div class="card"><div class="h">⭐ Premium '+(pr?'(débloqué)':'')+'</div>'+(pr?'':'<div class="mut" style="margin-bottom:8px">Logo, couleurs et sans mention « Créé avec Facture Express » : regarde 3 pubs, une seule fois.</div><button class="btn" onclick="unlockBox()">▶ Débloquer ('+adCount()+' / '+ADS.need+')</button>')+
+ '<label>Logo</label>'+(BIZ.logo?'<img src="'+BIZ.logo+'" style="max-height:70px;max-width:100%;display:block;margin:4px 0">':'')+'<input type="file" accept="image/*" '+(pr?'onchange="pickLogo(this)"':'disabled')+'>'+(BIZ.logo&&pr?'<button class="btn s r" style="margin-top:6px" onclick="bset(\'logo\',\'\');bizScreen()">Retirer le logo</button>':'')+
+ '<label>Couleur des documents</label><div>'+SW.map(function(c){return '<span class="sw'+(BIZ.color===c?' on':'')+'" style="background:'+c+';'+(pr?'':'opacity:.45')+'" onclick="'+(pr?'bset(\'color\',\''+c+'\');bizScreen()':'unlockBox()')+'"></span>';}).join("")+'</div>'+
+ '<label style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="checkbox" style="width:auto" '+(BIZ.foot?'checked':'')+(pr?'':' disabled')+' onchange="bset(\'foot\',this.checked)"> Afficher « Créé avec Facture Express »</label></div>'+
+ '<button class="btn" onclick="home()">✓ Enregistrer</button></div></main>';
+ shell("Mon entreprise",'<button class="ib" onclick="home()">←</button>',h);}
+function pickLogo(inp){var f=inp.files&&inp.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var m=Math.min(1,500/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*m);c.height=Math.round(im.height*m);c.getContext("2d").drawImage(im,0,0,c.width,c.height);BIZ.logo=c.toDataURL("image/png");persist();bizScreen();};im.src=fr.result;};fr.readAsDataURL(f);}
+home();
+window.__fa={SAVE:SAVE,nw:nw,words:words,money:money,calc:calc,renderDoc:renderDoc,newDoc:newDoc,openDoc:openDoc,preview:preview,bizScreen:bizScreen,get D(){return D;},BIZ:BIZ,buildPDF:buildPDF,canvasJpeg:canvasJpeg,pageTexts:function(p){return p.c.__t;},setPrem:function(){adSet(3);}};
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
+</script></body></html>
