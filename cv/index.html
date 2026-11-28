@@ -372,13 +372,66 @@ function newCV(ex){var d=ex?example():blank();SAVE.list.push(d);SAVE.cur=d.id;pe
 function openCV(id){SAVE.cur=id;CV=cur();TAB=0;editor();}
 function dupCV(id){var s=SAVE.list.filter(function(c){return c.id===id;})[0];if(!s)return;var c=JSON.parse(JSON.stringify(s));c.id=uid();c.name=(c.name||"")+" (2)";c.upd=Date.now();SAVE.list.push(c);persist();home();}
 function delCV(id){if(!confirm(X("Supprimer ce CV ?","Delete this résumé?")))return;SAVE.list=SAVE.list.filter(function(c){return c.id!==id;});persist();home();}
-var TABS=function(){return [X("👤 Infos","👤 Info"),X("📝 Profil","📝 Profile"),X("💼 Expérience","💼 Work"),X("🎓 Formation","🎓 Education"),X("🛠 Compétences","🛠 Skills"),X("➕ Plus","➕ More")];};
+var TABS=function(){return [X("👤 Infos","👤 Info"),X("📝 Profil","📝 Profile"),X("💼 Expérience","💼 Work"),X("🎓 Formation","🎓 Education"),X("🛠 Compétences","🛠 Skills"),X("➕ Plus","➕ More"),X("✨ Assistant","✨ Assistant")];};
 function editor(){
  VIEW="edit";
  var tabs='<div class="tabs">'+TABS().map(function(t,i){return '<div class="tab'+(i===TAB?' on':'')+'" onclick="TAB='+i+';editor()">'+t+'</div>';}).join("")+'</div>';
- var body=[tabInfo,tabProfile,tabExp,tabEdu,tabSkills,tabMore][TAB]();
+ var body=[tabInfo,tabProfile,tabExp,tabEdu,tabSkills,tabMore,tabAssist][TAB]();
  shell(CV.name||X("Mon CV","My résumé"),'<button class="ib" onclick="home()">←</button>',tabs+'<main><div class="wrap">'+body+'</div></main><button class="fab" onclick="preview()">👁 '+X("Aperçu et PDF","Preview & PDF")+'</button>');
 }
+
+/* ---------- Assistant local (sans internet) ---------- */
+var AST_MSG="";
+function cleanLine(t){t=String(t||"").replace(/\s+/g," ").trim();if(!t)return "";
+ t=t.replace(/^[-•*]\s*/,"");
+ t=t.replace(/^j['’]ai\s+/i,"").replace(/^je\s+/i,"");
+ t=t.replace(/^(étais |étant |suis )?(chargée?|responsable)\s+(de la |de l['’]|du |des |de |d['’])/i,function(m,a,b,c){var k=c.toLowerCase();return "Gestion "+(k==="de la "?"de la ":k==="du "?"du ":k==="des "?"des ":k==="de "?"de ":k==="d'"||k==="d’"?"d'":"de l'");});
+ t=t.replace(/\s+([,.;:!?])/g,"$1").replace(/([,.;:!?])\1+/g,"$1").replace(/[.;]+$/,"");
+ return t.charAt(0).toUpperCase()+t.slice(1);}
+function cleanDesc(d){return String(d||"").split("\n").map(function(l){var c=cleanLine(l);return c?"- "+c:"";}).filter(Boolean).join("\n");}
+function bullets(txt){return String(txt||"").split("\n").map(function(l){return l.replace(/^\s*[-•*]\s*/,"").trim();}).filter(Boolean);}
+function astIssues(d){var out=[],weak=/\b(motiv[ée]e?|dynamique|s[ée]rieux|s[ée]rieuse|passionn[ée]e?|travailleu[rs]e?|bon contact|esprit d['’]équipe)\b/i;
+ var sm=d.summary||"";
+ if(!sm.trim())out.push(X("Le profil est vide : utilise « Rédiger un profil » ci-dessous","The profile is empty: use “Write a profile” below"));
+ else{if(sm.length>420)out.push(X("Profil trop long : vise 2 à 3 phrases (moins de 400 caractères)","Profile too long: aim for 2–3 sentences"));
+  if(weak.test(sm))out.push(X("Évite les mots vagues (motivé, dynamique, sérieux…) : donne plutôt un fait ou un chiffre","Avoid vague words (motivated, dynamic…): give a fact or number instead"));
+  if(/^\s*je suis\b/i.test(sm))out.push(X("Commence ton profil par ton métier, pas par « Je suis »","Start your profile with your job, not “I am”"));}
+ d.exp.forEach(function(e,i){var n=(e.role||X("Expérience ","Experience ")+(i+1)),b=bullets(e.desc);
+  if(!b.length)out.push(n+" : "+X("aucune mission décrite (ajoute 2 à 4 puces)","no tasks described (add 2–4 bullets)"));
+  else{if(!b.some(function(x){return /\d/.test(x);}))out.push(n+" : "+X("ajoute au moins un chiffre (clients, ventes, durée, %)","add at least one number (clients, sales, %)"));
+   if(b.length>6)out.push(n+" : "+X("trop de puces, garde les 5 plus fortes","too many bullets, keep the best 5"));
+   if(b.some(function(x){return x.length>150;}))out.push(n+" : "+X("une puce est trop longue, coupe-la en deux","a bullet is too long, split it"));
+   if(b.some(function(x){return /^(j['’]ai|je |responsable de|chargée? de)/i.test(x);}))out.push(n+" : "+X("remplace « J'ai / Je / Responsable de » par un verbe d'action (bouton Corriger)","replace “I / Responsible for” with an action verb (Fix button)"));}
+  if(!e.from)out.push(n+" : "+X("indique l'année de début","add the start year"));});
+ if(skillList(d.skills).length<5)out.push(X("Moins de 5 compétences : ajoute-en pour passer les filtres des recruteurs","Fewer than 5 skills: add more"));
+ if(!d.langs.length)out.push(X("Ajoute tes langues (français, anglais…)","Add your languages"));
+ if((d.title||"").length>60)out.push(X("Intitulé de poste trop long","Job title too long"));
+ return out;}
+function astFix(){var n=0;function ch(o,k,v){if(o[k]!==v){o[k]=v;n++;}}
+ ch(CV,"summary",String(CV.summary||"").replace(/\s+/g," ").trim().replace(/^./,function(c){return c.toUpperCase();}));
+ CV.exp.forEach(function(e){ch(e,"desc",cleanDesc(e.desc));});CV.edu.forEach(function(e){ch(e,"desc",cleanDesc(e.desc));});
+ persist();AST_MSG=n?X("✅ "+n+" texte(s) corrigé(s).","✅ "+n+" text(s) fixed."):X("Rien à corriger automatiquement.","Nothing to fix automatically.");editor();}
+function astYears(d){var y=new Date().getFullYear(),m=y;d.exp.forEach(function(e){var v=parseInt(e.from,10);if(v>1970&&v<m)m=v;});return y-m;}
+function astSummary(){var d=CV,sk=skillList(d.skills).slice(0,4),yrs=astYears(d),t=(d.title||"").trim();
+ if(!t){toast(X("Indique d'abord le poste visé (onglet Infos)","Add your target job first (Info tab)"));return;}
+ var a=yrs>=1?X(t+" avec "+yrs+" an"+(yrs>1?"s":"")+" d'expérience",t+" with "+yrs+" year"+(yrs>1?"s":"")+" of experience"):X(t+" débutant(e), formé(e) et prêt(e) à apprendre vite",t+" at the start of my career, trained and quick to learn");
+ var b=sk.length?X(" Compétences clés : "+sk.join(", ")+"."," Key skills: "+sk.join(", ")+"."):"";
+ var e0=d.exp[0],c=e0&&e0.org?X(" Dernière expérience chez "+e0.org+"."," Latest experience at "+e0.org+"."):"";
+ var obj=X(" Je cherche un poste où mettre mes compétences au service de l'entreprise."," I am looking for a role where I can put my skills to work.");
+ d.summary=a+"."+b+c+obj;persist();AST_MSG=X("✅ Profil rédigé : relis-le et adapte-le.","✅ Profile drafted: review and adapt it.");editor();}
+function astAdd(){var tx=($("#astTx")||{}).value||"",k=+($("#astSel")||{}).value;var L=bullets(tx).map(cleanLine).filter(Boolean);
+ if(!L.length){toast(X("Écris au moins une idée","Write at least one idea"));return;}
+ if(k<0||!CV.exp[k]){toast(X("Ajoute d'abord une expérience","Add an experience first"));return;}
+ var e=CV.exp[k],old=bullets(e.desc);e.desc=old.concat(L).map(function(x){return "- "+x;}).join("\n");persist();AST_MSG=X("✅ "+L.length+" puce(s) ajoutée(s) à « "+(e.role||"…")+" ».","✅ "+L.length+" bullet(s) added.");editor();}
+function tabAssist(){var is=astIssues(CV),h="";
+ if(AST_MSG){h+='<div class="card" style="background:var(--pl)">'+esc(AST_MSG)+'</div>';AST_MSG="";}
+ h+='<div class="card"><b>'+X("Analyse de ton CV","Your résumé review")+'</b><div class="mut" style="margin:4px 0 8px">'+X("Assistant intégré, sans internet : il repère les points faibles et corrige la forme.","Built-in assistant, offline: it spots weak points and fixes the form.")+'</div>'+
+ (is.length?'<ul style="margin:0;padding-left:18px">'+is.map(function(t){return '<li style="margin:5px 0">'+esc(t)+'</li>';}).join("")+'</ul>':'<div>🎉 '+X("Rien de grave à signaler !","Nothing serious to report!")+'</div>')+
+ '<button class="btn" style="margin-top:12px" onclick="astFix()">🪄 '+X("Corriger la forme automatiquement","Fix wording automatically")+'</button></div>';
+ h+='<div class="card"><b>'+X("Rédiger un profil","Write a profile")+'</b><div class="mut" style="margin:4px 0 8px">'+X("Crée un texte à partir de ton poste, tes années d'expérience et tes compétences. Il remplace le profil actuel.","Builds text from your job, years of experience and skills. It replaces the current profile.")+'</div><button class="btn g" onclick="astSummary()">✍ '+X("Rédiger mon profil","Write my profile")+'</button></div>';
+ h+='<div class="card"><b>'+X("Ajouter ce que tu as fait","Add what you did")+'</b><div class="mut" style="margin:4px 0 8px">'+X("Écris tes tâches en vrac, une par ligne, avec tes mots (ex : j'ai vendu 40 produits par jour). Je les transforme en puces propres.","Write your tasks, one per line, in your own words. I turn them into clean bullets.")+'</div>'+
+ '<textarea id="astTx" rows="5" placeholder="'+esc(X("j'ai accueilli les clients\nj'ai géré la caisse\nresponsable de la livraison","I welcomed customers\nI ran the till"))+'"></textarea><label>'+X("Ajouter à quelle expérience ?","Add to which experience?")+'</label><select id="astSel">'+CV.exp.map(function(e,i){return '<option value="'+i+'">'+esc(e.role||X("Expérience ","Experience ")+(i+1))+'</option>';}).join("")+'</select><button class="btn" style="margin-top:10px" onclick="astAdd()">➕ '+X("Transformer en puces","Turn into bullets")+'</button></div>';
+ return h;}
 function fld(label,path,val,o){o=o||{};return '<label>'+label+'</label>'+(o.area?'<textarea data-p="'+path+'" placeholder="'+esc(o.ph||"")+'">'+esc(val)+'</textarea>':'<input data-p="'+path+'" value="'+esc(val)+'" placeholder="'+esc(o.ph||"")+'" '+(o.type?'type="'+o.type+'"':'')+'>');}
 function score(d){
  var tips=[],pts=0,tot=9;
@@ -516,7 +569,7 @@ function preview(){
  loadPhoto(CV.photo).then(function(img){var pages=renderFit(CV,img),pv=$("#pv");if(!pv)return;pages.forEach(function(c){pv.appendChild(c);});
   if(pages.length>1){var n=document.createElement("div");n.className="mut";n.style.textAlign="center";n.textContent=pages.length+" "+X("pages. Astuce : un CV d'1 à 2 pages suffit.","pages. Tip: 1–2 pages is enough.");pv.appendChild(n);}});
 }
-window.__cv={adSet:adSet,isLocked:isLocked,pickTpl:pickTpl,buildDocx:buildDocx,docxBody:docxBody,letterDocx:letterDocx,renderFit:renderFit,renderLetter:renderLetter,letterGen:letterGen,score:score,get CV(){return CV;},renderCV:renderCV,buildPDF:buildPDF,example:example,blank:blank,canvasJpeg:canvasJpeg,PW:PW,PH:PH,loadPhoto:loadPhoto,newCV:newCV,preview:preview};
+window.__cv={astIssues:astIssues,cleanDesc:cleanDesc,astSummary:astSummary,tabAssist:tabAssist,adSet:adSet,isLocked:isLocked,pickTpl:pickTpl,buildDocx:buildDocx,docxBody:docxBody,letterDocx:letterDocx,renderFit:renderFit,renderLetter:renderLetter,letterGen:letterGen,score:score,get CV(){return CV;},renderCV:renderCV,buildPDF:buildPDF,example:example,blank:blank,canvasJpeg:canvasJpeg,PW:PW,PH:PH,loadPhoto:loadPhoto,newCV:newCV,preview:preview};
 home();
 if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){navigator.serviceWorker.register("sw.js").catch(function(){});}
 </script></body></html>
