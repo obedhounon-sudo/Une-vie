@@ -1,0 +1,30 @@
+{
+  "name": "facture-express-bureau",
+  "productName": "Facture Express",
+  "version": "1.0.0",
+  "description": "Facture Express pour Windows : factures, devis et reçus en PDF",
+  "author": "Obed Hounon (obedklein)",
+  "main": "main.js",
+  "scripts": { "start": "electron ." },
+  "build": {
+    "appId": "com.obedklein.factureexpress.bureau",
+    "productName": "Facture Express",
+    "files": ["main.js", "index.html"],
+    "directories": { "output": "dist" },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "Facture-Express-Installateur-${version}.${ext}"
+    },
+    "portable": { "artifactName": "Facture-Express-Portable-${version}.${ext}" }
+  },
+  "devDependencies": { "electron": "^33.0.0", "electron-builder": "^25.0.0" }
+}

@@ -170,7 +170,7 @@ function renderDoc(d,logo){
  pages.forEach(function(p,i){if(pages.length>1)tx(p,"Page "+(i+1)+" / "+pages.length,PW-M,PH-50,20,"400","#8892a6","r");if(BIZ.foot||!isPremium())tx(p,"Créé avec Facture Express",PW/2,PH-50,20,"400","#a3acbd","c");});
  return pages;}
 /* ---------- fichiers ---------- */
-function isPremium(){return adCount()>=ADS.need;}
+function isPremium(){return !cap()||adCount()>=ADS.need;}
 function fname(d,ext){return (TYPES[d.type].n+"-"+d.num+"-"+(d.cn||"")).replace(/[^\wÀ-ÿ-]+/g,"-").replace(/-+/g,"-").replace(/-$/,"")+"."+ext;}
 function exportPDF(){toast("Création du PDF…");loadPhoto(BIZ.logo).then(function(lg){var pages=renderDoc(D,lg);window.__lp=pages;return Promise.all(pages.map(function(p){return canvasJpeg(p.c);}));}).then(function(j){saveBlob(fname(D,"pdf"),buildPDF(j,PW,PH,window.__lp.map(function(p){return p.c.__t;})));}).catch(function(){toast("Impossible de créer le PDF");});}
 function exportImg(){loadPhoto(BIZ.logo).then(function(lg){var p=renderDoc(D,lg);p[0].c.toBlob(function(b){saveBlob(fname(D,"jpg"),b);},"image/jpeg",0.92);});}
